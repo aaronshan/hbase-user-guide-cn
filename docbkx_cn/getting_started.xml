@@ -28,58 +28,40 @@
  * limitations under the License.
  */
 -->
-  <title>Getting Started</title>
+  <title>入门</title>
 
   <section>
-    <title>Introduction</title>
+    <title>介绍</title>
 
     <para><xref
-        linkend="quickstart" /> will get you up and running on a single-node, standalone instance of
-      HBase. </para>
+        linkend="quickstart" /> 将会介绍如何在单一节点上运行单机版的HBase实例。 </para>
   </section>
 
   <section
     xml:id="quickstart">
-    <title>Quick Start - Standalone HBase</title>
+    <title>快速开始 - 单机HBase</title>
 
-    <para>This guide describes setup of a standalone HBase instance running against the local
-      filesystem. This is not an appropriate configuration for a production instance of HBase, but
-      will allow you to experiment with HBase. This section shows you how to create a table in
-      HBase using the <command>hbase shell</command> CLI, insert rows into the table, perform put
-      and scan operations against the table, enable or disable the table, and start and stop HBase.
-      Apart from downloading HBase, this procedure should take less than 10 minutes.</para>
+    <para>该指南将会描述如何设置一个运行在本地文件系统上的单机版HBase。对于生产环境来讲，这样的配置是不合适的，但是它可以让你体验一下HBase。本节将展示如何使用<command>HBase Shell</command>命令来在HBase中创建一个表，在该表中插入几行数据，执行针对该表的Put和Scan操作，enable或disable该表，开启和关闭HBase。从下载完HBase到执行完上述操作，花费的时间将少于10分钟。 </para>
     <warning
       xml:id="local.fs.durability">
-      <title>Local Filesystem and Durability</title>
-      <para><emphasis>The below advice is for HBase 0.98.2 and earlier releases only. This is fixed
-        in HBase 0.98.3 and beyond. See <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE-11272">HBASE-11272</link> and
+      <title>本地文件系统和持久性</title>
+      <para><emphasis>以下建议仅仅针对HBase 0.98.2和更早的版本。在HBase 0.98.3和之后的版本，该问题已经被修复。查看<link
+          xlink:href="https://issues.apache.org/jira/browse/HBASE-11272">HBASE-11272</link> 和
         <link
             xlink:href="https://issues.apache.org/jira/browse/HBASE-11218">HBASE-11218</link>.</emphasis></para>
-      <para>Using HBase with a local filesystem does not guarantee durability. The HDFS
-        local filesystem implementation will lose edits if files are not properly closed. This is
-        very likely to happen when you are experimenting with new software, starting and stopping
-        the daemons often and not always cleanly. You need to run HBase on HDFS
-        to ensure all writes are preserved. Running against the local filesystem is intended as a
-        shortcut to get you familiar with how the general system works, as the very first phase of
-        evaluation. See <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE-3696" /> and its associated issues
-        for more details about the issues of running on the local filesystem.</para>
+      <para>基于本地文件系统使用HBase不能保证持久性。如果文件没有正确的关闭，HDFS的本地文件系统实现将丢失一些编辑信息。当你实验一个新的软件，没有干净的开启或停止守护进程的时候，这种情况很有可能发生。你需要在HDFS上运行HBase来确保所有的写入都被保留。在本地文件系统上运行HBase是为了让你快速了解系统如何工作，作为第一阶段的评估。详见 <link
+          xlink:href="https://issues.apache.org/jira/browse/HBASE-3696" /> 和它相关的更多细节都是关于运行在本地文件系统上产生的问题。</para>
     </warning>
     <note
       xml:id="loopback.ip.getting.started">
-      <title>Loopback IP - HBase 0.94.x and earlier</title>
-      <para><emphasis>The below advice is for hbase-0.94.x and older versions only. This is fixed in
-          hbase-0.96.0 and beyond.</emphasis></para>
+      <title>环回(Loopback) IP - HBase 0.94.x 和更早版本</title>
+      <para><emphasis>以下建议仅仅针对hbase-0.94.x和更早的版本。在hbase-0.96.0和之后的版本中，该问题已经被修复。</emphasis></para>
 
-      <para>Prior to HBase 0.94.x, HBase expected the loopback IP address to be 127.0.0.1. Ubuntu
-        and some other distributions default to 127.0.1.1 and this will cause problems for you . See <link
-          xlink:href="http://blog.devving.com/why-does-hbase-care-about-etchosts/">Why does HBase
-          care about /etc/hosts?</link> for detail.</para>
+      <para>在HBase 0.94.x之前, HBase希望环回(loopback)IP地址为127.0.0.1。 Ubuntu和其他类似的发行版本将该值默认设置为127.0.1.1，这将给你带来一些问题。查看 <link
+          xlink:href="http://blog.devving.com/why-does-hbase-care-about-etchosts/">为何HBase关心/etc/hosts?</link> 以便查看更多细节。</para>
       <example>
-        <title>Example /etc/hosts File for Ubuntu</title>
-        <para>The following <filename>/etc/hosts</filename> file works correctly for HBase 0.94.x
-          and earlier, on Ubuntu. Use this as a template if you run into trouble.</para>
+        <title>Ubuntu系统中的/etc/hosts文件</title>
+        <para>在Ubuntu系统中，下面的 <filename>/etc/hosts</filename> 文件在HBase 0.94.x和更早版本上工作正常。如果你的运行出现问题，请使用以下配置作为模板。</para>
         <screen>
 127.0.0.1 localhost
 127.0.0.1 ubuntu.ubuntu-domain ubuntu
@@ -88,45 +70,35 @@
     </note>
 
     <section>
-      <title>JDK Version Requirements</title>
-      <para>HBase requires that a JDK be installed. See <xref linkend="java" /> for information
-        about supported JDK versions.</para>
+      <title>需要的JDK版本</title>
+      <para>HBase需要安装JDK。 查看 <xref linkend="java" /> 以便了解支持的JDK版本信息。</para>
     </section>
 
     <section>
-      <title>Get Started with HBase</title>
+      <title>开始使用HBase</title>
 
       <procedure>
-        <title>Download, Configure, and Start HBase</title>
+        <title>下载，配置和启动HBase</title>
         <step>
-          <para>Choose a download site from this list of <link
-          xlink:href="http://www.apache.org/dyn/closer.cgi/hbase/">Apache Download Mirrors</link>.
-        Click on the suggested top link. This will take you to a mirror of <emphasis>HBase
-          Releases</emphasis>. Click on the folder named <filename>stable</filename> and then
-        download the binary file that ends in <filename>.tar.gz</filename> to your local filesystem. Be
-        sure to choose the version that corresponds with the version of Hadoop you are likely to use
-      later. In most cases, you should choose the file for Hadoop 2, which will be called something
-      like <filename>hbase-0.98.3-hadoop2-bin.tar.gz</filename>. Do not download the file ending in
-        <filename>src.tar.gz</filename> for now.</para>
+          <para>从以下列表 <link
+          xlink:href="http://www.apache.org/dyn/closer.cgi/hbase/">Apache下载镜像</link>中选择一个站点进行下载。
+        点击一个建议的链接，将带你进入一个<emphasis>HBase
+          发行版</emphasis>的镜像。 点击被命名为 <filename>stable</filename> 的文件夹并且下载其中以 <filename>.tar.gz</filename> 结尾的二进制压缩文件到你的本地文件系统。确定要选择的版本和你将要使用的Hadoop版本能相匹配。在大多数情况下，你应该选择一个针对Hadoop 2的文件。它的命名类似于 <filename>hbase-0.98.3-hadoop2-bin.tar.gz</filename>。 现在不要下载以
+        <filename>src.tar.gz</filename> 结尾的文件。</para>
         </step>
         <step>
-          <para>Extract the downloaded file, and change to the newly-created directory.</para>
+          <para>提取被下载的文件到一个新创建的目录。</para>
           <screen language="bourne">
 $ tar xzvf hbase-<![CDATA[<?eval ${project.version}?>]]>-hadoop2-bin.tar.gz  
 $ cd hbase-<![CDATA[<?eval ${project.version}?>]]>-hadoop2/
           </screen>
         </step>
         <step>
-          <para>Edit <filename>conf/hbase-site.xml</filename>, which is the main HBase configuration
-            file. At this time, you only need to specify the directory on the local filesystem where
-            HBase and Zookeeper write data. By default, a new directory is created under /tmp. Many
-            servers are configured to delete the contents of /tmp upon reboot, so you should store
-            the data elsewhere. The following configuration will store HBase's data in the
-              <filename>hbase</filename> directory, in the home directory of the user called
-              <systemitem>testuser</systemitem>. Paste the <markup>&lt;property&gt;</markup> tags beneath the
-            <markup>&lt;configuration&gt;</markup> tags, which should be empty in a new HBase install.</para>
+          <para>编辑 <filename>conf/hbase-site.xml</filename>, 它是主要的HBase配置文件。此时，你仅仅需要指定一个本地目录以便HBase和Zookeeper写入数据。默认情况下，一个新的目录被创建到/tmp目录下。许多服务器被配置成在重启后删除/tmp目录下的所有内容。所以你应该将数据存储在其他地方。 下面的配置将存储HBase的数据在
+              <filename>hbase</filename> 目录, 该目录在一个名为
+              <systemitem>testuser</systemitem>的用户的家目录(home)下。 黏贴<markup>&lt;configuration&gt;</markup>标签下的<markup>&lt;property&gt;</markup>标签内容到新安装的HBase配置文件中去。</para>
           <example>
-            <title>Example <filename>hbase-site.xml</filename> for Standalone HBase</title>
+            <title>一个单机HBase的 <filename>hbase-site.xml</filename> 配置文件的示例</title>
             <programlisting language="xml"><![CDATA[
 <configuration>
   <property>
@@ -141,17 +113,11 @@ $ cd hbase-<![CDATA[<?eval ${project.version}?>]]>-hadoop2/
               ]]>
             </programlisting>
           </example>
-          <para>You do not need to create the HBase data directory. HBase will do this for you. If
-            you create the directory, HBase will attempt to do a migration, which is not what you
-            want.</para>
+          <para>你不需要创建HBase数据目录，HBase会自动创建该目录。. 如果你已经创建了该目录，HBase将尝试做迁移，你需要考虑这是不是你想要的。</para>
         </step>
         <step xml:id="start_hbase">
-          <para>The <filename>bin/start-hbase.sh</filename> script is provided as a convenient way
-            to start HBase. Issue the command, and if all goes well, a message is logged to standard
-            output showing that HBase started successfully. You can use the <command>jps</command>
-            command to verify that you have one running process called <literal>HMaster</literal>.
-            In standalone mode HBase runs all daemons within this single JVM, i.e. the HMaster, a
-            single HRegionServer, and the ZooKeeper daemon.</para>
+          <para>脚本<filename>bin/start-hbase.sh</filename> 提供了一个便捷的方式来启动HBase。运行该命令, 如果一切没有问题，那么一个日志信息将会被输出，表明HBase启动成功。你可以使用 <command>jps</command>
+            命令来验证是否有一个叫做 <literal>HMaster</literal>的进程正在运行。在单机模式下，HBase在单个JVM中运行所有的守护进程。例如，HMaster, 一个单独的HRegionServer, 和ZooKeeper守护进程。</para>
           <note><para>Java needs to be installed and available. If you get an error indicating that
             Java is not installed, but it is on your system, perhaps in a non-standard location,
             edit the <filename>conf/hbase-env.sh</filename> file and modify the
