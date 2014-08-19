@@ -6,11 +6,15 @@ HBase用户指南（中文版）
 生成html方式
 -------------------
 1、安装maven
+
 如果已安装，则跳过本步骤。判断是否安装可使用mvn --version命令。
+
 2、下载源代码编译
 
         git clone https://github.com/aaronshan/hbase-user-guide-cn.git
         cd hbase-user-guide-cn
         mvn site
 3、使用
+
 编译完成后，会在target目录下生成multipage和onepage两个目录，分别代表多页和单页。 分别进入这两个目录，打开对应的book.html文件即可。
+
