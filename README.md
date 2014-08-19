@@ -16,5 +16,5 @@ HBase用户指南（中文版）
         mvn site
 3、使用
 
-编译完成后，会在target目录下生成multipage和onepage两个目录，分别代表多页和单页。 分别进入这两个目录，打开对应的book.html文件即可。
+编译完成后，会在target/docbkx目录下生成multipage和onepage两个目录，分别代表多页和单页。 分别进入这两个目录，打开对应的book.html文件即可。
 
