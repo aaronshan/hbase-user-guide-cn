@@ -28,116 +28,90 @@
  * limitations under the License.
  */
 -->
-  <title>Apache HBase Configuration</title>
-  <para>This chapter expands upon the <xref linkend="getting_started" /> chapter to further explain
-    configuration of Apache HBase. Please read this chapter carefully, especially <xref
-      linkend="basic.prerequisites" /> to ensure that your HBase testing and deployment goes
-    smoothly, and prevent data loss.</para>
+  <title>Apache HBase配置</title>
+  <para>本章扩展自 <xref linkend="getting_started" /> 章节，阐述更多的Apache HBase配置。 请仔细阅读本章节，尤其是 <xref
+      linkend="basic.prerequisites" /> 部分，以便确保你的HBase测试和部署能够平滑，还可以防止数据丢失。</para>
 
-  <para> Apache HBase uses the same configuration system as Apache Hadoop. All configuration files
-    are located in the <filename>conf/</filename> directory, which needs to be kept in sync for each
-    node on your cluster.</para>
+  <para> Apache HBase使用与Apache Hadoop相同的配置系统。所有的配置文件位于 <filename>conf/</filename> 目录，你需要同步该配置到你集群的所有节点上。</para>
   
   <variablelist>
-    <title>HBase Configuration Files</title>
+    <title>HBase配置文件</title>
     <varlistentry>
       <term><filename>backup-masters</filename></term>
       <listitem>
-        <para>Not present by default. A plain-text file which lists hosts on which the Master should
-          start a backup Master process, one host per line.</para>
+        <para>不存在默认情况。是一个列出了主机名的纯文本文件。文件里的主机名代表了需要启动的备份(backup)Master的主机，文件的每一行代表一个主机。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term><filename>hadoop-metrics2-hbase.properties</filename></term>
       <listitem>
-        <para>Used to connect HBase Hadoop's Metrics2 framework. See the <link
+        <para>用来连接HBase Hadoop's Metrics2框架。参考 <link
             xlink:href="http://wiki.apache.org/hadoop/HADOOP-6728-MetricsV2">Hadoop Wiki
-            entry</link> for more information on Metrics2. Contains only commented-out examples by
-          default.</para>
+            入口</link> 查看更多Metrics2的信息。. 默认仅仅包含了一些被注释的例子。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
-      <term><filename>hbase-env.cmd</filename> and <filename>hbase-env.sh</filename></term>
+      <term><filename>hbase-env.cmd</filename> 和 <filename>hbase-env.sh</filename></term>
       <listitem>
-        <para>Script for Windows and Linux / Unix environments to set up the working environment for
-        HBase, including the location of Java, Java options, and other environment variables. The
-        file contains many commented-out examples to provide guidance.</para>
+        <para>是用于Windows 和 Linux / Unix 环境的HBase启动脚本。包括Java的位置和选项，以及其他一些环境变量。这个文件包含许多注释掉的指导示例。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term><filename>hbase-policy.xml</filename></term>
       <listitem>
-        <para>The default policy configuration file used by RPC servers to make authorization
-          decisions on client requests. Only used if HBase security (<xref
-            linkend="security" />) is enabled.</para>
+        <para>RPC服务器使用默认的策略配置来对客户端的请求进行授权。仅仅用于当HBase安全(<xref
+                linkend="security" />)被启用的时候。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term><filename>hbase-site.xml</filename></term>
       <listitem>
-        <para>The main HBase configuration file. This file specifies configuration options which
-          override HBase's default configuration. You can view (but do not edit) the default
-          configuration file at <filename>docs/hbase-default.xml</filename>. You can also view the
-          entire effective configuration for your cluster (defaults and overrides) in the
-            <guilabel>HBase Configuration</guilabel> tab of the HBase Web UI.</para>
+        <para>这是HBase主要的配置文件。这个文件指定的配置将会覆盖HBase的默认配置。你可以在<filename>docs/hbase-default.xml</filename>查看（但不能编辑）默认的配置文件，你也可以通过HBase Web UI的<guilabel>HBase Configuration</guilabel>标签来查看你集群所有有效的配置(默认和重载的)。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term><filename>log4j.properties</filename></term>
       <listitem>
-        <para>Configuration file for HBase logging via <code>log4j</code>.</para>
+        <para>通过<code>log4j</code>配置HBase的日志输出。</para>
       </listitem>
     </varlistentry>
     <varlistentry>
       <term><filename>regionservers</filename></term>
       <listitem>
-        <para>A plain-text file containing a list of hosts which should run a RegionServer in your
-          HBase cluster. By default this file contains the single entry
-          <literal>localhost</literal>. It should contain a list of hostnames or IP addresses, one
-          per line, and should only contain <literal>localhost</literal> if each node in your
-          cluster will run a RegionServer on its <literal>localhost</literal> interface.</para>
+        <para>一个包含了你集群中将要运行RegionServer的所有节点的主机名的纯文本文件。默认该文件仅仅包含了
+          <literal>localhost</literal>。它应该包含一个主机名或者IP地址的列表，每一行是一个主机名或者IP地址。如果你的集群中的每一个节点将在<literal>localhost</literal>运行RegionServer，那么该文件应该仅仅包含<literal>localhost</literal>。</para>
       </listitem>
     </varlistentry>
   </variablelist>
   
   <tip>
-    <title>Checking XML Validity</title>
-    <para>When you edit XML, it is a good idea to use an XML-aware editor to be sure that your
-      syntax is correct and your XML is well-formed. You can also use the <command>xmllint</command>
-      utility to check that your XML is well-formed. By default, <command>xmllint</command> re-flows
-      and prints the XML to standard output. To check for well-formedness and only print output if
-      errors exist, use the command <command>xmllint -noout
-        <replaceable>filename.xml</replaceable></command>.</para>
+    <title>检查XML的有效性</title>
+    <para>当你编辑XML时，最好的方法是使用一个XML编辑器，它能提醒你你的语法是否正确。你也可以使用 <command>xmllint</command>工具来检查你的XML格式是否正确。默认情况下，<command>xmllint</command> 将打印出标准输出。为了检查XML格式是否正确并且输出错误信息，需要使用命令 <command>xmllint -noout
+        <replaceable>filename.xml</replaceable></command>。</para>
   </tip>
 
   <warning>
-    <title>Keep Configuration In Sync Across the Cluster</title>
-    <para>When running in distributed mode, after you make an edit to an HBase configuration, make
-      sure you copy the content of the <filename>conf/</filename> directory to all nodes of the
-      cluster. HBase will not do this for you. Use <command>rsync</command>, <command>scp</command>,
-      or another secure mechanism for copying the configuration files to your nodes. For most
-      configuration, a restart is needed for servers to pick up changes An exception is dynamic
-      configuration. to be described later below.</para>
+    <title>在集群上使用同步操作来使配置一致</title>
+    <para>挡在分布式模式下运行HBase时，在你编辑了HBase配置，请确定你已经将<filename>conf/</filename> 目录下的所有文件拷贝到集群上的其他节点上的同样的目录中，HBase默认不会进行这些操作。你可以使用<command>rsync</command>命令、<command>scp</command>命令或者其他的安全拷贝机制将配置文件拷贝到其他节点上。对于大多数配置来说，需要重新启动机器以便配置能够生效。一些异常情况在稍后会进行描述。</para>
   </warning>
 
   <section
     xml:id="basic.prerequisites">
-    <title>Basic Prerequisites</title>
-    <para>This section lists required services and some required system configuration. </para>
+    <title>基本的先决条件</title>
+    <para>本节将列出需要的服务和一些系统配置。 </para>
 
     <table
       xml:id="java">
       <title>Java</title>
       <textobject>
-        <para>HBase requires at least Java 6 from <link
-            xlink:href="http://www.java.com/download/">Oracle</link>. The following table lists
-          which JDK version are compatible with each version of HBase.</para>
+        <para>HBase至少需要Java 6版本<link
+            xlink:href="http://www.java.com/download/">Oracle</link>. 下表列出了JDK的版本和每个HBase版本的兼容性。</para>
       </textobject>
       <tgroup
         cols="4">
         <thead>
           <row>
-            <entry>HBase Version</entry>
+            <entry>HBase版本</entry>
             <entry>JDK 6</entry>
             <entry>JDK 7</entry>
             <entry>JDK 8</entry>
@@ -147,30 +121,28 @@
           <row>
             <entry>1.0</entry>
             <entry><link
-                xlink:href="http://search-hadoop.com/m/DHED4Zlz0R1">Not Supported</link></entry>
-            <entry>yes</entry>
-            <entry><para>Running with JDK 8 will work but is not well tested.</para></entry>
+                xlink:href="http://search-hadoop.com/m/DHED4Zlz0R1">不支持</link></entry>
+            <entry>支持</entry>
+            <entry><para>可以运行在JDK 8，但是测试不够充分。</para></entry>
           </row>
           <row>
             <entry>0.98</entry>
-            <entry>yes</entry>
-            <entry>yes</entry>
-            <entry><para>Running with JDK 8 works but is not well tested. Building with JDK 8 would
-                require removal of the deprecated remove() method of the PoolMap class and is under
-                consideration. See ee <link
+            <entry>支持</entry>
+            <entry>支持</entry>
+            <entry><para>可以运行在JDK 8，但是测试不够充分。使用JDK 8需要移除PoolMap累的过时的remove()方法，目前正在考虑。查看 <link
                   xlink:href="https://issues.apache.org/jira/browse/HBASE-7608">HBASE-7608</link>
-                for more information about JDK 8 support.</para></entry>
+                可以查看更多的关于JDK 8支持的信息。</para></entry>
           </row>
           <row>
             <entry>0.96</entry>
-            <entry>yes</entry>
-            <entry>yes</entry>
+            <entry>支持</entry>
+            <entry>支持</entry>
             <entry />
           </row>
           <row>
             <entry>0.94</entry>
-            <entry>yes</entry>
-            <entry>yes</entry>
+            <entry>支持</entry>
+            <entry>支持</entry>
             <entry />
           </row>
         </tbody>
@@ -179,21 +151,15 @@
 
     <variablelist
       xml:id="os">
-      <title>Operating System Utilities</title>
+      <title>操作系统的实用程序</title>
       <varlistentry
         xml:id="ssh">
         <term>ssh</term>
         <listitem>
-          <para>HBase uses the Secure Shell (ssh) command and utilities extensively to communicate
-            between cluster nodes. Each server in the cluster must be running <command>ssh</command>
-            so that the Hadoop and HBase daemons can be managed. You must be able to connect to all
-            nodes via SSH, including the local node, from the Master as well as any backup Master,
-            using a shared key rather than a password. You can see the basic methodology for such a
-            set-up in Linux or Unix systems at <xref
-              linkend="passwordless.ssh.quickstart" />. If your cluster nodes use OS X, see the
-            section, <link
+          <para>HBase使用安全的Shell(ssh)命令和工具来进行集群节点间的通信。集群中的每一个服务器必须运行<command>ssh</command>来管理Hadoop和HBase的守护进程。你必须能通过无密码的SSH而不是需要输入密码SSH来从Master和备份(backup)Master连接所有的节点，包括本地节点。你可以参考<xref
+                  linkend="passwordless.ssh.quickstart" />来查看如何在Linux或Unix系统来进行设置。如果你的集群节点使用OS X，请查看<link
               xlink:href="http://wiki.apache.org/hadoop/Running_Hadoop_On_OS_X_10.5_64-bit_%28Single-Node_Cluster%29">SSH:
-              Setting up Remote Desktop and Enabling Self-Login</link> on the Hadoop wiki.</para>
+              Setting up Remote Desktop and Enabling Self-Login</link>。</para>
         </listitem>
       </varlistentry>
       <varlistentry
