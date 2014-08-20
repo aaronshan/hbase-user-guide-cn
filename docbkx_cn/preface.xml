@@ -28,56 +28,35 @@
  * limitations under the License.
  */
 -->
-    <title>Preface</title>
+    <title>序</title>
 
-    <para>This is the official reference guide for the <link
-            xlink:href="http://hbase.apache.org/">HBase</link> version it ships with. Herein you
-        will find either the definitive documentation on an HBase topic as of its standing when the
-        referenced HBase version shipped, or it will point to the location in <link
-            xlink:href="http://hbase.apache.org/apidocs/index.html">javadoc</link>, <link
-            xlink:href="https://issues.apache.org/jira/browse/HBASE">JIRA</link> or <link
-            xlink:href="http://wiki.apache.org/hadoop/Hbase">wiki</link> where the pertinent
-        information can be found.</para>
+    <para>这是 <link
+            xlink:href="http://hbase.apache.org/">HBase</link> 官方附带的参考指南版本。 关于HBase主题的最新的文档可以参考 <link
+            xlink:href="http://hbase.apache.org/apidocs/index.html">javadoc</link>， <link
+            xlink:href="https://issues.apache.org/jira/browse/HBASE">JIRA</link> 或者<link
+            xlink:href="http://wiki.apache.org/hadoop/Hbase">wiki</link> ，在这些地方你会找到更多相关信息。</para>
 
     <formalpara>
-        <title>About This Guide</title>
-        <para>This reference guide is a work in progress. The source for this guide can be found in
-            the <filename>src/main/docbkx</filename> directory of the HBase source. This reference
-            guide is marked up using <link xlink:href="http://www.docbook.com/">DocBook</link> from
-            which the the finished guide is generated as part of the 'site' build target. Run
-            <programlisting language="bourne">mvn site</programlisting> to generate this documentation. Amendments and
-            improvements to the documentation are welcomed. Click <link
+        <title>关于本指南</title>
+        <para>该参考指南是一个正在进行中的工作。指南的源文件可以在HBase源文件中的 <filename>src/main/docbkx</filename> 目录下找到。 它使用<link xlink:href="http://www.docbook.com/">DocBook</link> 来进行组织。可以使用maven的'site'命令来生成最终的的html文件。 运行命令
+            <programlisting language="bourne">mvn site</programlisting> 以便生成该文档。我们欢迎对该文档进行修改和改进。 点击 <link
                 xlink:href="https://issues.apache.org/jira/secure/CreateIssueDetails!init.jspa?pid=12310753&amp;issuetype=1&amp;components=12312132&amp;summary=SHORT+DESCRIPTION"
-                >this link</link> to file a new documentation bug against Apache HBase with some
-            values pre-selected.</para>
+                >链接地址</link> 以反映该文档存在的问题。</para>
     </formalpara>
     <formalpara>
-        <title>Contributing to the Documentation</title>
-        <para>For an overview of Docbook and suggestions to get started contributing to the documentation, see <xref linkend="appendix_contributing_to_documentation" />.</para>
+        <title>对文档做贡献Contributing to the Documentation</title>
+        <para>开始该文档的Docbook简介和对文档的建议请参考 <xref linkend="appendix_contributing_to_documentation" />。</para>
     </formalpara>
     <formalpara>
-        <title>Providing Feedback</title>
-        <para>This guide allows you to leave comments or questions on any page, using Disqus. Look
-            for the Comments area at the bottom of the page. Answering these questions is a
-            volunteer effort, and may be delayed.</para>
+        <title>提供反馈</title>
+        <para>这个指南允许你使用Disqus在任意一页留下评论或问题。在页面的底部是评论区域。回答这些问题出于自愿，所以问题的答复可能会有延迟。</para>
     </formalpara>
     
     <note
         xml:id="headsup">
-        <title>Heads-up if this is your first foray into the world of distributed
-            computing...</title>
-        <para> If this is your first foray into the wonderful world of Distributed Computing, then
-            you are in for some interesting times. First off, distributed systems are hard; making a
-            distributed system hum requires a disparate skillset that spans systems (hardware and
-            software) and networking. Your cluster' operation can hiccup because of any of a myriad
-            set of reasons from bugs in HBase itself through misconfigurations -- misconfiguration
-            of HBase but also operating system misconfigurations -- through to hardware problems
-            whether it be a bug in your network card drivers or an underprovisioned RAM bus (to
-            mention two recent examples of hardware issues that manifested as "HBase is slow"). You
-            will also need to do a recalibration if up to this your computing has been bound to a
-            single box. Here is one good starting point: <link
+        <title>如果你是第一次接触分布式计算请看...</title>
+        <para> 如果你是第一次接触分布式计算的精彩世界，你将发现你正在一个有趣的时代。首先，分布式系统很难；制作分布式系统需要不同的技能。涵盖系统（硬件和软件）以及网络。你的集群可能因为HBase自身的bug、错误的配置或者错误的操作出现很多问题。会引起问题的原因还有网卡驱动或者RAM总线的错误(最近提及比较多的“HBase很慢”都是因为硬件问题)。如果你一直在写单机程序，你也需要学习新的技能。这里是一个很好的起点： <link
                 xlink:href="http://en.wikipedia.org/wiki/Fallacies_of_Distributed_Computing">Fallacies
-                of Distributed Computing</link>. That said, you are welcome. Its a fun place to be.
-            Yours, the HBase Community. </para>
+                of Distributed Computing</link>. 也就是说，你在HBase社区是受欢迎的，它一个有趣的地方。 </para>
     </note>
 </preface>
