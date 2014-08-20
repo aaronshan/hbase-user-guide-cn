@@ -166,54 +166,42 @@
         xml:id="dns">
         <term>DNS</term>
         <listitem>
-          <para>HBase uses the local hostname to self-report its IP address. Both forward and
-            reverse DNS resolving must work in versions of HBase previous to 0.92.0.<footnote>
-              <para>The <link
+          <para>HBase使用本地主机名以便自己报告它的IP地址。正向或反向解析必须工作在HBase 0.92.0之前的版本。<footnote>
+              <para><link
                   xlink:href="https://github.com/sujee/hadoop-dns-checker">hadoop-dns-checker</link>
-                tool can be used to verify DNS is working correctly on the cluster. The project
-                README file provides detailed instructions on usage. </para>
+                工具能够被用来确定集群上的DNS是否在正确运行。这个工程的README文件提供了详细的使用指导。 </para>
             </footnote></para>
 
-          <para>If your server has multiple network interfaces, HBase defaults to using the
-            interface that the primary hostname resolves to. To override this behavior, set the
-              <code>hbase.regionserver.dns.interface</code> property to a different interface. This
-            will only work if each server in your cluster uses the same network interface
-            configuration.</para>
+          <para>如果你的服务器已经有多个网络接口，HBase默认会使用主机名来进行解析。为了覆盖这种行为，请设置
+              <code>hbase.regionserver.dns.interface</code> 属性为一个不同的接口。此时如果你的集群使用相同的网络接口配置，集群才能正常工作。</para>
 
-          <para>To choose a different DNS nameserver than the system default, set the
-              <varname>hbase.regionserver.dns.nameserver</varname> property to the IP address of
-            that nameserver.</para>
+          <para>为了使用不同的DNS域名服务器而不是系统默认的域名服务器，需要设定
+              <varname>hbase.regionserver.dns.nameserver</varname> 属性为那个域名服务器的IP地址。</para>
         </listitem>
       </varlistentry>
       <varlistentry
         xml:id="loopback.ip">
-        <term>Loopback IP</term>
+        <term>环回(Loopback)IP</term>
         <listitem>
-          <para>Prior to hbase-0.96.0, HBase only used the IP address
-              <systemitem>127.0.0.1</systemitem> to refer to <code>localhost</code>, and this could
-            not be configured. See <xref
-              linkend="loopback.ip" />.</para>
+          <para>在hbase-0.96.0版本之前，HBase仅仅使用IP地址
+              <systemitem>127.0.0.1</systemitem> 来代表 <code>localhost</code>，并且它可能没有被配置。请查看 <xref
+              linkend="loopback.ip" />。</para>
         </listitem>
       </varlistentry>
       <varlistentry
         xml:id="ntp">
         <term>NTP</term>
         <listitem>
-          <para>The clocks on cluster nodes should be synchronized. A small amount of variation is
-            acceptable, but larger amounts of skew can cause erratic and unexpected behavior. Time
-            synchronization is one of the first things to check if you see unexplained problems in
-            your cluster. It is recommended that you run a Network Time Protocol (NTP) service, or
-            another time-synchronization mechanism, on your cluster, and that all nodes look to the
-            same service for time synchronization. See the <link
+          <para>集群上的所有节点的时钟必须被同步。少量的差异可以被接受，但是如果差异过大会导致不稳定和异常行为。如果你发现你的集群出现了不明原因的问题，时钟同步的是第一个需要检查的事项。建议你运行一个网络时间协议(NTP)的服务，或者另外一种时钟同步的机制。在集群上，相同的服务在所有节点的时钟应该是同步的。查看<link
               xlink:href="http://www.tldp.org/LDP/sag/html/basic-ntp-config.html">Basic NTP
-              Configuration</link> at <citetitle>The Linux Documentation Project (TLDP)</citetitle>
-            to set up NTP.</para>
+              Configuration</link> 的 <citetitle>The Linux Documentation Project (TLDP)</citetitle>
+            来设置NTP。</para>
         </listitem>
       </varlistentry>
 
       <varlistentry
         xml:id="ulimit">
-        <term>Limits on Number of Files and Processes (<command>ulimit</command>)
+        <term>对文件和进程数的限制(<command>ulimit</command>)
           <indexterm>
             <primary>ulimit</primary>
           </indexterm><indexterm>
@@ -222,69 +210,39 @@
         </term>
 
         <listitem>
-          <para>Apache HBase is a database. It requires the ability to open a large number of files
-            at once. Many Linux distributions limit the number of files a single user is allowed to
-            open to <literal>1024</literal> (or <literal>256</literal> on older versions of OS X).
-            You can check this limit on your servers by running the command <command>ulimit
-              -n</command> when logged in as the user which runs HBase. See <xref
-              linkend="trouble.rs.runtime.filehandles" /> for some of the problems you may
-            experience if the limit is too low. You may also notice errors such as the
-            following:</para>
+          <para>Apache HBase是一个数据库。它需要在同一时刻打开大量的文件。许多Linux的发行版限定了单一用户允许打开的最大文件数目为 <literal>1024</literal> (在旧的OS X系统上是 <literal>256</literal> )。
+            你可以通过命令<command>ulimit -n</command>检查你的服务器上运行HBase的用户能够打开的最大文件数目。查看 <xref
+              linkend="trouble.rs.runtime.filehandles" /> 可以看到你因为这个数目太低而可能遇到的一些问题。你可能会看到类似下面的错误：</para>
           <screen>
 2010-04-06 03:04:37,542 INFO org.apache.hadoop.hdfs.DFSClient: Exception increateBlockOutputStream java.io.EOFException
 2010-04-06 03:04:37,542 INFO org.apache.hadoop.hdfs.DFSClient: Abandoning block blk_-6935524980745310745_1391901
           </screen>
-          <para>It is recommended to raise the ulimit to at least 10,000, but more likely 10,240,
-            because the value is usually expressed in multiples of 1024. Each ColumnFamily has at
-            least one StoreFile, and possibly more than 6 StoreFiles if the region is under load.
-            The number of open files required depends upon the number of ColumnFamilies and the
-            number of regions. The following is a rough formula for calculating the potential number
-            of open files on a RegionServer. </para>
+          <para>推荐你将ulimit最少设置为10,000，但是设置为10,240会更好些，因为该值通常表示为1024的倍数。 每一个列簇至少都有一个StoreFile文件，并且如果region被加载，可能会有超过6个StoreFiles。打开的文件数目依赖于列簇和region数目。下面是一个RegionServer可能打开的文件数目的粗略的计算公式。</para>
           <example>
-            <title>Calculate the Potential Number of Open Files</title>
-            <screen>(StoreFiles per ColumnFamily) x (regions per RegionServer)</screen>
+            <title>计算可能打开的文件数目</title>
+            <screen>(每个列簇的StoreFiles数目) x (每个RegionServer的regions数目 )</screen>
           </example>
-          <para>For example, assuming that a schema had 3 ColumnFamilies per region with an average
-            of 3 StoreFiles per ColumnFamily, and there are 100 regions per RegionServer, the JVM
-            will open 3 * 3 * 100 = 900 file descriptors, not counting open JAR files, configuration
-            files, and others. Opening a file does not take many resources, and the risk of allowing
-            a user to open too many files is minimal.</para>
-          <para>Another related setting is the number of processes a user is allowed to run at once.
-            In Linux and Unix, the number of processes is set using the <command>ulimit -u</command>
-            command. This should not be confused with the <command>nproc</command> command, which
-            controls the number of CPUs available to a given user. Under load, a
-              <varname>nproc</varname> that is too low can cause OutOfMemoryError exceptions. See
-            Jack Levin's <link
+          <para>例如，假设一个模型的每个Region有3个列簇，每个列簇有3个StoreFiles文件，并且每个RegionServer有100个regions。那么，JVM将打开3 * 3 * 100 = 900个文件描述符，这还不包括打开的JAR文件、配置文件以及其他文件的数目。 打开一个文件不会花费很多资源，允许用户打开很多文件的风险是很小的。</para>
+          <para>另外一个相关的设置是一个用户允许一次运行的进程数目。 在Linux和Unix中，可以使用<command>ulimit -u</command>命令来进行该数目的设定。这个命令不会与<command>nproc</command>命令混淆。<command>nproc</command>命令用来设定一个用户能使用的CPU的数量。在负载情况下，一个<varname>nproc</varname>太低可能会引起OutOfMemoryError异常。请查阅Jack Levin的 <link
               xlink:href="http://thread.gmane.org/gmane.comp.java.hadoop.hbase.user/16374">major
-              hdfs issues</link> thread on the hbase-users mailing list, from 2011.</para>
-          <para>Configuring the fmaximum number of ile descriptors and processes for the user who is
-            running the HBase process is an operating system configuration, rather than an HBase
-            configuration. It is also important to be sure that the settings are changed for the
-            user that actually runs HBase. To see which user started HBase, and that user's ulimit
-            configuration, look at the first line of the HBase log for that instance.<footnote>
-              <para>A useful read setting config on you hadoop cluster is Aaron Kimballs' <link
+              hdfs issues</link> 从2011年开始的hbase-users邮件列表。</para>
+          <para>配置一个运行HBase的用户的ILE描述符和进程的fmaximum数目是操作系统的配置，而不是HBase的配置。同样重要的是得确定修改是针对运行HBase的用户。为了查看启动HBase的用户和该用户的ulimit配置，请查看HBase日志的第一行信息。<footnote>
+              <para>一个在你的hadoop集群上很有用的读设置配置请看Aaron Kimballs的 <link
                   xlink:href="http://www.cloudera.com/blog/2009/03/configuration-parameters-what-can-you-just-ignore/">Configuration
-                  Parameters: What can you just ignore?</link></para>
+                  Parameters: What can you just ignore?</link>文章。</para>
             </footnote></para>
           <formalpara xml:id="ulimit_ubuntu">
-            <title><command>ulimit</command> Settings on Ubuntu</title>
-            <para>To configure <command>ulimit</command> settings on Ubuntu, edit
-                <filename>/etc/security/limits.conf</filename>, which is a space-delimited file with
-              four columns. Refer to the <link
+            <title>Ubuntu上设定<command>ulimit</command></title>
+            <para>为了在Ubuntu上配置 <command>ulimit</command>，需要编辑
+                <filename>/etc/security/limits.conf</filename>文件, 这是一个使用空格分割的有4列的文件。参考 <link
                 xlink:href="http://manpages.ubuntu.com/manpages/lucid/man5/limits.conf.5.html">man
-                page for limits.conf</link> for details about the format of this file. In the
-              following example, the first line sets both soft and hard limits for the number of
-              open files (<literal>nofile</literal>) to <literal>32768</literal> for the operating
-              system user with the username <literal>hadoop</literal>. The second line sets the
-              number of processes to 32000 for the same user.</para>
+                page for limits.conf</link> 查看关于该文件的格式信息。 在下面的例子中，第一行设定了用户hadoop打开文件的软硬限定的数目(<literal>nofile</literal>)为<literal>32768</literal>。第二行设定了该用户打开的进程数目为32000。</para>
           </formalpara>
           <screen>
 hadoop  -       nofile  32768
 hadoop  -       nproc   32000
           </screen>
-          <para>The settings are only applied if the Pluggable Authentication Module (PAM)
-            environment is directed to use them. To configure PAM to use these limits, be sure that
-            the <filename>/etc/pam.d/common-session</filename> file contains the following line:</para>
+          <para>如果插入式验证模块(PAM)环境直接使用它们，这个设置会被应用。为了配置PAM来使用这些限制，请确保 <filename>/etc/pam.d/common-session</filename> 文件包含下面一行：</para>
           <screen>session required  pam_limits.so</screen>
         </listitem>
       </varlistentry>
@@ -294,17 +252,14 @@ hadoop  -       nproc   32000
         <term>Windows</term>
 
         <listitem>
-          <para>Prior to HBase 0.96, testing for running HBase on Microsoft Windows was limited.
-            Running a on Windows nodes is not recommended for production systems.</para>
+          <para>在HBase 0.96和之前的版本，在微软的Windows系统上测试运行HBase是有限制的。在生产环境下，不推荐在Windows上运行HBase。</para>
 
-        <para>To run versions of HBase prior to 0.96 on Microsoft Windows, you must install <link
-            xlink:href="http://cygwin.com/">Cygwin</link> and run HBase within the Cygwin
-          environment. This provides support for Linux/Unix commands and scripts. The full details are explained in the <link
-            xlink:href="http://hbase.apache.org/cygwin.html">Windows Installation</link> guide. Also <link
-            xlink:href="http://search-hadoop.com/?q=hbase+windows&amp;fc_project=HBase&amp;fc_type=mail+_hash_+dev">search
-            our user mailing list</link> to pick up latest fixes figured by Windows users.</para>
-        <para>Post-hbase-0.96.0, hbase runs natively on windows with supporting
-            <command>*.cmd</command> scripts bundled. </para></listitem>
+        <para>为了在微软的Windows系统上运行HBase 0.96之前的版本，你需要安装 <link
+            xlink:href="http://cygwin.com/">Cygwin</link> 并且在Cygwin环境中运行HBase。Cygwin提供了对Linux/Unix命令和脚本的完整支持。详细的细节说明请看 <link
+            xlink:href="http://hbase.apache.org/cygwin.html">Windows安装</link> 指南和 <link
+            xlink:href="http://search-hadoop.com/?q=hbase+windows&amp;fc_project=HBase&amp;fc_type=mail+_hash_+dev">查找用户邮件列表</link> 以便查看针对Windows用户的一些修复工作。</para>
+        <para>在hbase-0.96.0之后的版本，, 通过使用hbase提供的
+            <command>*.cmd</command> 脚本，可以在windows直接运行HBase。 </para></listitem>
       </varlistentry>
 
     </variablelist>
@@ -316,7 +271,7 @@ hadoop  -       nproc   32000
           xlink:href="http://hadoop.apache.org">Hadoop</link><indexterm>
           <primary>Hadoop</primary>
         </indexterm></title>
-      <para>The following table summarizes the versions of Hadoop supported with each version of
+      <para>下面的表总结了对于每一个版本的HBase，Hadoop版本的支持情况。The following table summarizes the versions of Hadoop supported with each version of
         HBase. Based on the version of HBase, you should select the most
         appropriate version of Hadoop. You can use Apache Hadoop, or a vendor's distribution of
         Hadoop. No distinction is made here. See <link
