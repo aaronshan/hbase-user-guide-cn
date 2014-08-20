@@ -32,31 +32,39 @@
   <info>
 
     <title><link
-        xlink:href="http://www.hbase.org"> The Apache HBase&#153; Reference Guide </link></title>
+        xlink:href="http://www.hbase.org"> The Apache HBase&#153; 参考指南 </link></title>
     <subtitle><link
         xlink:href="http://www.hbase.org">
         <inlinemediaobject>
           <imageobject>
             <imagedata
-              align="center"
-              valign="middle"
               fileref="hbase_logo.png" />
           </imageobject>
         </inlinemediaobject>
-      </link>
+      </link><link
+            xlink:href="http://www.hbase.org">HBase</link>
+        官方文档中文版
     </subtitle>
+
+    <author>
+        <contrib>中文译者：山瑞峰，邮箱：shanruifeng@gmail.com，QQ:839894344</contrib>
+    </author>
+
+    <releaseinfo>译者注：当前HBase英文版的用户指南相比较之前的版本更新了很多内容。而之前其他人翻译的版本因为某些原因已经中断，所以，重新翻译了最新版的HBase英文版参考指南。由于涉及的概念和术语较多，许多概念和术语尚没有公认的中文译法，加上译者水平有限，若译文中有不妥之处，还请批评指正。</releaseinfo>
     <copyright>
       <year>2014</year>
-      <holder>Apache Software Foundation. All Rights Reserved. Apache Hadoop, Hadoop, MapReduce,
-        HDFS, Zookeeper, HBase, and the HBase project logo are trademarks of the Apache Software
-        Foundation. </holder>
+      <holder>Apache软件基金会。保留所有权利。Apache Hadoop、Hadoop、MapReduce、
+        HDFS、Zookeeper、HBase和HBase项目的logo是Apache软件基金会的商标。 </holder>
     </copyright>
+
     <abstract>
-      <para>This is the official reference guide of <link
-          xlink:href="http://www.hbase.org">Apache HBase&#153;</link>, a distributed, versioned, big
-        data store built on top of <link
-          xlink:href="http://hadoop.apache.org/">Apache Hadoop&#153;</link> and <link
-          xlink:href="http://zookeeper.apache.org/">Apache ZooKeeper&#153;</link>. </para>
+        <info>
+            <title>摘要</title>
+        </info>
+      <para>这是 <link
+          xlink:href="http://www.hbase.org">Apache HBase&#153;</link>的官方文档， HBase是一个分布式的、多版本的、面向列的，建立在<link
+          xlink:href="http://hadoop.apache.org/">Apache Hadoop&#153;</link> 和 <link
+          xlink:href="http://zookeeper.apache.org/">Apache ZooKeeper&#153;</link>之上的大数据存储平台。 </para>
     </abstract>
 
     <revhistory>
@@ -90,7 +98,7 @@
 
   <chapter
     xml:id="datamodel">
-    <title>Data Model</title>
+    <title>数据模型</title>
     <para>In HBase, data is stored in tables, which have rows and columns. This is a terminology
       overlap with relational databases (RDBMSs), but this is not a helpful analogy. Instead, it can
     be helpful to think of an HBase table as a multi-dimensional map.</para>
@@ -913,7 +921,7 @@ htable.put(put);
 
   <chapter
     xml:id="mapreduce">
-    <title>HBase and MapReduce</title>
+    <title>HBase和MapReduce</title>
     <para>Apache MapReduce is a software framework used to analyze large amounts of data, and is
       the framework used most often with <link
         xlink:href="http://hadoop.apache.org/">Apache Hadoop</link>. MapReduce itself is out of the
