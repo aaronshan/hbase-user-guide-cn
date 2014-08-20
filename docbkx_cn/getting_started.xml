@@ -118,46 +118,38 @@ $ cd hbase-<![CDATA[<?eval ${project.version}?>]]>-hadoop2/
         <step xml:id="start_hbase">
           <para>脚本<filename>bin/start-hbase.sh</filename> 提供了一个便捷的方式来启动HBase。运行该命令, 如果一切没有问题，那么一个日志信息将会被输出，表明HBase启动成功。你可以使用 <command>jps</command>
             命令来验证是否有一个叫做 <literal>HMaster</literal>的进程正在运行。在单机模式下，HBase在单个JVM中运行所有的守护进程。例如，HMaster, 一个单独的HRegionServer, 和ZooKeeper守护进程。</para>
-          <note><para>Java needs to be installed and available. If you get an error indicating that
-            Java is not installed, but it is on your system, perhaps in a non-standard location,
-            edit the <filename>conf/hbase-env.sh</filename> file and modify the
-            <envar>JAVA_HOME</envar> setting to point to the directory that contains
-            <filename>bin/java</filename> your system.</para></note>
+          <note><para>Java需要被安装并且可用。如果你得到一个Java没有被安装的错误提示，但是在系统中存在Java，那么它可能在一个非标准的位置。编辑<filename>conf/hbase-env.sh</filename> 文件并且修改
+            <envar>JAVA_HOME</envar> 为系统中包含<filename>bin/java</filename> 的目录。</para></note>
         </step>
       </procedure>
 
       <procedure xml:id="shell_exercises">
-        <title>Use HBase For the First Time</title>
+        <title>初次使用HBase</title>
         <step>
-          <title>Connect to HBase.</title>
-          <para>Connect to your running instance of HBase using the <command>hbase shell</command>
-            command, located in the <filename>bin/</filename> directory of your HBase
-            install. In this example, some usage and version information that is printed when you
-            start HBase Shell has been omitted. The HBase Shell prompt ends with a
-            <literal>&gt;</literal> character.</para>
+          <title>连接HBase</title>
+          <para>使用<command>hbase shell</command>
+            命令连接到你正在运行的HBase， 这个命令在HBase安装目录下的 <filename>bin/</filename> 目录。 在这个示例中，你打开HBase shell时被输出的的一些使用和版本信息已经被忽略。HBase Shell 的提示以
+            <literal>&gt;</literal> 字符结尾。</para>
           <screen language="bourne">
 $ <userinput>./bin/hbase shell</userinput>
 hbase(main):001:0&gt; 
           </screen>
         </step>
         <step>
-          <title>Display HBase Shell Help Text.</title>
-          <para>Type <literal>help</literal> and press Enter, to display some basic usage
-            information for HBase Shell, as well as several example commands. Notice that table
-            names, rows, columns all must be enclosed in quote characters.</para>
+          <title>显示HBase Shell帮助文本</title>
+          <para>输入 <literal>help</literal> 并且按下回车键，将真是一些基本的HBase Shell使用信息和一些命令的示例。注意表名，行，列的信息必须包括在引号字符内。</para>
         </step>
         <step>
-          <title>Create a table.</title>
-          <para>Use the <code>create</code> command to create a new table. You must specify the
-            table name and the ColumnFamily name.</para>
+          <title>创建一个表</title>
+          <para>使用<code>create</code> 命令来创建一个新的表。你必须指定表名和列簇(ColumnFamily)名。</para>
           <screen>
 hbase&gt; <userinput>create 'test', 'cf'</userinput>    
 0 row(s) in 1.2200 seconds
           </screen>
         </step>
         <step>
-          <title>List Information About your Table</title>
-          <para>Use the <code>list</code> command to </para>
+          <title>列出所有表的信息</title>
+          <para>使用 <code>list</code> 命令 </para>
           <screen>
 hbase&gt; <userinput>list 'test'</userinput>
 TABLE
@@ -168,8 +160,8 @@ test
           </screen>
         </step>
         <step>
-          <title>Put data into your table.</title>
-          <para>To put data into your table, use the <code>put</code> command.</para>
+          <title>给表中插入数据</title>
+          <para>为了将数据插入到表中，需要使用 <code>put</code> 命令。</para>
           <screen>
 hbase&gt; <userinput>put 'test', 'row1', 'cf:a', 'value1'</userinput>
 0 row(s) in 0.1770 seconds
@@ -180,17 +172,15 @@ hbase&gt; <userinput>put 'test', 'row2', 'cf:b', 'value2'</userinput>
 hbase&gt; <userinput>put 'test', 'row3', 'cf:c', 'value3'</userinput>
 0 row(s) in 0.0260 seconds          
           </screen>
-          <para>Here, we insert three values, one at a time. The first insert is at
-              <literal>row1</literal>, column <literal>cf:a</literal>, with a value of
-              <literal>value1</literal>. Columns in HBase are comprised of a column family prefix,
-              <literal>cf</literal> in this example, followed by a colon and then a column qualifier
-            suffix, <literal>a</literal> in this case.</para>
+          <para>此处，我们插入了三条记录。第一次插入的行键(rowKey)是
+              <literal>row1</literal>, 列是 <literal>cf:a</literal>, 值为
+              <literal>value1</literal>。 在HBase中，列前面有一个列簇作为前缀，在这个例子中，列簇为
+              <literal>cf</literal> ，紧接着是列名，在这个例子中，列名是<literal>a</literal> 。</para>
         </step>
         <step>
-          <title>Scan the table for all data at once.</title>
-          <para>One of the ways to get data from HBase is to scan. Use the <command>scan</command>
-            command to scan the table for data. You can limit your scan, but for now, all data is
-            fetched.</para>
+          <title>一次遍历表中的所有数据</title>
+          <para>从HBase中获取数据的一种方式是使用scan。使用 <command>scan</command>
+            命令能遍历一个表中的所有数据。你可以对scan做一些限制，但是当前所有的数据都会被取出。</para>
           <screen>
 hbase&gt; <userinput>scan 'test'</userinput>
 ROW                   COLUMN+CELL
@@ -201,8 +191,8 @@ ROW                   COLUMN+CELL
           </screen>
         </step>
         <step>
-          <title>Get a single row of data.</title>
-          <para>To get a single row of data at a time, use the <command>get</command> command.</para>
+          <title>获取一行数据</title>
+          <para>为了获取表中的一行数据，需要使用 <command>get</command> 命令。</para>
           <screen>
 hbase&gt; <userinput>get 'test', 'row1'</userinput>
 COLUMN                CELL
@@ -211,10 +201,9 @@ COLUMN                CELL
           </screen>
         </step>
         <step>
-          <title>Disable a table.</title>
-          <para>If you want to delete a table or change its settings, as well as in some other
-            situations, you need to disable the table first, using the <code>disable</code>
-            command. You can re-enable it using the <code>enable</code> command.</para>
+          <title>使表不可用</title>
+          <para>如果你想要删除一个表或者更改该表的一些配置，那么你需要先将表设置为不可用，使用 <code>disable</code>
+            命令可以将表设置为不可用。你可以使用 <code>enable</code> 命令使表重新变为可用。</para>
           <screen>
 hbase&gt; disable 'test'
 0 row(s) in 1.6270 seconds
@@ -222,34 +211,33 @@ hbase&gt; disable 'test'
 hbase&gt; enable 'test'
 0 row(s) in 0.4500 seconds
           </screen>
-          <para>Disable the table again if you tested the <command>enable</command> command above:</para>
+          <para>再次使表格变为不可用。如果你已经测试了上面的 <command>enable</command> 命令:</para>
           <screen>
 hbase&gt; disable 'test'
 0 row(s) in 1.6270 seconds            
           </screen>
         </step>
         <step>
-          <title>Drop the table.</title>
-          <para>To drop (delete) a table, use the <code>drop</code> command.</para>
+          <title>删除表</title>
+          <para>为了删除一个表，需要使用 <code>drop</code> 命令。</para>
           <screen>
 hbase&gt; drop 'test'
 0 row(s) in 0.2900 seconds            
           </screen>
         </step>
         <step>
-          <title>Exit the HBase Shell.</title>
-          <para>To exit the HBase Shell and disconnect from your cluster, use the
-              <command>quit</command> command. HBase is still running in the background.</para>
+          <title>退出HBase Shell</title>
+          <para>为了退出HBase Shell并且断掉与你的集群的连接，需要使用
+              <command>quit</command> 命令。 HBase仍然在后台继续运行。</para>
         </step>
       </procedure>
       
       <procedure
         xml:id="stopping">
-        <title>Stop HBase</title>
+        <title>停止HBase</title>
         <step>
-          <para>In the same way that the <filename>bin/start-hbase.sh</filename> script is provided
-            to conveniently start all HBase daemons, the <filename>bin/stop-hbase.sh</filename>
-            script stops them.</para>
+          <para>脚本 <filename>bin/start-hbase.sh</filename> 提供了一种方便的开启所有HBase守护进程的功能，脚本 <filename>bin/stop-hbase.sh</filename>
+            将停止这些守护进程。</para>
           <screen language="bourne">
 $ ./bin/stop-hbase.sh
 stopping hbase....................
@@ -257,50 +245,33 @@ $
         </screen>
         </step>
         <step>
-          <para>After issuing the command, it can take several minutes for the processes to shut
-            down. Use the <command>jps</command> to be sure that the HMaster and HRegionServer
-            processes are shut down.</para>
+          <para>运行了改名了之后，将会花费几分钟的时间来关闭所有守护进程。使用 <command>jps</command> 命令查看HMaster和HRegionServer进程是否被关闭。</para>
         </step>
       </procedure>
     </section>
 
     <section xml:id="quickstart-pseudo">
-      <title>Intermediate - Pseudo-Distributed Local Install</title>
-      <para>After working your way through <xref linkend="quickstart" />, you can re-configure HBase
-      to run in pseudo-distributed mode. Pseudo-distributed mode means
-      that HBase still runs completely on a single host, but each HBase daemon (HMaster,
-      HRegionServer, and Zookeeper) runs as a separate process. By default, unless you configure the
-      <code>hbase.rootdir</code> property as described in <xref linkend="quickstart" />, your data
-        is still stored in <filename>/tmp/</filename>. In this walk-through, we store your data in
-        HDFS instead, assuming you have HDFS available. You can skip the HDFS configuration to
-        continue storing your data in the local filesystem.</para>
+      <title>中级 - 伪分布式的本地安装</title>
+      <para>在体验过 <xref linkend="quickstart" />过程之后，你可以重新配置HBase，使它运行在伪分布式模式下。伪分布式模式意味着HBase仍然运行在单机上，但是每一个HBase守护进程 (HMaster,
+      HRegionServer, and Zookeeper) 运行在独立的进程中。默认情况下，除非你配置了在<xref linkend="quickstart" />中提到的
+      <code>hbase.rootdir</code> 属性, 否则你的数据仍然被保存在 <filename>/tmp/</filename>路径下。 在以下的演示中，我们将数据存储在HDFS中，此处假设HDFS已经可用。你也可以跳过HDFS的配置，继续将数据保存在本地文件系统中。 </para>
       <note>
-        <title>Hadoop Configuration</title>
-        <para>This procedure assumes that you have configured Hadoop and HDFS on your local system
-          and or a remote system, and that they are running and available. It also assumes you are
-          using Hadoop 2. Currently, the documentation on the Hadoop website does not include a
-          quick start for Hadoop 2, but the guide at <link
+        <title>Hadoop配置</title>
+        <para>此过程假定你已经在你的本地文件系统或者远程系统配置好Hadoop和HDFS，并且它们当前正在运行并且可用。另外也假定你运行的是Hadoop 2。目前，Hadoop官网的文档不包括如何快速开始Hadoop 2，但是， <link
             xlink:href="http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide">http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide</link>
-          is a good starting point.</para>
+          是一个好的开始指南。</para>
       </note>
       <procedure>
         <step>
-          <title>Stop HBase if it is running.</title>
-          <para>If you have just finished <xref linkend="quickstart" /> and HBase is still running,
-            stop it. This procedure will create a totally new directory where HBase will store its
-            data, so any databases you created before will be lost.</para>
+          <title>先停止正在运行的HBase</title>
+          <para>如果你刚刚完成了 <xref linkend="quickstart" /> 部分并且HBase仍然在运行，请先停止它。 该过程将创建一个新的目录用来存储HBase数据，所以你之前创建的所有数据库都会丢失。</para>
         </step>
         <step>
-          <title>Configure HBase.</title>
+          <title>配置HBase</title>
           <para>
-            Edit the <filename>hbase-site.xml</filename> configuration. First, add the following
-            properties. Property <code>hbase.cluster.distributed</code> is set to <code>true</code>
-            (Its default is <code>false</code>), which directs HBase to run in distributed mode,
-            with one JVM instance per daemon. Since HBase version 1.0.0, a HMaster is also a
-            RegionServer. So in pseudo-distributed mode, just one HMaster (also a RegionServer)
-            instance is started by default. Because there is just one RegionServer (the HMaster),
-            property <code>hbase.master.wait.on.regionservers.mintostart</code> should be set to
-            <code>1</code> (Its default is changed to <code>2</code> since version 1.0.0).
+            编辑 <filename>hbase-site.xml</filename> 配置文件。首先，增加如下属性。属性 <code>hbase.cluster.distributed</code> 应该设置为 <code>true</code>
+            (它默认是 <code>false</code>), 该属性表明HBase运行在分布式模式下，每个守护进程有独立的JVM实例。HBase从1.0.0版本开始, HMaster实例也是一个RegionServer。因此在伪分布式模式下，仅仅有一个HMaster (也是一个RegionServer)实例被默认开启。因为仅仅有一个RegionServer (HMaster)，属性 <code>hbase.master.wait.on.regionservers.mintostart</code> 应该被设置为
+            <code>1</code> (它从1.0.0版本开始被默认设置为 <code>2</code> )。
           </para>
           <programlisting language="xml"><![CDATA[
 <property>
@@ -312,9 +283,7 @@ $
   <value>1</value>
 </property>
             ]]></programlisting>
-          <para>Next, change the <code>hbase.rootdir</code> from the local filesystem to the address
-            of your HDFS instance, using the <code>hdfs:////</code> URI syntax. In this example,
-            HDFS is running on the localhost at port 8020.</para>
+          <para>接下来，改变 <code>hbase.rootdir</code> ，将本地文件系统改为HDFS，使用 <code>hdfs:////</code> 这样的URI语法。在该例中，HDFS运行在本地主机的8020端口。</para>
           <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rootdir</name>
@@ -322,22 +291,15 @@ $
 </property>            
             ]]>
           </programlisting>
-          <para>You do not need to create the directory in HDFS. HBase will do this for you. If you
-            create the directory, HBase will attempt to do a migration, which is not what you
-            want.</para>
+          <para>你不需要在HDFS中创建一个目录，HBase将会自动创建。如果你已经创建了该目录，HBase将尝试做迁移，你需要考虑这是不是你想要的。</para>
         </step>
         <step>
-          <title>Start HBase.</title>
-          <para>Use the <filename>bin/start-hbase.sh</filename> command to start HBase. If your
-            system is configured correctly, the <command>jps</command> command should show the
-            HMaster and HRegionServer processes running.</para>
+          <title>启动HBase</title>
+          <para>使用 <filename>bin/start-hbase.sh</filename> 命令来启动HBase。如果你的系统配置正确，那么 <command>jps</command> 命令将会显示HMaster和HRegionServer进程正在运行。</para>
         </step>
         <step>
-          <title>Check the HBase directory in HDFS.</title>
-          <para>If everything worked correctly, HBase created its directory in HDFS. In the
-            configuration above, it is stored in <filename>/hbase/</filename> on HDFS. You can use
-            the <command>hadoop fs</command> command in Hadoop's <filename>bin/</filename> directory
-            to list this directory.</para>
+          <title>检查HDFS中的HBase目录</title>
+          <para>如果所有过程都正确运行，HBase将会在HDFS中创建它的目录。在上述配置中，它被存储在HDFS中的<filename>/hbase/</filename> 目录。 你可以使用Hadoop<filename>bin/</filename>目录下的 <command>hadoop fs</command> 命令来显示该目录。</para>
           <screen  language="bourne">
 $ <userinput>./bin/hadoop fs -ls /hbase</userinput>
 Found 7 items
@@ -351,85 +313,56 @@ drwxr-xr-x   - hbase users          0 2014-06-25 21:49 /hbase/oldWALs
           </screen>
         </step>
         <step>
-          <title>Create a table and populate it with data.</title>
-          <para>You can use the HBase Shell to create a table, populate it with data, scan and get
-            values from it, using the same procedure as in <xref linkend="shell_exercises" />.</para>
+          <title>创建一个表并且插入数据</title>
+          <para>你可以使用HBase Shell来创建一个表，并且给该表插入数据。可以使用 <xref linkend="shell_exercises" /> 中的内容来遍历或获取数据。</para>
         </step>
         <step>
-          <title>Start and stop a backup HBase Master (HMaster) server.</title>
+          <title>启动或停止一个备份的HBase Master (HMaster) 服务器。</title>
           <note>
-            <para>Running multiple HMaster instances on the same hardware does not make sense in a
-              production environment, in the same way that running a pseudo-distributed cluster does
-              not make sense for production. This step is offered for testing and learning purposes
-              only.</para>
+            <para>生产环境中，在同一个硬件上运行多个HMaster实例是没有意义的，一个伪分布式的集群对于生产环境也没有意义。本步骤仅仅用于测试和学习。</para>
           </note>
-          <para>The HMaster server controls the HBase cluster. You can start up to 9 backup HMaster
-            servers, which makes 10 total HMasters, counting the primary. To start a backup HMaster,
-            use the <command>local-master-backup.sh</command>. For each backup master you want to
-            start, add a parameter representing the port offset for that master. Each HMaster uses
-            three ports (16010, 16020, and 16030 by default). The port offset is added to these ports, so
-            using an offset of 2, the backup HMaster would use ports 16012, 16022, and 16032. The
-            following command starts 3 backup servers using ports 16012/16022/16032, 16013/16023/16033,
-            and 16015/16025/16035.</para>
+          <para>HMaster服务器控制着HBase集群。你可以启动9个备份的HMaster服务器，一共10个HMater。为了开启备份的HMaster，需要使用 <command>local-master-backup.sh</command>脚本。 对于每一个你想要启动的备份master，添加一个对应的参数作为启动的端口的偏移量。每一个Hmaster都使用三个端口(默认是16010，16020和16030。)，因此如果将启动的端口的偏移量设为2，那么备份的HMaster将使用端口16012，16022和16032。接下来的命令将启动3个备份的HMaster，它们分别使用端口16012/16022/16032，16013/16023/16033和16015/16025/16035。</para>
             <screen language="bourne">
 $ ./bin/local-master-backup.sh 2 3 5             
             </screen>
-          <para>To kill a backup master without killing the entire cluster, you need to find its
-            process ID (PID). The PID is stored in a file with a name like
-            <filename>/tmp/hbase-<replaceable>USER</replaceable>-<replaceable>X</replaceable>-master.pid</filename>.
-          The only contents of the file are the PID. You can use the <command>kill -9</command>
-            command to kill that PID. The following command will kill the master with port offset 1,
-          but leave the cluster running:</para>
+          <para>为了杀死一个备份master而不是整个集群，你需要找到该备份master的进程ID(PID)。 PID被存储在一个名字类似于
+            <filename>/tmp/hbase-<replaceable>USER</replaceable>-<replaceable>X</replaceable>-master.pid</filename>的文件中。
+          这个文件的内容只有PID。 你可以使用 <command>kill -9</command>
+            命令杀死这个PID。下面的命令将杀死端口偏移量为1的master，但剩余的仍然运行：</para>
           <screen language="bourne">
 $ cat /tmp/hbase-testuser-1-master.pid |xargs kill -9            
           </screen>
         </step>
         <step>
-          <title>Start and stop additional RegionServers</title>
-          <para>The HRegionServer manages the data in its StoreFiles as directed by the HMaster.
-            Generally, one HRegionServer runs per node in the cluster. Running multiple
-            HRegionServers on the same system can be useful for testing in pseudo-distributed mode.
-            The <command>local-regionservers.sh</command> command allows you to run multiple
-            RegionServers. It works in a similar way to the
-            <command>local-master-backup.sh</command> command, in that each parameter you provide
-            represents the port offset for an instance. Each RegionServer requires two ports, and
-            the default ports are 16020 and 16030. However, the base ports for additional RegionServers
-            are not the default ports since the default ports are used by the HMaster, which is also
-            a RegionServer since HBase version 1.0.0. The base ports are 16200 and 16300 instead.
-            You can run 99 additional RegionServers that are not a HMaster or backup HMaster,
-            on a server. The following command starts four additional RegionServers, running on
-            sequential ports starting at 16202/16302 (base ports 16200/16300 plus 2).</para>
+          <title>启动和关闭其他的RegionServers</title>
+          <para>HRegionServer受Master的指示，管理着其StoreFiles中存储的数据。 一般情况下，集群中的每个节点运行着一个HRegionServer。在伪分布式模式下，在同一个系统中运行多个HRegionServer仅仅用于测试。 <command>local-regionservers.sh</command> 命令允许你运行多个RegionServers。 它的工作方式和
+            <command>local-master-backup.sh</command> 命令类似，你需要提供一个端口的偏移量作为参数。每一个RegionServer需要两个端口，这两个端口默认是16020和16030。然而， 对于其他的RegionServers，基本端口不是默认的端口，因为从1.0.0版本开始，HMaster也是一个RegionServer，所以默认的端口被HMaster使用。所以使用了16200和16300取代了之前的默认端口。下面的命令启动了4个其他的RegionServers，它们运行在以端口16202/16302(基本端口16200/16300加2)开始的序列端口上。</para>
           <screen language="bourne">
 $ .bin/local-regionservers.sh start 2 3 4 5            
           </screen>
-          <para>To stop a RegionServer manually, use the <command>local-regionservers.sh</command>
-            command with the <literal>stop</literal> parameter and the offset of the server to
-            stop.</para>
+          <para>为了手动停止一个RegionServer，需要运行命令 <command>local-regionservers.sh</command>
+            并且以 <literal>stop</literal> 和server的端口的偏移量作为参数。</para>
           <screen language="bourne">$ .bin/local-regionservers.sh stop 3</screen>
         </step>
         <step>
-          <title>Stop HBase.</title>
-          <para>You can stop HBase the same way as in the <xref
-              linkend="quickstart" /> procedure, using the
-            <filename>bin/stop-hbase.sh</filename> command.</para>
+          <title>停止HBase</title>
+          <para>你可以使用与 <xref
+              linkend="quickstart" /> 相同的过程来停止HBase。即使用
+            <filename>bin/stop-hbase.sh</filename> 命令。</para>
         </step>
       </procedure>
     </section>
     
     <section xml:id="quickstart-fully-distributed">
-      <title>Advanced - Fully Distributed</title>
-      <para>In reality, you need a fully-distributed configuration to fully test HBase and to use it
-        in real-world scenarios. In a distributed configuration, the cluster contains multiple
-        nodes, each of which runs one or more HBase daemon. These include primary and backup Master
-        instances, multiple Zookeeper nodes, and multiple RegionServer nodes.</para>
-      <para>This advanced quickstart adds two more nodes to your cluster. The architecture will be
-        as follows:</para>
+      <title>高级 - 完全分布式</title>
+      <para>在现实中，你需要一个完全分布式的配置，以全面的测试HBase，并使用它在现实世界的情景。在分布式的配置中，集群包含多个节点，每一个节点运行一个或多个HBase守护进程。这些包括主Master和备份Master实例，多个Zookeeper节点，以及多个RegionServer节点。</para>
+      <para>这个高级的快速开始在集群中增加了两个节点。结构如下：</para>
       <table>
-        <title>Distributed Cluster Demo Architecture</title>
+        <title>分布式集群示例结构</title>
         <tgroup cols="4">
           <thead>
             <row>
-              <entry>Node Name</entry>
+              <entry>节点名</entry>
               <entry>Master</entry>
               <entry>ZooKeeper</entry>
               <entry>RegionServer</entry>
@@ -438,109 +371,84 @@ $ .bin/local-regionservers.sh start 2 3 4 5
           <tbody>
             <row>
               <entry>node-a.example.com</entry>
-              <entry>yes</entry>
-              <entry>yes</entry>
-              <entry>no</entry>
+              <entry>是</entry>
+              <entry>是</entry>
+              <entry>否</entry>
             </row>
             <row>
               <entry>node-b.example.com</entry>
-              <entry>backup</entry>
-              <entry>yes</entry>
-              <entry>yes</entry>
+              <entry>备份(backup)</entry>
+              <entry>是</entry>
+              <entry>是</entry>
             </row>
             <row>
               <entry>node-c.example.com</entry>
-              <entry>no</entry>
-              <entry>yes</entry>
-              <entry>yes</entry>
+              <entry>否</entry>
+              <entry>是</entry>
+              <entry>是</entry>
             </row>
           </tbody>
         </tgroup>
       </table>
-      <para>This quickstart assumes that each node is a virtual machine and that they are all on the
-      same network. It builds upon the previous quickstart, <xref linkend="quickstart-pseudo" />,
-        assuming that the system you configured in that procedure is now <code>node-a</code>. Stop HBase on <code>node-a</code>
-        before continuing.</para>
+      <para>快速开始假定每一个节点是一个虚拟机并且它们运行在同一个网络。它建立在之前的快速开始 <xref linkend="quickstart-pseudo" />之上，
+        假定你现在配置的系统名为 <code>node-a</code>. 在继续之前先停止 <code>node-a</code> 上的HBase。</para>
       <note>
-        <para>Be sure that all the nodes have full access to communicate, and that no firewall rules
-        are in place which could prevent them from talking to each other. If you see any errors like
-        <literal>no route to host</literal>, check your firewall.</para>
+        <para>请确定所有的节点之间可以相互进行通信，并且没有防火墙规则阻止它们之间进行通信。如果出现了类似<literal>no route to host</literal>的错误，请检查你的防火墙。</para>
       </note>
       <procedure xml:id="passwordless.ssh.quickstart">
-        <title>Configure Password-Less SSH Access</title>
-        <para><code>node-a</code> needs to be able to log into <code>node-b</code> and
-          <code>node-c</code> (and to itself) in order to start the daemons. The easiest way to accomplish this is
-          to use the same username on all hosts, and configure password-less SSH login from
-          <code>node-a</code> to each of the others. </para>
+        <title>配置SSH无密码访问</title>
+        <para><code>node-a</code> 需要能登录到 <code>node-b</code> 和
+          <code>node-c</code> (还有它自己) 以便启动所有守护进程。in order to start the daemons.最方便的方式是在所有的主机上使用相同的用户名，并且配置从
+          <code>node-a</code> 到其他所有节点的SSH无密码登录。 </para>
         <step>
-          <title>On <code>node-a</code>, generate a key pair.</title>
-          <para>While logged in as the user who will run HBase, generate a SSH key pair, using the
-            following command:
+          <title>在 <code>node-a</code>生成一个密钥对</title>
+          <para>登录将要运行HBase的用户账号，生成SSH密钥对，使用如下命令：
           </para>
           <screen language="bourne">$ ssh-keygen -t rsa</screen>
-          <para>If the command succeeds, the location of the key pair is printed to standard output.
-          The default name of the public key is <filename>id_rsa.pub</filename>.</para>
+          <para>如果命令执行成功，密钥对将会打印到标准输出。默认的公有密钥默认名为 <filename>id_rsa.pub</filename>.</para>
         </step>
         <step>
-          <title>Create the directory that will hold the shared keys on the other nodes.</title>
-          <para>On <code>node-b</code> and <code>node-c</code>, log in as the HBase user and create
-            a <filename>.ssh/</filename> directory in the user's home directory, if it does not
-            already exist. If it already exists, be aware that it may already contain other keys.</para>
+          <title>在其他节点上创建持有共享密钥的目录</title>
+          <para>在 <code>node-b</code> 和 <code>node-c</code>, 登录到HBase用户并且在该用户的家目录(home目录)下创建一个 <filename>.ssh/</filename> 目录，如果它还不存在。如果它已经存在，那么它可能已经包含其他密钥。</para>
         </step>
         <step>
-          <title>Copy the public key to the other nodes.</title>
-          <para>Securely copy the public key from <code>node-a</code> to each of the nodes, by
-            using the <command>scp</command> or some other secure means. On each of the other nodes,
-            create a new file called <filename>.ssh/authorized_keys</filename> <emphasis>if it does
-              not already exist</emphasis>, and append the contents of the
-            <filename>id_rsa.pub</filename> file to the end of it. Note that you also need to do
-            this for <code>node-a</code> itself.</para>
+          <title>拷贝公有密钥到其他节点</title>
+          <para>从 <code>node-a</code> 安全拷贝公有密钥到其他节点，通过使用 <command>scp</command> 命令或其他安全方式。在其他每一个节点上，创建一个名为 <filename>.ssh/authorized_keys</filename>的新文件。 <emphasis>如果它不存在</emphasis>， 然后将
+            <filename>id_rsa.pub</filename> 文件的内容追加到它的末尾。 注意，在<code>node-a</code> 上你也需要这样做。</para>
           <screen language="bourne">$ cat id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</screen>
         </step>
         <step>
-          <title>Test password-less login.</title>
-          <para>If you performed the procedure correctly, if you SSH from <code>node-a</code> to
-            either of the other nodes, using the same username, you should not be prompted for a password.
+          <title>测试无密码登录</title>
+          <para>如果你正确完成了上面的过程，那么你在 <code>node-a</code> 上使用SSH登录到其他节点，使用相同的用户名，你将不需要输入密码。
           </para>
         </step>
         <step>
-          <para>Since <code>node-b</code> will run a backup Master, repeat the procedure above,
-            substituting <code>node-b</code> everywhere you see <code>node-a</code>. Be sure not to
-            overwrite your existing <filename>.ssh/authorized_keys</filename> files, but concatenate
-          the new key onto the existing file using the <code>&gt;&gt;</code> operator rather than
-            the <code>&gt;</code> operator.</para>
+          <para>因为 <code>node-b</code> 将作为备份(backup) Master运行, 重复上面的过程，使得<code>node-b</code> 也能无密码访问 <code>node-a</code>可以访问的所有节点。 注意不要重写已经存在的 <filename>.ssh/authorized_keys</filename> 文件，使用 <code>&gt;&gt;</code> 操作而不是 <code>&gt;</code> 操作将新的密钥增加到文件中。</para>
         </step>
       </procedure>
       
       <procedure>
-        <title>Prepare <code>node-a</code></title>
-        <para><code>node-a</code> will run your primary master and ZooKeeper processes, but no
-          RegionServers.</para>
+        <title><code>node-a</code> 的准备</title>
+        <para><code>node-a</code> 将运行主(primary) master 和ZooKeeper进程，但是不运行RegionServers。</para>
         <step>
-          <title>Stop the RegionServer from starting on <code>node-a</code>.</title>
-          <para>Edit <filename>conf/regionservers</filename> and remove the line which contains
-              <literal>localhost</literal>. Add lines with the hostnames or IP addresses for
-              <code>node-b</code> and <code>node-c</code>. Even if you did want to run a
-            RegionServer on <code>node-a</code>, you should refer to it by the hostname the other
-            servers would use to communicate with it. In this case, that would be
-              <literal>node-a.example.com</literal>. This enables you to distribute the
-            configuration to each node of your cluster any hostname conflicts. Save the file.</para>
+          <title>停止<code>node-a</code>上已经启动的RegionServer</title>
+          <para>编辑 <filename>conf/regionservers</filename> 并且移除包含
+              <literal>localhost</literal>的那一行。 增加主机名或IP地址
+              <code>node-b</code> 和 <code>node-c</code>到文件中。 即使你确实想在<code>node-a</code>上运行一个RegionServer, 你也应该使用一个主机名来让其他服务器能和它进行通信。在这个例子中，它应该是
+              <literal>node-a.example.com</literal>。 这能使你分发配置文件到集群中域名不同的所有节点。保存该文件。</para>
         </step>
         <step>
-          <title>Configure HBase to use <code>node-b</code> as a backup master.</title>
-          <para>Create a new file in <filename>conf/</filename> called
-            <filename>backup-masters</filename>, and add a new line to it with the hostname for
-            <code>node-b</code>. In this demonstration, the hostname is
+          <title>配置 <code>node-b</code> 为HBase的备份(backup) master</title>
+          <para>在目录 <filename>conf/</filename> 下创建一个名为
+            <filename>backup-masters</filename>的文件，并且增加
+            <code>node-b</code>的主机名到文件中。在这个示例中，主机名是
             <literal>node-b.example.com</literal>.</para>
         </step>
         <step>
-          <title>Configure ZooKeeper</title>
-          <para>In reality, you should carefully consider your ZooKeeper configuration. You can find
-            out more about configuring ZooKeeper in <xref
-              linkend="zookeeper" />. This configuration will direct HBase to start and manage a
-            ZooKeeper instance on each node of the cluster.</para>
-          <para>On <code>node-a</code>, edit <filename>conf/hbase-site.xml</filename> and add the
-            following properties.</para>
+          <title>配置ZooKeeper</title>
+          <para>在真实环境下，你应该仔细考虑你的ZooKeeper配置。你可以在<xref
+                  linkend="zookeeper" />找到关于ZooKeeper配置的更多信息。 这个配置将指导HBase启动和管理集群中每个节点的ZooKeeper实例。</para>
+          <para>在 <code>node-a</code>上，编辑 <filename>conf/hbase-site.xml</filename> 文件并且添加如下属性。</para>
           <programlisting language="bourne"><![CDATA[
 <property>
   <name>hbase.zookeeper.quorum</name>
@@ -553,43 +461,34 @@ $ .bin/local-regionservers.sh start 2 3 4 5
             ]]></programlisting>
         </step>
         <step>
-          <para>Everywhere in your configuration that you have referred to <code>node-a</code> as
-            <literal>localhost</literal>, change the reference to point to the hostname that
-            the other nodes will use to refer to <code>node-a</code>. In these examples, the
-            hostname is <literal>node-a.example.com</literal>.</para>
+          <para>在配置中你提及到 <code>node-a</code> 为<literal>localhost</literal>的地方，
+            , 变成使用主机名来指代 <code>node-a</code>。在这个例子中， 主机名为 <literal>node-a.example.com</literal>.</para>
         </step>
       </procedure>
       <procedure>
-        <title>Prepare <code>node-b</code> and <code>node-c</code></title>
-        <para><code>node-b</code> will run a backup master server and a ZooKeeper instance.</para>
+        <title><code>node-b</code> 和 <code>node-c</code>的准备</title>
+        <para><code>node-b</code> 将作为备份(backup) master服务器和ZooKeeper实例。</para>
         <step>
-          <title>Download and unpack HBase.</title>
-          <para>Download and unpack HBase to <code>node-b</code>, just as you did for the standalone
-          and pseudo-distributed quickstarts.</para>
+          <title>下载且解压HBase.</title>
+          <para>下载且解压HBase到 <code>node-b</code>，就像你在单机和伪分布式的快速开始时做的那样。</para>
         </step>
         <step>
-          <title>Copy the configuration files from <code>node-a</code> to <code>node-b</code>.and
-            <code>node-c</code>.</title>
-          <para>Each node of your cluster needs to have the same configuration information. Copy the
-            contents of the <filename>conf/</filename> directory to the <filename>conf/</filename>
-            directory on <code>node-b</code> and <code>node-c</code>.</para>
+          <title>从 <code>node-a</code> 拷贝配置文件到<code>node-b</code>和
+            <code>node-c</code></title>
+          <para>集群中的每一个节点需要有相同的配置信息。拷贝<filename>conf/</filename> 目录下的所有文件到<code>node-b</code> 和 <code>node-c</code>的 <filename>conf/</filename>目录中。</para>
         </step>
       </procedure>
 
       <procedure>
-        <title>Start and Test Your Cluster</title>
+        <title>启动和测试你的集群</title>
         <step>
-          <title>Be sure HBase is not running on any node.</title>
-          <para>If you forgot to stop HBase from previous testing, you will have errors. Check to
-            see whether HBase is running on any of your nodes by using the <command>jps</command>
-            command. Look for the processes <literal>HMaster</literal>,
-            <literal>HRegionServer</literal>, and <literal>HQuorumPeer</literal>. If they exist,
-            kill them.</para>
+          <title>确定HBase没有在任何节点上运行</title>
+          <para>如果你在之前的测试中忘记关闭HBase，你将会遇到错误。使用<command>jps</command>命令在所有的节点上检查是否有HBase正在运行。查看是否有进程 <literal>HMaster</literal>，
+            <literal>HRegionServer</literal>和 <literal>HQuorumPeer</literal>。如果存在，先杀死这些进程。</para>
         </step>
         <step>
-          <title>Start the cluster.</title>
-          <para>On <code>node-a</code>, issue the <command>start-hbase.sh</command> command. Your
-            output will be similar to that below.</para>
+          <title>启动集群</title>
+          <para>在 <code>node-a</code>上，运行 <command>start-hbase.sh</command> 命令。你将获得的输出和下面的例子类似。</para>
           <screen language="bourne">
 $ <userinput>bin/start-hbase.sh</userinput>
 node-c.example.com: starting zookeeper, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-zookeeper-node-c.example.com.out
@@ -600,16 +499,13 @@ node-c.example.com: starting regionserver, logging to /home/hbuser/hbase-0.98.3-
 node-b.example.com: starting regionserver, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-regionserver-node-b.example.com.out            
 node-b.example.com: starting master, logging to /home/hbuser/hbase-0.98.3-hadoop2/bin/../logs/hbase-hbuser-master-nodeb.example.com.out          
           </screen>
-          <para>ZooKeeper starts first, followed by the master, then the RegionServers, and finally
-            the backup masters. </para>
+          <para>首先启动ZooKeeper，紧接着启动master，然后是RegionServers，最后是备份(backup)masters。 </para>
         </step>
         <step>
-          <title>Verify that the processes are running.</title>
-          <para>On each node of the cluster, run the <command>jps</command> command and verify that
-            the correct processes are running on each server. You may see additional Java processes
-            running on your servers as well, if they are used for other purposes.</para>
+          <title>确定那些进程是否正在运行</title>
+          <para>在集群的每一个节点上，运行 <command>jps</command> 命令来验证每一个服务器上的进程是否正确运行。你可能会看到其他的java进程正在你的服务器上运行，它们可能被用于其他目的。</para>
           <example>
-            <title><code>node-a</code> <command>jps</command> Output</title>
+            <title><code>node-a</code> <command>jps</command> 输出</title>
             <screen language="bourne">
 $ <userinput>jps</userinput>
 20355 Jps
@@ -618,7 +514,7 @@ $ <userinput>jps</userinput>
             </screen>
           </example>
           <example>
-            <title><code>node-b</code> <command>jps</command> Output</title>
+            <title><code>node-b</code> <command>jps</command> 输出</title>
             <screen language="bourne">
 $ <userinput>jps</userinput>
 15930 HRegionServer
@@ -628,7 +524,7 @@ $ <userinput>jps</userinput>
             </screen>
           </example>
           <example>
-            <title><code>node-c</code> <command>jps</command> Output</title>
+            <title><code>node-c</code> <command>jps</command> 输出</title>
             <screen language="bourne">
 $ <userinput>jps</userinput>    
 13901 Jps
@@ -637,47 +533,31 @@ $ <userinput>jps</userinput>
             </screen>
           </example>
           <note>
-            <title>ZooKeeper Process Name</title>
-            <para>The <code>HQuorumPeer</code> process is a ZooKeeper instance which is controlled
-              and started by HBase. If you use ZooKeeper this way, it is limited to one instance per
-              cluster node, , and is appropriate for testing only. If ZooKeeper is run outside of
-              HBase, the process is called <code>QuorumPeer</code>. For more about ZooKeeper
-              configuration, including using an external ZooKeeper instance with HBase, see <xref
-                linkend="zookeeper" />.</para>
+            <title>ZooKeeper进程名</title>
+            <para> <code>HQuorumPeer</code> 进程是一个被HBase控制和启动的ZooKeeper实例。如果你用这种方式使用ZooKeeper，它在每个节点上将被限定只有一个实例，并且仅仅只适合在测试时使用。如果你在HBase外部启动了ZooKeeper，那么ZooKeeper的进程被叫做<code>QuorumPeer</code>。更多关于ZooKeeper的配置信息，包括如何在HBase中使用外部的ZooKeeper，请参考  <xref
+                linkend="zookeeper" />。</para>
           </note>
         </step>
         <step>
-          <title>Browse to the Web UI.</title>
+          <title>浏览Web UI</title>
           <note>
-            <title>Web UI Port Changes</title>
-            <para>In HBase newer than 0.98.x, the HTTP ports used by the HBase Web UI changed from
-              60010 for the Master and 60030 for each RegionServer to 16610 for the Master and 16030
-              for the RegionServer.</para>
+            <title>Web UI端口变化</title>
+            <para>在HBase 0.98.x及之后的版本, HBase Web UI的端口已经改变。Master的查看端口从60010变为了16610。而RegionServer的查看端口从60030变为了16030。</para>
           </note>
-          <para>If everything is set up correctly, you should be able to connect to the UI for the
-            Master <literal>http://node-a.example.com:60110/</literal> or the secondary master at
-              <literal>http://node-b.example.com:60110/</literal> for the secondary master, using a
-            web browser. If you can connect via <code>localhost</code> but not from another host,
-            check your firewall rules. You can see the web UI for each of the RegionServers at port
-            60130 of their IP addresses, or by clicking their links in the web UI for the
-            Master.</para>
+          <para>如果所有的事项都被正确运行，你应该能使用浏览器打开<literal>http://node-a.example.com:60110/</literal>从而连接到master或从(secondary)master的UI页面，你可以通过Web UI查看每一个RegionServers，它们的端口为60130，IP为对应的RegionServer的IP地址。或者通过点击Master的web UI上的链接打开RegionServer的web UI页面。</para>
         </step>
         <step>
-          <title>Test what happens when nodes or services disappear.</title>
-          <para>With a three-node cluster like you have configured, things will not be very
-            resilient. Still, you can test what happens when the primary Master or a RegionServer
-            disappears, by killing the processes and watching the logs.</para>
+          <title>测试当节点或服务消失</title>
+          <para>像这样只配置了三个节点的集群，在使用时不会有很好的弹性。你可以通过杀死进程来测试当主Master或者一个RegionServer消失时会发生什么，可以查看对应的日志信息。</para>
         </step>
       </procedure>
     </section>
     
     <section>
-      <title>Where to go next</title>
+      <title>下一步</title>
 
-      <para>The next chapter, <xref
-          linkend="configuration" />, gives more information about the different HBase run modes,
-        system requirements for running HBase, and critical configuration areas for setting up a
-        distributed HBase cluster.</para>
+      <para>下一个章节， <xref
+          linkend="configuration" />,提供了有关不同HBase的运行模式、运行HBase的系统要求以及分布式HBase集群重要配置的更多信息。</para>
     </section>
   </section>
 </chapter>
