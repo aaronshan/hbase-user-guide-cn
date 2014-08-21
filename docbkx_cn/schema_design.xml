@@ -29,7 +29,7 @@
  * limitations under the License.
  */
 -->
-  <title>HBase and Schema Design</title>
+  <title>HBase和模式设计</title>
   <para>A good general introduction on the strength and weaknesses modelling on the various
     non-rdbms datastores is Ian Varley's Master thesis, <link
       xlink:href="http://ianvarley.com/UT/MR/Varley_MastersReport_Full_2009-08-07.pdf">No Relation:
