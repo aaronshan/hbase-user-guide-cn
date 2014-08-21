@@ -28,28 +28,23 @@
  * limitations under the License.
  */
 -->
-    <title>Upgrading</title>
-    <para>You cannot skip major versions upgrading. If you are upgrading from version 0.90.x to
-        0.94.x, you must first go from 0.90.x to 0.92.x and then go from 0.92.x to 0.94.x.</para>
+    <title>升级</title>
+    <para>你不能跳过主要的版本进行升级。如果你想从0.90.x升级到0.94.x，那么你必须先从0.90.x升级到0.92.x，然后从0.92.x升级到0.94.x。</para>
     <note>
-        <para>It may be possible to skip across versions -- for example go from 0.92.2 straight to
-            0.98.0 just following the 0.96.x upgrade instructions -- but we have not tried it so
-            cannot say whether it works or not.</para>
+        <para>你可能会跨版本进行升级 -- 例如从0.92.2直接升级到
+            0.98.0，而且还只是遵循了0.96.x的升级指导 -- 我们没有这么尝试过所以不知道升级后HBase是否能够正常工作。</para>
     </note>
-    <para> Review <xref
-            linkend="configuration" />, in particular the section on Hadoop version. </para>
+    <para> 请查看 <xref
+            linkend="configuration" /> 一章, 尤其是Hadoop版本那部分。 </para>
     <section
         xml:id="hbase.versioning">
-        <title>HBase version numbers</title>
-        <para>HBase has not walked a straight line where version numbers are concerned. Since we
-            came up out of hadoop itself, we originally tracked hadoop versioning. Later we left
-            hadoop versioning behind because we were moving at a different rate to that of our
-            parent. If you are into the arcane, checkout our old wiki page on <link
+        <title>HBase版本数目</title>
+        <para>HBase的版本号不是线性增加的。因为源自hadoop，所以开始时的版本号和hadoop的版本对应。但是之后因为两个系统的发布频率不同，所以HBase的版本号不再与hadoop保持一致。如果你对此表示疑惑，请查看 <link
                 xlink:href="http://wiki.apache.org/hadoop/Hbase/HBaseVersions">HBase
-                Versioning</link> which tries to connect the HBase version dots.</para>
+                Versioning</link> ，它将带你到HBase的版本页面。</para>
         <section
             xml:id="hbase.development.series">
-            <title>Odd/Even Versioning or "Development"" Series Releases</title>
+            <title>奇/偶版本或者“开发”系列发行版</title>
             <para>Ahead of big releases, we have been putting up preview versions to start the
                 feedback cycle turning-over earlier. These "Development" Series releases, always
                 odd-numbered, come with no guarantees, not even regards being able to upgrade
