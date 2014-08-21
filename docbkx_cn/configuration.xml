@@ -129,7 +129,7 @@
             <entry>0.98</entry>
             <entry>支持</entry>
             <entry>支持</entry>
-            <entry><para>可以运行在JDK 8，但是测试不够充分。使用JDK 8需要移除PoolMap累的过时的remove()方法，目前正在考虑。查看 <link
+            <entry><para>可以运行在JDK 8，但是测试不够充分。使用JDK 8需要移除PoolMap类的过时的remove()方法，目前正在考虑。查看 <link
                   xlink:href="https://issues.apache.org/jira/browse/HBASE-7608">HBASE-7608</link>
                 可以查看更多的关于JDK 8支持的信息。</para></entry>
           </row>
@@ -181,7 +181,7 @@
       </varlistentry>
       <varlistentry
         xml:id="loopback.ip">
-        <term>环回(Loopback)IP</term>
+        <term>环回(Loopback) IP</term>
         <listitem>
           <para>在hbase-0.96.0版本之前，HBase仅仅使用IP地址
               <systemitem>127.0.0.1</systemitem> 来代表 <code>localhost</code>，并且它可能没有被配置。请查看 <xref
@@ -220,12 +220,12 @@
           <para>推荐你将ulimit最少设置为10,000，但是设置为10,240会更好些，因为该值通常表示为1024的倍数。 每一个列簇至少都有一个StoreFile文件，并且如果region被加载，可能会有超过6个StoreFiles。打开的文件数目依赖于列簇和region数目。下面是一个RegionServer可能打开的文件数目的粗略的计算公式。</para>
           <example>
             <title>计算可能打开的文件数目</title>
-            <screen>(每个列簇的StoreFiles数目) x (每个RegionServer的regions数目 )</screen>
+            <screen>(每个列簇的StoreFile数目) x (每个RegionServer的region数目 )</screen>
           </example>
           <para>例如，假设一个模型的每个Region有3个列簇，每个列簇有3个StoreFiles文件，并且每个RegionServer有100个regions。那么，JVM将打开3 * 3 * 100 = 900个文件描述符，这还不包括打开的JAR文件、配置文件以及其他文件的数目。 打开一个文件不会花费很多资源，允许用户打开很多文件的风险是很小的。</para>
-          <para>另外一个相关的设置是一个用户允许一次运行的进程数目。 在Linux和Unix中，可以使用<command>ulimit -u</command>命令来进行该数目的设定。这个命令不会与<command>nproc</command>命令混淆。<command>nproc</command>命令用来设定一个用户能使用的CPU的数量。在负载情况下，一个<varname>nproc</varname>太低可能会引起OutOfMemoryError异常。请查阅Jack Levin的 <link
+          <para>另外一个相关的设置是一个用户允许一次运行的进程数目。 在Linux和Unix中，可以使用<command>ulimit -u</command>命令来进行该数目的设定。这个命令不会与<command>nproc</command>命令混淆。<command>nproc</command>命令用来设定一个用户能使用的CPU的数量。在负载情况下，一个<varname>nproc</varname>太低可能会引起OutOfMemoryError异常。请查阅从2011年开始的hbase-users邮件列表，找出Jack Levin写的 <link
               xlink:href="http://thread.gmane.org/gmane.comp.java.hadoop.hbase.user/16374">major
-              hdfs issues</link> 从2011年开始的hbase-users邮件列表。</para>
+              hdfs issues</link> 。</para>
           <para>配置一个运行HBase的用户的ILE描述符和进程的fmaximum数目是操作系统的配置，而不是HBase的配置。同样重要的是得确定修改是针对运行HBase的用户。为了查看启动HBase的用户和该用户的ulimit配置，请查看HBase日志的第一行信息。<footnote>
               <para>一个在你的hadoop集群上很有用的读设置配置请看Aaron Kimballs的 <link
                   xlink:href="http://www.cloudera.com/blog/2009/03/configuration-parameters-what-can-you-just-ignore/">Configuration
@@ -271,144 +271,135 @@ hadoop  -       nproc   32000
           xlink:href="http://hadoop.apache.org">Hadoop</link><indexterm>
           <primary>Hadoop</primary>
         </indexterm></title>
-      <para>下面的表总结了对于每一个版本的HBase，Hadoop版本的支持情况。The following table summarizes the versions of Hadoop supported with each version of
-        HBase. Based on the version of HBase, you should select the most
-        appropriate version of Hadoop. You can use Apache Hadoop, or a vendor's distribution of
-        Hadoop. No distinction is made here. See <link
-          xlink:href="http://wiki.apache.org/hadoop/Distributions%20and%20Commercial%20Support" />
-        for information about vendors of Hadoop.</para>
-      <tip>
-        <title>Hadoop 2.x is recommended.</title>
-        <para>Hadoop 2.x is faster and includes features, such as short-circuit reads, which will
-          help improve your HBase random read profile. Hadoop 2.x also includes important bug fixes
-          that will improve your overall HBase experience. HBase 0.98 deprecates use of Hadoop 1.x,
-          and HBase 1.0 will not support Hadoop 1.x.</para>
-      </tip>
-      <para>Use the following legend to interpret this table:</para>
-      <simplelist
-        type="vert"
-        columns="1">
-        <member>S = supported and tested,</member>
-        <member>X = not supported,</member>
-        <member>NT = it should run, but not tested enough.</member>
-      </simplelist>
+        <para>下面的表总结了对于每一个版本的HBase，Hadoop版本的支持情况。基于HBase的版本，你应该选择最合适的Hadoop版本。你可以选择使用Apache Hadoop，或者其他供应商的Hadoop的发行版。查阅 <link
+                xlink:href="http://wiki.apache.org/hadoop/Distributions%20and%20Commercial%20Support" />
+            可以得到更多的关于Hadoop的供应商的信息。</para>
+        <tip>
+            <title>推荐使用Hadoop 2.x</title>
+            <para>Hadoop 2.x运行的更快并且包含了更多特性。例如短路(short-circuit)读取，这将有助于提高HBase的随机读取能力。Hadoop 2.x修复了一些重要的bug，这将从整体上提高HBase的体验。HBase 0.98已经弃用Hadoop 1.x，并且HBase 1.0将不再支持Hadoop 1.x。</para>
+        </tip>
+        <para>使用下面的图例来解释这个表格：</para>
+        <simplelist
+                type="vert"
+                columns="1">
+            <member>S = 支持并且测试充分，</member>
+            <member>X = 不支持，</member>
+            <member>NT = 可以运行，但测试不够充分。</member>
+        </simplelist>
 
-      <table>
-        <title>Hadoop version support matrix</title>
-        <tgroup
-          cols="6"
-          align="left"
-          colsep="1"
-          rowsep="1">
-          <colspec
-            colname="c1"
-            align="left" />
-          <colspec
-            colname="c2"
-            align="center" />
-          <colspec
-            colname="c3"
-            align="center" />
-          <colspec
-            colname="c4"
-            align="center" />
-          <colspec
-            colname="c5"
-            align="center" />
-          <colspec
-            colname="c6"
-            align="center" />
-          <thead>
-            <row>
-              <entry> </entry>
-              <entry>HBase-0.92.x</entry>
-              <entry>HBase-0.94.x</entry>
-              <entry>HBase-0.96.x</entry>
-              <entry>HBase-0.98.x<footnote>
-                  <para>Support for Hadoop 1.x is deprecated.</para>
-                </footnote></entry>
-              <entry>HBase-1.0.x<footnote>
-                  <para>Hadoop 1.x is NOT supported</para>
-                </footnote></entry>
-            </row>
-          </thead>
-          <tbody>
-            <row>
-              <entry>Hadoop-0.20.205</entry>
-              <entry>S</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-0.22.x </entry>
-              <entry>S</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-1.0.0-1.0.2<footnote>
-                  <para>HBase requires hadoop 1.0.3 at a minimum; there is an issue where we cannot
-                    find KerberosUtil compiling against earlier versions of Hadoop.</para>
-                </footnote>
-              </entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-1.0.3+</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-1.1.x </entry>
-              <entry>NT</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-0.23.x </entry>
-              <entry>X</entry>
-              <entry>S</entry>
-              <entry>NT</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.0.x-alpha </entry>
-              <entry>X</entry>
-              <entry>NT</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.1.0-beta </entry>
-              <entry>X</entry>
-              <entry>NT</entry>
-              <entry>S</entry>
-              <entry>X</entry>
-              <entry>X</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.2.0 </entry>
-              <entry>X</entry>
-              <entry>NT <footnote>
-                  <para>To get 0.94.x to run on hadoop 2.2.0, you need to change the hadoop 2 and
-                    protobuf versions in the <filename>pom.xml</filename>: Here is a diff with
-                    pom.xml changes: </para>
-                  <programlisting><![CDATA[$ svn diff pom.xml
+        <table>
+            <title>Hadoop版本支持矩阵</title>
+            <tgroup
+                    cols="6"
+                    align="left"
+                    colsep="1"
+                    rowsep="1">
+                <colspec
+                        colname="c1"
+                        align="left" />
+                <colspec
+                        colname="c2"
+                        align="center" />
+                <colspec
+                        colname="c3"
+                        align="center" />
+                <colspec
+                        colname="c4"
+                        align="center" />
+                <colspec
+                        colname="c5"
+                        align="center" />
+                <colspec
+                        colname="c6"
+                        align="center" />
+                <thead>
+                    <row>
+                        <entry> </entry>
+                        <entry>HBase-0.92.x</entry>
+                        <entry>HBase-0.94.x</entry>
+                        <entry>HBase-0.96.x</entry>
+                        <entry>HBase-0.98.x<footnote>
+                            <para>已经弃用对Hadoop 1.x 的支持。</para>
+                        </footnote></entry>
+                        <entry>HBase-1.0.x<footnote>
+                            <para>不再支持Hadoop 1.x。</para>
+                        </footnote></entry>
+                    </row>
+                </thead>
+                <tbody>
+                    <row>
+                        <entry>Hadoop-0.20.205</entry>
+                        <entry>S</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-0.22.x </entry>
+                        <entry>S</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-1.0.0-1.0.2<footnote>
+                            <para>HBase至少需要hadoop 1.0.3版本，这里存在一个问题，即我们找不到编译早期Hadoop的KerberosUtil。</para>
+                        </footnote>
+                        </entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-1.0.3+</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-1.1.x </entry>
+                        <entry>NT</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-0.23.x </entry>
+                        <entry>X</entry>
+                        <entry>S</entry>
+                        <entry>NT</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.0.x-alpha </entry>
+                        <entry>X</entry>
+                        <entry>NT</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.1.0-beta </entry>
+                        <entry>X</entry>
+                        <entry>NT</entry>
+                        <entry>S</entry>
+                        <entry>X</entry>
+                        <entry>X</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.2.0 </entry>
+                        <entry>X</entry>
+                        <entry>NT <footnote>
+                            <para>为了使0.94.x运行在hadoop 2.2.0上，你需要改变<filename>pom.xml</filename>文件中hadoop 2和protobuf的版本，这里展示了关于这两个pom.xml文件的不同： </para>
+                            <programlisting><![CDATA[$ svn diff pom.xml
 Index: pom.xml
 ===================================================================
 --- pom.xml     (revision 1545157)
@@ -431,127 +422,108 @@ Index: pom.xml
          <slf4j.version>1.6.1</slf4j.version>
        </properties>
        <dependencies>]]>
-                   </programlisting>
-                  <para>The next step is to regenerate Protobuf files and assuming that the Protobuf
-                    has been installed:</para>
-                  <itemizedlist>
-                    <listitem>
-                      <para>Go to the hbase root folder, using the command line;</para>
-                    </listitem>
-                    <listitem>
-                      <para>Type the following commands:</para>
-                      <para>
-                        <programlisting language="bourne"><![CDATA[$ protoc -Isrc/main/protobuf --java_out=src/main/java src/main/protobuf/hbase.proto]]></programlisting>
-                      </para>
-                      <para>
-                        <programlisting language="bourne"><![CDATA[$ protoc -Isrc/main/protobuf --java_out=src/main/java src/main/protobuf/ErrorHandling.proto]]></programlisting>
-                      </para>
-                    </listitem>
-                  </itemizedlist>
-                  <para> Building against the hadoop 2 profile by running something like the
-                    following command: </para>
-                  <screen language="bourne">$  mvn clean install assembly:single -Dhadoop.profile=2.0 -DskipTests</screen>
-                </footnote></entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>NT</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.3.x</entry>
-              <entry>X</entry>
-              <entry>NT</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>NT</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.4.x</entry>
-              <entry>X</entry>
-              <entry>NT</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-            </row>
-            <row>
-              <entry>Hadoop-2.5.x</entry>
-              <entry>X</entry>
-              <entry>NT</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-              <entry>S</entry>
-            </row>
+                            </programlisting>
+                            <para>假定Protobuf已经被安装，接下来的这一步将生成Protobuf文件：</para>
+                            <itemizedlist>
+                                <listitem>
+                                    <para>进入hbase的根目录，使用如下命令行；</para>
+                                </listitem>
+                                <listitem>
+                                    <para>输入如下命令：</para>
+                                    <para>
+                                        <programlisting language="bourne"><![CDATA[$ protoc -Isrc/main/protobuf --java_out=src/main/java src/main/protobuf/hbase.proto]]></programlisting>
+                                    </para>
+                                    <para>
+                                        <programlisting language="bourne"><![CDATA[$ protoc -Isrc/main/protobuf --java_out=src/main/java src/main/protobuf/ErrorHandling.proto]]></programlisting>
+                                    </para>
+                                </listitem>
+                            </itemizedlist>
+                            <para> 通过运行如下命令基于hadoop 2的profile来构建HBase： </para>
+                            <screen language="bourne">$  mvn clean install assembly:single -Dhadoop.profile=2.0 -DskipTests</screen>
+                        </footnote></entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>NT</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.3.x</entry>
+                        <entry>X</entry>
+                        <entry>NT</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>NT</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.4.x</entry>
+                        <entry>X</entry>
+                        <entry>NT</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                    </row>
+                    <row>
+                        <entry>Hadoop-2.5.x</entry>
+                        <entry>X</entry>
+                        <entry>NT</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                        <entry>S</entry>
+                    </row>
 
-          </tbody>
-        </tgroup>
-      </table>
+                </tbody>
+            </tgroup>
+        </table>
 
-      <note
-        xml:id="replace.hadoop">
-        <title>Replace the Hadoop Bundled With HBase!</title>
-        <para> Because HBase depends on Hadoop, it bundles an instance of the Hadoop jar under its
-            <filename>lib</filename> directory. The bundled jar is ONLY for use in standalone mode.
-          In distributed mode, it is <emphasis>critical</emphasis> that the version of Hadoop that
-          is out on your cluster match what is under HBase. Replace the hadoop jar found in the
-          HBase lib directory with the hadoop jar you are running on your cluster to avoid version
-          mismatch issues. Make sure you replace the jar in HBase everywhere on your cluster. Hadoop
-          version mismatch issues have various manifestations but often all looks like its hung up.
-        </para>
-      </note>
-      <section
-        xml:id="hadoop.hbase-0.94">
-        <title>Apache HBase 0.92 and 0.94</title>
-        <para>HBase 0.92 and 0.94 versions can work with Hadoop versions, 0.20.205, 0.22.x, 1.0.x,
-          and 1.1.x. HBase-0.94 can additionally work with Hadoop-0.23.x and 2.x, but you may have
-          to recompile the code using the specific maven profile (see top level pom.xml)</para>
-      </section>
+        <note
+                xml:id="replace.hadoop">
+            <title>替换与HBase捆绑的Hadoop</title>
+            <para> 因为HBase依赖于Hadoop，它绑定了一个在<filename>lib</filename>目录下的Hadoop jar的实例。捆绑的jar文件仅仅只能在单机模式下使用。在分布式模式下，<emphasis>最重要</emphasis>的是你的HBase集群外部使用的Hadoop版本。
+                将HBase的lib目录下的hadoop的jar文件替换为你在集群上正在使用的Hadoop的对应版本，这样可以避免出现一些不匹配的问题。
+                确定你替换了你HBase集群中所有的jar文件。版本不匹配的问题有不同的表现，但是它都会让集群看起来像是挂了。
+            </para>
+        </note>
+        <section
+                xml:id="hadoop.hbase-0.94">
+            <title>Apache HBase 0.92和0.94</title>
+            <para>HBase 0.92和0.94版本能工作在以下Hadoop版本：0.20.205、 0.22.x、 1.0.x和
+                1.1.x。HBase-0.94还能工作在Hadoop-0.23.x和2.x上，但是你可能需要使用特定的maven profile重新编译代码。(查阅顶层的pom.xml)</para>
+        </section>
 
-      <section
-        xml:id="hadoop.hbase-0.96">
-        <title>Apache HBase 0.96</title>
-        <para> As of Apache HBase 0.96.x, Apache Hadoop 1.0.x at least is required. Hadoop 2 is
-          strongly encouraged (faster but also has fixes that help MTTR). We will no longer run
-          properly on older Hadoops such as 0.20.205 or branch-0.20-append. Do not move to Apache
-          HBase 0.96.x if you cannot upgrade your Hadoop.<footnote>
-            <para>See <link
-                xlink:href="http://search-hadoop.com/m/7vFVx4EsUb2">HBase, mail # dev - DISCUSS:
-                Have hbase require at least hadoop 1.0.0 in hbase 0.96.0?</link></para>
-          </footnote></para>
-      </section>
+        <section
+                xml:id="hadoop.hbase-0.96">
+            <title>Apache HBase 0.96</title>
+            <para> 对于Apache HBase 0.96.x，至少需要Apache Hadoop 1.0.x。强烈推荐使用Hadoop 2(更快并且修复了很多bug)。
+                HBase不适合运行在诸如0.20.205或者branch-0.20-append或者更早的Hadoop版本上。如果你不升级你的Hadoop，不要迁移到HBase 0.96.x。<footnote>
+                    <para>查阅 <link
+                            xlink:href="http://search-hadoop.com/m/7vFVx4EsUb2">HBase, mail # dev - DISCUSS:
+                        Have hbase require at least hadoop 1.0.0 in hbase 0.96.0?</link></para>
+                </footnote></para>
+        </section>
 
-      <section
-        xml:id="hadoop.older.versions">
-        <title>Hadoop versions 0.20.x - 1.x</title>
-        <para> HBase will lose data unless it is running on an HDFS that has a durable
-            <code>sync</code> implementation. DO NOT use Hadoop 0.20.2, Hadoop 0.20.203.0, and
-          Hadoop 0.20.204.0 which DO NOT have this attribute. Currently only Hadoop versions
-          0.20.205.x or any release in excess of this version -- this includes hadoop-1.0.0 -- have
-          a working, durable sync <footnote>
-            <para>The Cloudera blog post <link
-                xlink:href="http://www.cloudera.com/blog/2012/01/an-update-on-apache-hadoop-1-0/">An
-                update on Apache Hadoop 1.0</link> by Charles Zedlweski has a nice exposition on how
-              all the Hadoop versions relate. Its worth checking out if you are having trouble
-              making sense of the Hadoop version morass. </para>
-          </footnote>. Sync has to be explicitly enabled by setting
-            <varname>dfs.support.append</varname> equal to true on both the client side -- in
-            <filename>hbase-site.xml</filename> -- and on the serverside in
-            <filename>hdfs-site.xml</filename> (The sync facility HBase needs is a subset of the
-          append code path).</para>
+        <section
+                xml:id="hadoop.older.versions">
+            <title>Hadoop 0.20.x - 1.x版本</title>
+            <para> 除非HBase运行在实现了<code>sync</code>的HDFS上，否则它很有可能会丢失数据。
+                不要使用Hadoop 0.20.2，Hadoop 0.20.203.0和Hadoop 0.20.204.0 ，它们没有这个特性。目前只有
+                0.20.205.x 或者之后的Hadoop发行版本 -- 包括hadoop-1.0.0 -- 有一个工作且耐用的同步。 <footnote>
+                    <para>Cloudera公司的Charles Zedlweski的博文 <link
+                            xlink:href="http://www.cloudera.com/blog/2012/01/an-update-on-apache-hadoop-1-0/">An
+                        update on Apache Hadoop 1.0</link> 有一个关于所有Hadoop版本相关的论述。如果你觉得你陷入了关于Hadoop版本的泥沼，那么该文就值得一读。</para>
+          </footnote>. 同步需要显式的在客户端的<filename>hbase-site.xml</filename>文件和服务器端的<filename>hdfs-site.xml</filename>文件中设置<varname>dfs.support.append</varname>属性的值为true(HBase需要的同步功能在附件代码路径中)。</para>
         <programlisting language="xml"><![CDATA[  
 <property>
   <name>dfs.support.append</name>
   <value>true</value>
 </property>]]></programlisting>
-        <para> You will have to restart your cluster after making this edit. Ignore the
+        <para> 在你更改了配置后，你需要重新启动集群。 Ignore the
           chicken-little comment you'll find in the <filename>hdfs-default.xml</filename> in the
           description for the <varname>dfs.support.append</varname> configuration. </para>
       </section>
       <section
         xml:id="hadoop.security">
-        <title>Apache HBase on Secure Hadoop</title>
-        <para>Apache HBase will run on any Hadoop 0.20.x that incorporates Hadoop security features
-          as long as you do as suggested above and replace the Hadoop jar that ships with HBase with
-          the secure version. If you want to read more about how to setup Secure HBase, see <xref
-            linkend="hbase.secure.configuration" />.</para>
+        <title>运行在安全Hadoop上的Apache HBase</title>
+        <para>Apache HBase 可以运行在任何集成了Hadoop安全特性的0.20.x版本的Hadoop上，只需要你按照之前的建议将HBase中的对应的Hadoop jar文件使用安全版本的jar文件进行替换即可。如果你想要阅读更多的关于如何设置安全HBase的内容，请查看 <xref
+            linkend="hbase.secure.configuration" />部分。</para>
       </section>
 
       <section
@@ -560,10 +532,8 @@ Index: pom.xml
             <primary>dfs.datanode.max.transfer.threads</primary>
           </indexterm></title>
 
-        <para>An HDFS datanode has an upper bound on the number of files that it will serve
-          at any one time. Before doing any loading, make sure you have configured
-          Hadoop's <filename>conf/hdfs-site.xml</filename>, setting the
-          <varname>dfs.datanode.max.transfer.threads</varname> value to at least the following:
+        <para>HDFS的datanode对于同一时刻服务的文件数目存在一个上限。在进行任何加载操作之前，请确定你已经配置了Hadoop的 <filename>conf/hdfs-site.xml</filename>文件，将属性
+          <varname>dfs.datanode.max.transfer.threads</varname> 的值至少设置为了下面示例中的值：
         </para>
         <programlisting language="xml"><![CDATA[
 <property>
@@ -572,15 +542,13 @@ Index: pom.xml
 </property>
       ]]></programlisting>
 
-        <para>Be sure to restart your HDFS after making the above configuration.</para>
+        <para>确认之后重启你的HDFS以使上述配置生效。</para>
 
-        <para>Not having this configuration in place makes for strange-looking failures. One
-        manifestation is a complaint about missing blocks. For example:</para>
+        <para>没有做上述设置会引起一些看起来很奇怪的错误。一个表现是会显示丢失了某些块(block)。例如：</para>
         <screen>10/12/08 20:10:31 INFO hdfs.DFSClient: Could not obtain block
           blk_XXXXXXXXXXXXXXXXXXXXXX_YYYYYYYY from any node: java.io.IOException: No live nodes
           contain current block. Will get new block locations from namenode and retry...</screen>
-        <para>See also <xref linkend="casestudies.max.transfer.threads" /> and note that this
-          property was previously known as <varname>dfs.datanode.max.xcievers</varname> (e.g.
+        <para>可以参考 <xref linkend="casestudies.max.transfer.threads" /> 一节并且要注意到这个属性之前叫做 <varname>dfs.datanode.max.xcievers</varname> (e.g.
           <link
             xlink:href="http://ccgtech.blogspot.com/2010/02/hadoop-hdfs-deceived-by-xciever.html">
             Hadoop HDFS: Deceived by Xciever</link>).
@@ -594,31 +562,23 @@ Index: pom.xml
 
   <section
     xml:id="standalone_dist">
-    <title>HBase run modes: Standalone and Distributed</title>
+    <title>HBase的运行模式: 单机和分布式</title>
 
-    <para>HBase has two run modes: <xref
-        linkend="standalone" /> and <xref
-        linkend="distributed" />. Out of the box, HBase runs in standalone mode. Whatever your mode,
-      you will need to configure HBase by editing files in the HBase <filename>conf</filename>
-      directory. At a minimum, you must edit <code>conf/hbase-env.sh</code> to tell HBase which
-        <command>java</command> to use. In this file you set HBase environment variables such as the
-      heapsize and other options for the <application>JVM</application>, the preferred location for
-      log files, etc. Set <varname>JAVA_HOME</varname> to point at the root of your
-        <command>java</command> install.</para>
+    <para>HBase 有两种运行模式: <xref
+        linkend="standalone" /> 和 <xref
+        linkend="distributed" />。 HBase可以直接在单机模式下运行。无论你选择了哪种模式，你都需要对HBase <filename>conf</filename>目录下的文件进行修改。起码你需要修改<code>conf/hbase-env.sh</code>以告知HBase将要用的<command>java</command>命令的目录。在这个文件中你可以设置一些HBase的环境变量，比如堆大小和其他一些JVM的选项，以及你选择的存储日志文件的位置。将<varname>JAVA_HOME</varname>设置为你安装的<command>java</command>的根路径。</para>
 
     <section
       xml:id="standalone">
-      <title>Standalone HBase</title>
+      <title>单机HBase</title>
 
-      <para>This is the default mode. Standalone mode is what is described in the <xref
-          linkend="quickstart" /> section. In standalone mode, HBase does not use HDFS -- it uses
-        the local filesystem instead -- and it runs all HBase daemons and a local ZooKeeper all up
-        in the same JVM. Zookeeper binds to a well known port so clients may talk to HBase.</para>
+      <para>这是默认的模式。单机模式在 <xref
+          linkend="quickstart" /> 一节中进行了描述。在单机模式中，HBase使用本地文件系统取代了HDFS。它在同一个JVM中运行所有的HBase守护进程和一个本地ZooKeeper。Zookeeper也使用了默认的端口与HBase进行通信。</para>
     </section>
 
     <section
       xml:id="distributed">
-      <title>Distributed</title>
+      <title>分布式</title>
 
       <para>Distributed mode can be subdivided into distributed but all daemons run on a single node
         -- a.k.a <emphasis>pseudo-distributed</emphasis>-- and
