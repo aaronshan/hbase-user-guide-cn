@@ -39,51 +39,29 @@ possible configurations would overwhelm and obscure the important.
 -->
 
 <configuration>
+
   <!--Configs you will likely change are listed here at the top of the file.
   -->
   <property >
     <name>hbase.tmp.dir</name>
     <value>${java.io.tmpdir}/hbase-${user.name}</value>
-    <description>Temporary directory on the local filesystem.
-    Change this setting to point to a location more permanent
-    than '/tmp', the usual resolve for java.io.tmpdir, as the
-    '/tmp' directory is cleared on machine restart.</description>
+    <description>本地文件系统上的临时目录。将'/tmp'改为其他可以持久保存文件的位置，通常能够解决java.io.tmpdir。'/tmp'目录在机器重启后将会被清空。</description>
   </property>
   <property >
     <name>hbase.rootdir</name>
     <value>${hbase.tmp.dir}/hbase</value>
-    <description>The directory shared by region servers and into
-    which HBase persists.  The URL should be 'fully-qualified'
-    to include the filesystem scheme.  For example, to specify the
-    HDFS directory '/hbase' where the HDFS instance's namenode is
-    running at namenode.example.org on port 9000, set this value to:
-    hdfs://namenode.example.org:9000/hbase.  By default, we write
-    to whatever ${hbase.tmp.dir} is set too -- usually /tmp --
-    so change this configuration or else all data will be lost on
-    machine restart.</description>
+    <description>该目录被region server共享并且用来保存HBase的持久化数据。这个URL应该完全按照文件系统模式的格式来指定。例如，假定使用HDFS目录'/hbase'，并且HDFS的namenode运行在namenode.example.org的9000端口上，那么，该值应该是：
+    hdfs://namenode.example.org:9000/hbase。默认情况下，我们也应该将${hbase.tmp.dir}以这种格式进行设置，通常${hbase.tmp.dir}目录的值为/tmp。因此需要该变该值以可以防止数据在机器重启后丢失。</description>
   </property>
   <property >
     <name>hbase.cluster.distributed</name>
     <value>false</value>
-    <description>The mode the cluster will be in. Possible values are
-      false for standalone mode and true for distributed mode.  If
-      false, startup will run all HBase and ZooKeeper daemons together
-      in the one JVM.</description>
+    <description>该值指定了集群运行的模式。如果该值为false，表示运行在单机模式，如果该值为true，表示运行在分布式模式。当该值为false时，将会在同一个JVM中启动HBase和Zookeeper的守护进程。</description>
   </property>
   <property>
     <name>hbase.zookeeper.quorum</name>
     <value>localhost</value>
-    <description>Comma separated list of servers in the ZooKeeper ensemble
-    (This config. should have been named hbase.zookeeper.ensemble).
-    For example, "host1.mydomain.com,host2.mydomain.com,host3.mydomain.com".
-    By default this is set to localhost for local and pseudo-distributed modes
-    of operation. For a fully-distributed setup, this should be set to a full
-    list of ZooKeeper ensemble servers. If HBASE_MANAGES_ZK is set in hbase-env.sh
-    this is the list of servers which hbase will start/stop ZooKeeper on as
-    part of cluster start/stop.  Client-side, we will take this list of
-    ensemble members and put it together with the hbase.zookeeper.clientPort
-    config. and pass it into zookeeper constructor as the connectString
-    parameter.</description>
+    <description>Zookeeper服务器使用逗号分隔（这个配置项应该被命名为hbase.zookeeper.ensemble）。例如，"host1.mydomain.com,host2.mydomain.com,host3.mydomain.com"。默认该值被设置为localhost以便单机模式和伪分布式模式进行操作。对于完全分布式模式，它应该被设定为Zookeeper服务器的列表。如果hbase-env.sh中设定了HBASE_MANAGES_ZK，那么当集群启动/关闭的时候，也会按照该值启动/关闭Zookeeper。在客户端，我们将确定这个列表的值并且将该值与hbase.zookeeper.clientPort的值组合到一起，然后作为一个字符串参数传递给zookeeper的构造器。</description>
   </property>
   <!--The above are the important configurations for getting hbase up
     and running -->
@@ -91,38 +69,30 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.local.dir</name>
     <value>${hbase.tmp.dir}/local/</value>
-    <description>Directory on the local filesystem to be used
-    as a local storage.</description>
+    <description>本地文件系统的目录，用作本地存储。</description>
   </property>
 
   <!--Master configurations-->
   <property>
     <name>hbase.master.info.port</name>
     <value>16010</value>
-    <description>The port for the HBase Master web UI.
-    Set to -1 if you do not want a UI instance run.</description>
+    <description>HBase Master的web界面。如果你不想使用web界面，那么将该值设置为-1。</description>
   </property>
   <property>
     <name>hbase.master.info.bindAddress</name>
     <value>0.0.0.0</value>
-    <description>The bind address for the HBase Master web UI
+    <description>HBase Master的web界面的地址。
     </description>
   </property>
   <property>
     <name>hbase.master.logcleaner.plugins</name>
     <value>org.apache.hadoop.hbase.master.cleaner.TimeToLiveLogCleaner</value>
-    <description>A comma-separated list of LogCleanerDelegate invoked by
-    the LogsCleaner service. These WAL/HLog cleaners are called in order,
-    so put the HLog cleaner that prunes the most HLog files in front. To
-    implement your own LogCleanerDelegate, just put it in HBase's classpath
-    and add the fully qualified class name here. Always add the above
-    default log cleaners in the list.</description>
+    <description>WAL/HLog清理程序。类名之间以逗号分割，类会被LogsCleaner服务顺序调用，这样就可以删除最早的HLog文件。用户可以实现自己的日志清理程序，只需要在HBase的classpath中加入完整的类名。</description>
   </property>
   <property>
     <name>hbase.master.logcleaner.ttl</name>
     <value>600000</value>
-    <description>Maximum time a HLog can stay in the .oldlogdir directory,
-    after which it will be cleaned by a Master thread.</description>
+    <description>HLog文件在.oldlogdir目录中最长的生命周期，一旦超过这个值，HLog就会被Master的县城清理掉。</description>
   </property>
   <property>
     <name>hbase.master.hfilecleaner.plugins</name>
@@ -557,8 +527,8 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.balancer.period
     </name>
-    <value>300000</value>
-    <description>Period at which the region balancer runs in the Master.</description>
+    <value>300000(5分钟)</value>
+    <description>在Master节点中运行region负载均衡器的周期。</description>
   </property>
   <property>
     <name>hbase.balancer.backupMasterWeight</name>
@@ -590,64 +560,39 @@ possible configurations would overwhelm and obscure the important.
   </property>
   <property>
     <name>hbase.hregion.memstore.flush.size</name>
-    <value>134217728</value>
+    <value>134217728(128*1024*1024字节)</value>
     <description>
-    Memstore will be flushed to disk if size of the memstore
-    exceeds this number of bytes.  Value is checked by a thread that runs
-    every hbase.server.thread.wakefrequency.</description>
+    如果Memstore的大小超过这个值，Memstore的数据就会刷写到磁盘中。这个值由一个线程每隔hbase.server.thread.wakefrequency检查一次。</description>
   </property>
   <property>
     <name>hbase.hregion.preclose.flush.size</name>
     <value>5242880</value>
     <description>
-      If the memstores in a region are this size or larger when we go
-      to close, run a "pre-flush" to clear out memstores before we put up
-      the region closed flag and take the region offline.  On close,
-      a flush is run under the close flag to empty memory.  During
-      this time the region is offline and we are not taking on any writes.
-      If the memstore content is large, this flush could take a long time to
-      complete.  The preflush is meant to clean out the bulk of the memstore
-      before putting up the close flag and taking the region offline so the
-      flush that runs under the close flag has little to do.</description>
+      当我们要关闭一个region，而该region的memstore的大小大于这个值，那么就会先运行“预刷写”操作，清理这个需要关闭的memstore，然后再将这个region下线。在关闭region时，关闭标签会触发一次清空内存的刷写。在region处于下线过程中时，我们就无法再对其进行任何写操作了。如果一个memstore的内容很大，刷写磁盘的操作就会消耗很多时间。预刷写操作意味着在region被打上关闭标签之前，会先把memstore清空。这样在最终执行关闭操作的时候，带关闭操作的刷写速度会很快。</description>
   </property>
   <property>
     <name>hbase.hregion.memstore.block.multiplier</name>
     <value>4</value>
     <description>
-    Block updates if memstore has hbase.hregion.memstore.block.multiplier
-    times hbase.hregion.memstore.flush.size bytes.  Useful preventing
-    runaway memstore during spikes in update traffic.  Without an
-    upper-bound, memstore fills such that when it flushes the
-    resultant flush files take a long time to compact or split, or
-    worse, we OOME.</description>
+    如果memstore达到了hbase.hregion.memstore.block.multiplier
+    乘以hbase.hregion.memstore.flush.size的大小，就会阻塞更新操作。这是为了预防在更新高峰期或导致的失控。如果不设上界，刷写的时候会花费很长的时间来合并或者拆分，最坏的情况会引发OOME异常。</description>
   </property>
   <property>
     <name>hbase.hregion.memstore.mslab.enabled</name>
     <value>true</value>
     <description>
-      Enables the MemStore-Local Allocation Buffer,
-      a feature which works to prevent heap fragmentation under
-      heavy write loads. This can reduce the frequency of stop-the-world
-      GC pauses on large heaps.</description>
+      启动本地MemStore分配缓冲区(MemStore-Local Allocation Buffer)，这个特性是为了防止在大量写负载的时候堆的碎片太多。这将降低大堆中垃圾回收的频率。</description>
   </property>
   <property>
     <name>hbase.hregion.max.filesize</name>
-    <value>10737418240</value>
+    <value>10737418240 (10*1024*1024*1024字节)</value>
     <description>
-    Maximum HFile size. If the sum of the sizes of a region's HFiles has grown to exceed this 
-    value, the region is split in two.</description>
+    HFile的最大大小。如果一个region的HFile总的大小超过了这个上线，那么它会被拆分为两个region。</description>
   </property>
   <property>
     <name>hbase.hregion.majorcompaction</name>
-    <value>604800000</value>
-    <description>Time between major compactions, expressed in milliseconds. Set to 0 to disable
-      time-based automatic major compactions. User-requested and size-based major compactions will
-      still run. This value is multiplied by hbase.hregion.majorcompaction.jitter to cause
-      compaction to start at a somewhat-random time during a given window of time. The default value
-      is 7 days, expressed in milliseconds. If major compactions are causing disruption in your
-      environment, you can configure them to run at off-peak times for your deployment, or disable
-      time-based major compactions by setting this parameter to 0, and run major compactions in a
-      cron job or by another external mechanism.</description>
+    <value>604800000(7天)</value>
+    <description>两次major合并的间隔时间，单位是毫秒。默认值是7天。将其设置为0可以禁用major合并。当用户请求major合并或者满足major合并要求时将会进行。该值乘以hbase.hregion.majorcompaction.jitter的值以便在一个给定的时间窗口期间的一个随机时间来开启major合并操作。major合并可能会导致集群无法访问，你可以在你的配置中将它设置为在低峰时段运行，或者通过将它设置为0而禁用它，或者通过另外一种额外的机制来定时运行major合并操作。</description>
   </property>
   <property>
     <name>hbase.hregion.majorcompaction.jitter</name>
@@ -675,36 +620,22 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.hstore.blockingStoreFiles</name>
     <value>10</value>
-    <description> If more than this number of StoreFiles exist in any one Store (one StoreFile
-     is written per flush of MemStore), updates are blocked for this region until a compaction is
-      completed, or until hbase.hstore.blockingWaitTime has been exceeded.</description>
+    <description> 如果一个Store中StoreFile文件的数目（每次MemStore刷写到磁盘都会产生一个StoreFile文件）大于这个阈值，那么对这个region的更新操作就会被阻塞，直到合并操作完成或者一直阻塞到超过hbase.hstore.blockingWaitTime。</description>
   </property>
   <property>
     <name>hbase.hstore.blockingWaitTime</name>
     <value>90000</value>
-    <description> The time for which a region will block updates after reaching the StoreFile limit
-    defined by hbase.hstore.blockingStoreFiles. After this time has elapsed, the region will stop 
-    blocking updates even if a compaction has not been completed.</description>
+    <description> 一个region的StoreFile数目达到了hbase.hstore.blockingStoreFiles设置的值后，它会阻塞对其他客户端的更新请求。超过当前设定的时间之后，即使合并没有完成，也会停止对更新操作的阻塞。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.min</name>
     <value>3</value>
-    <description>The minimum number of StoreFiles which must be eligible for compaction before 
-      compaction can run. The goal of tuning hbase.hstore.compaction.min is to avoid ending up with 
-      too many tiny StoreFiles to compact. Setting this value to 2 would cause a minor compaction 
-      each time you have two StoreFiles in a Store, and this is probably not appropriate. If you
-      set this value too high, all the other values will need to be adjusted accordingly. For most 
-      cases, the default value is appropriate. In previous versions of HBase, the parameter
-      hbase.hstore.compaction.min was named hbase.hstore.compactionThreshold.</description>
+    <description>可以进行合并的StoreFile在一次合时并必须满足的最小的StoreFile数目。设置hbase.hstore.compaction.min的值是为了防止太多的小的StoreFile被合并。将该值设置为2将会导致一次minor合并每次只能合并2个StoreFile，并且这样可能不太恰当。如果你将该值设定的过大，其他的值也需要被适当的调整。大多数情况下，默认值是适当的。在之前的HBase版本中，hbase.hstore.compaction.min被称为hbase.hstore.compactionThreshold。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.max</name>
     <value>10</value>
-    <description>The maximum number of StoreFiles which will be selected for a single minor 
-      compaction, regardless of the number of eligible StoreFiles. Effectively, the value of
-      hbase.hstore.compaction.max controls the length of time it takes a single compaction to
-      complete. Setting it larger means that more StoreFiles are included in a compaction. For most
-      cases, the default value is appropriate.</description>
+    <description>每次minor合并所要处理的最大的StoreFile数目，无论需要合并的数目是多少。hbase.hstore.compaction.max的值控制着单次合并完成所要花费的时间。将这个值设定的更大意味着一次合并将包括更多的StoreFile文件。大多数情况下，默认值是适当的。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.min.size</name>
@@ -886,33 +817,24 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.master.keytab.file</name>
     <value></value>
-    <description>Full path to the kerberos keytab file to use for logging in
-    the configured HMaster server principal.</description>
+    <description>用于登录配置的HMaster服务器实体(HMaster server principal)的kerberos keytab文件的完整路径。</description>
   </property>
   <property>
     <name>hbase.master.kerberos.principal</name>
     <value></value>
-    <description>Ex. "hbase/_HOST@EXAMPLE.COM".  The kerberos principal name
-    that should be used to run the HMaster process.  The principal name should
-    be in the form: user/hostname@DOMAIN.  If "_HOST" is used as the hostname
-    portion, it will be replaced with the actual hostname of the running
-    instance.</description>
+    <description>例如， "hbase/_HOST@EXAMPLE.COM"。HMaster进程运行时需要使用kerberos实体(kerberos principal)，实体可以使用这种格式：user/hostname@DOMAIN。
+        如果"_HOST"部分使用主机名，它在实际运行的时候将使用主机名来替代。</description>
   </property>
   <property>
     <name>hbase.regionserver.keytab.file</name>
     <value></value>
-    <description>Full path to the kerberos keytab file to use for logging in
-    the configured HRegionServer server principal.</description>
+    <description>用于登录配置的HRegionServer服务器实体(HRegionServer server principal)的kerberos keytab文件的完整路径。</description>
   </property>
   <property>
     <name>hbase.regionserver.kerberos.principal</name>
     <value></value>
-    <description>Ex. "hbase/_HOST@EXAMPLE.COM".  The kerberos principal name
-    that should be used to run the HRegionServer process.  The principal name
-    should be in the form: user/hostname@DOMAIN.  If "_HOST" is used as the
-    hostname portion, it will be replaced with the actual hostname of the
-    running instance.  An entry for this principal must exist in the file
-    specified in hbase.regionserver.keytab.file</description>
+    <description>例如， "hbase/_HOST@EXAMPLE.COM"。HRegionServer进程运行时需要使用kerberos实体(kerberos principal)，实体可以使用这种格式：user/hostname@DOMAIN。
+        如果"_HOST"部分使用主机名，它在实际运行的时候将使用主机名来替代。这个实体的入口必须在hbase.regionserver.keytab.file文件中指定。</description>
   </property>
   <!-- Additional configuration specific to HBase security -->
   <property>
@@ -961,11 +883,7 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.coprocessor.region.classes</name>
     <value></value>
-    <description>A comma-separated list of Coprocessors that are loaded by
-    default on all tables. For any override coprocessor method, these classes
-    will be called in order. After implementing your own Coprocessor, just put
-    it in HBase's classpath and add the fully qualified class name here.
-    A coprocessor can also be loaded on demand by setting HTableDescriptor.</description>
+    <description>协处理器之间使用逗号分隔，这些协处理器默认会被所有的表加载。用户可以实现自己的协处理器，只需将其添加到HBase的classpath中，并在此配置完整类名。用户也可以根据需求设置HTableDescriptor来选择性的加载协处理器。</description>
   </property>
   <property>
     <name>hbase.rest.port</name>
@@ -1004,30 +922,19 @@ possible configurations would overwhelm and obscure the important.
   <property skipInDoc="true">
     <name>hbase.defaults.for.version</name>
     <value>@@@VERSION@@@</value>
-    <description>This defaults file was compiled for version ${project.version}. This variable is used
-    to make sure that a user doesn't have an old version of hbase-default.xml on the
-    classpath.</description>
+    <description>默认值是是被编译的${project.version}的版本号。这个值用来确定用户在classpath中没有一个旧版本的hbase-default.xml。</description>
   </property>
   <property>
     <name>hbase.defaults.for.version.skip</name>
     <value>false</value>
-    <description>Set to true to skip the 'hbase.defaults.for.version' check.
-    Setting this to true can be useful in contexts other than
-    the other side of a maven generation; i.e. running in an
-    ide.  You'll want to set this boolean to true to avoid
-    seeing the RuntimException complaint: "hbase-default.xml file
+    <description>将当前参数设置为true可以跳过'hbase.defaults.for.version'检查。将该参数设置为true，它会在上下文中发挥作用。这一点不同于它在maven下的使用方法，即在IDE中通过maven使用HBase。用户也可以将该参数设置为true，以避免因为hbase-default.xml中的版本检查通不过而产生的运行时异常："hbase-default.xml file
     seems to be for and old version of HBase (\${hbase.version}), this
-    version is X.X.X-SNAPSHOT"</description>
+    version is X.X.X-SNAPSHOT"。</description>
   </property>
   <property>
     <name>hbase.coprocessor.master.classes</name>
     <value></value>
-    <description>A comma-separated list of
-    org.apache.hadoop.hbase.coprocessor.MasterObserver coprocessors that are
-    loaded by default on the active HMaster process. For any implemented
-    coprocessor methods, the listed classes will be called in order. After
-    implementing your own MasterObserver, just put it in HBase's classpath
-    and add the fully qualified class name here.</description>
+    <description>HMaster进程默认使用的协处理器是org.apache.hadoop.hbase.coprocessor.MasterObserver，在该配置中，协处理器之间使用逗号分隔，协处理器中实现的方法将按照配置顺序执行。用户可以通过继承MasterObserver来实现自己的协处理器，只需要将其添加到classpath，并添加可用的类名。</description>
   </property>
   <property>
       <name>hbase.coprocessor.abortonerror</name>
