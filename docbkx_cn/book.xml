@@ -45,10 +45,11 @@
             xlink:href="http://www.hbase.org">HBase</link>
         官方文档中文版
     </subtitle>
-
-    <author>
-        <contrib>中文译者：山瑞峰，邮箱：shanruifeng@gmail.com，QQ:839894344</contrib>
-    </author>
+    <authorgroup>
+        <author>
+            <contrib>中文译者：山瑞峰，邮箱：shanruifeng@gmail.com，QQ:839894344; 李展，邮箱：lizhanwhu@gmail.com，QQ:609377620</contrib>
+        </author>
+    </authorgroup>
 
     <releaseinfo>译者注：当前HBase英文版的用户指南相比较之前的版本更新了很多内容。而之前其他人翻译的版本因为某些原因已经中断，所以，重新翻译了最新版的HBase英文版参考指南。由于涉及的概念和术语较多，许多概念和术语尚没有公认的中文译法，加上译者水平有限，若译文中有不妥之处，还请批评指正。</releaseinfo>
     <copyright>
