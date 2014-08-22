@@ -87,68 +87,56 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.master.logcleaner.plugins</name>
     <value>org.apache.hadoop.hbase.master.cleaner.TimeToLiveLogCleaner</value>
-    <description>WAL/HLog清理程序。类名之间以逗号分割，类会被LogsCleaner服务顺序调用，这样就可以删除最早的HLog文件。用户可以实现自己的日志清理程序，只需要在HBase的classpath中加入完整的类名。</description>
+    <description>WAL/HLog清理程序。类名之间以逗号分割，类会被LogsCleaner服务顺序调用，这样就可以删除最早的HLog文件。用户可以实现自己的日志清理程序，只需要在HBase的classpath中加入完整的类名，将上述的日志清理类将hbase-site.xml文件中的默认设置覆盖即可。</description>
   </property>
   <property>
     <name>hbase.master.logcleaner.ttl</name>
     <value>600000</value>
-    <description>HLog文件在.oldlogdir目录中最长的生命周期，一旦超过这个值，HLog就会被Master的县城清理掉。</description>
+    <description>HLog文件在.oldlogdir目录中最长的生命周期，一旦超过这个值，HLog就会被Master的线程清理掉。</description>
   </property>
   <property>
     <name>hbase.master.hfilecleaner.plugins</name>
     <value>org.apache.hadoop.hbase.master.cleaner.TimeToLiveHFileCleaner</value>
-    <description>A comma-separated list of HFileCleanerDelegate invoked by
-    the HFileCleaner service. These HFiles cleaners are called in order,
-    so put the cleaner that prunes the most files in front. To
-    implement your own HFileCleanerDelegate, just put it in HBase's classpath
-    and add the fully qualified class name here. Always add the above
-    default log cleaners in the list as they will be overwritten in
-    hbase-site.xml.</description>
+    <description>HFile清理程序。类名之间以逗号分割，类会被HFileCleaner服务顺序调用，这样可以删除最早的HFile文件。用户可以实现自己的HFile清理程序，只需要在HBase的classpath中加入完整的类名，将上述的HFile清理类将hbase-site.xml文件中的默认设置覆盖即可。</description>
   </property>
   <property>
     <name>hbase.master.catalog.timeout</name>
-    <value>600000</value>
-    <description>Timeout value for the Catalog Janitor from the master to
-    META.</description>
+    <value>600000(1分钟)</value>
+    <description>master监控.META目录的超时时间。</description>
   </property>
   <property>
     <name>hbase.master.infoserver.redirect</name>
     <value>true</value>
-    <description>Whether or not the Master listens to the Master web
-      UI port (hbase.master.info.port) and redirects requests to the web
-      UI server shared by the Master and RegionServer.</description>
+    <description>无论Master是否监听了Master的网页UI端口(hbase.master.info.port)，都将请求重定向到Master和RegionServer共享的网页UI服务器。</description>
   </property>
 
   <!--RegionServer configurations-->
   <property>
     <name>hbase.regionserver.port</name>
     <value>16020</value>
-    <description>The port the HBase RegionServer binds to.</description>
+    <description>HBase RegionServer绑定的端口。</description>
   </property>
   <property>
     <name>hbase.regionserver.info.port</name>
     <value>16030</value>
-    <description>The port for the HBase RegionServer web UI
-    Set to -1 if you do not want the RegionServer UI to run.</description>
+    <description>这是HBase RegionServer的网页UI端口。如果你不想运行RegionServer的网页UI，就将该值设置为-1。
+    </description>
   </property>
   <property>
     <name>hbase.regionserver.info.bindAddress</name>
     <value>0.0.0.0</value>
-    <description>The address for the HBase RegionServer web UI</description>
+    <description>HBase RegionServer网页UI的绑定地址</description>
   </property>
   <property>
     <name>hbase.regionserver.info.port.auto</name>
     <value>false</value>
-    <description>Whether or not the Master or RegionServer
-    UI should search for a port to bind to. Enables automatic port
-    search if hbase.regionserver.info.port is already in use.
-    Useful for testing, turned off by default.</description>
+    <description>Master或RegionServer是否应该寻找绑定的UI端口。如果hbase.regionserver.info.port已经在使用，就启用自动端口寻找功能。该值在测试时很有用，默认被关闭。</description>
   </property>
   <property>
     <name>hbase.regionserver.handler.count</name>
     <value>30</value>
-    <description>Count of RPC Listener instances spun up on RegionServers.
-    Same property is used by the Master for count of master handlers.</description>
+    <description>在RegionServer上统计RPC监听器实例的数量。同样的属性被master用来统计master处理器的数量。
+    </description>
   </property>
   <property>
     <name>hbase.ipc.server.callqueue.handler.factor</name>
@@ -307,51 +295,38 @@ possible configurations would overwhelm and obscure the important.
   <!--ZooKeeper configuration-->
   <property>
     <name>zookeeper.session.timeout</name>
-    <value>90000</value>
-    <description>ZooKeeper session timeout in milliseconds. It is used in two different ways.
-      First, this value is used in the ZK client that HBase uses to connect to the ensemble.
-      It is also used by HBase when it starts a ZK server and it is passed as the 'maxSessionTimeout'. See
-      http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions.
-      For example, if a HBase region server connects to a ZK ensemble that's also managed by HBase, then the
-      session timeout will be the one specified by this configuration. But, a region server that connects
-      to an ensemble managed with a different configuration will be subjected that ensemble's maxSessionTimeout. So,
-      even though HBase might propose using 90 seconds, the ensemble can have a max timeout lower than this and
-      it will take precedence. The current default that ZK ships with is 40 seconds, which is lower than HBase's.
+    <value>90000(90秒)</value>
+    <description>ZooKeeper会话超时时间。单位是毫秒。它被用于两种不同的情况。其一，这个值被ZooKeeper客户端在和HBase建立链接时使用。它也被HBase用来启动Zookeeper服务器作为建立绘画的最大超时时间-'maxSessionTimeout'。查看
+      http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions。
+      例如，如果HBase region server连接被HBase管理的Zookeeper，会话超时时间将会由这个配置项指定。但是连接Zookeeper的region服务器使用和Zookeeper的该配置不同的值来进行链接时，将会使用Zookeeper的该配置的值。因此，尽管可能HBase指定的超时时间是90秒，但是如果Zookeeper指定的时间比90秒更少，那么Zookeeper的配置将会被优先使用。当前Zookeeper的默认值是40秒，比HBase默认的该值要低。
     </description>
   </property>
   <property>
     <name>zookeeper.znode.parent</name>
     <value>/hbase</value>
-    <description>Root ZNode for HBase in ZooKeeper. All of HBase's ZooKeeper
-      files that are configured with a relative path will go under this node.
-      By default, all of HBase's ZooKeeper file path are configured with a
-      relative path, so they will all go under this directory unless changed.</description>
+    <description>HBase在ZooKeeper中的根ZNode。 所有HBase的ZooKeeper文件的路径都使用了在这个node下的相对路径。
+      默认情况下，所有HBase的ZooKeeper文件路径都配置成了相对路径。因此，除非被改变，否则它们都会到这个目录下进行操作。
+      </description>
   </property>
   <property>
     <name>zookeeper.znode.rootserver</name>
     <value>root-region-server</value>
-    <description>Path to ZNode holding root region location. This is written by
-      the master and read by clients and region servers. If a relative path is
-      given, the parent folder will be ${zookeeper.znode.parent}. By default,
-      this means the root location is stored at /hbase/root-region-server.</description>
+    <description>保存根region位置的ZNode路径，这个值由master来更新，由客户端和region服务器来读取。如果将其设置为一个相对地址，父目录就是 ${zookeeper.znode.parent}。默认情况下，根region位置的存储路径是/hbase/root-region-server。</description>
   </property>
   <property>
     <name>zookeeper.znode.acl.parent</name>
     <value>acl</value>
-    <description>Root ZNode for access control lists.</description>
+    <description>根ZNode的访问控制列表。</description>
   </property>
   <property>
     <name>hbase.zookeeper.dns.interface</name>
     <value>default</value>
-    <description>The name of the Network Interface from which a ZooKeeper server
-      should report its IP address.</description>
+    <description>汇报自己IP地址的Zookeeper服务器的网络接口名。</description>
   </property>
   <property>
     <name>hbase.zookeeper.dns.nameserver</name>
     <value>default</value>
-    <description>The host name or IP address of the name server (DNS)
-      which a ZooKeeper server should use to determine the host name used by the
-      master for communication and display purposes.</description>
+    <description>ZooKeeper服务器用来确定正在通信的master的主机名的域名服务器(DNS)的主机名或IP地址。</description>
   </property>
   <!--
   The following three properties are used together to create the list of
@@ -360,16 +335,15 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.zookeeper.peerport</name>
     <value>2888</value>
-    <description>Port used by ZooKeeper peers to talk to each other.
-    See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
-    for more information.</description>
+    <description>ZooKeeper服务器之间彼此通信使用的接口。查看http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+    可以找到更多信息。</description>
   </property>
   <property>
     <name>hbase.zookeeper.leaderport</name>
     <value>3888</value>
-    <description>Port used by ZooKeeper for leader election.
-    See http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
-    for more information.</description>
+    <description>在ZooKeeper领导选举中使用的端口地址。
+    查看http://hadoop.apache.org/zookeeper/docs/r3.1.1/zookeeperStarted.html#sc_RunningReplicatedZooKeeper
+    可以找到更多信息。</description>
   </property>
   <!-- End of properties used to generate ZooKeeper host:port quorum list. -->
   <property>
@@ -1273,37 +1247,27 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.http.filter.initializers</name>
     <value>org.apache.hadoop.hbase.http.lib.StaticUserWebFilter</value>
     <description>
-      A comma separated list of class names. Each class in the list must extend 
-      org.apache.hadoop.hbase.http.FilterInitializer. The corresponding Filter will 
-      be initialized. Then, the Filter will be applied to all user facing jsp 
-      and servlet web pages. 
-      The ordering of the list defines the ordering of the filters.
-      The default StaticUserWebFilter add a user principal as defined by the 
-      hbase.http.staticuser.user property.
+      类名使用逗号分割。其中的每一个类都继承自org.apache.hadoop.hbase.http.FilterInitializer。相应的过滤器将会被初始化。紧接着，过滤器在所有用户访问jsp和servlet网页的时候使用。过滤器按照定义的顺序依次使用。默认的StaticUserWebFilter过滤器会增加一个在hbase.http.staticuser.user中定义的用户。
     </description>
   </property>
     <property>
     <name>hbase.security.visibility.mutations.checkauths</name>
     <value>false</value>
     <description>
-      This property if enabled, will check whether the labels in the visibility expression are associated
-      with the user issuing the mutation
+      该属性如果启用，将会检查可见表达式中的标签是否与用户发出的行为相关联。
     </description>
   </property>
   <property>
     <name>hbase.http.max.threads</name>
     <value>10</value>
     <description>
-      The maximum number of threads that the HTTP Server will create in its 
-      ThreadPool.
+      HTTP服务器创建的线程池中线程的最大数目。
     </description>
   </property>
   <!-- Static Web User Filter properties. -->
   <property>
     <description>
-      The user name to filter as, on static web filters
-      while rendering content. An example use is the HDFS
-      web UI (user to be used for browsing files).
+      n用户名过滤器。当在静态网页上呈现内容时的过滤器。一个使用的例子是HDFS的网页UI（用于浏览文件的用户）。
     </description>
     <name>hbase.http.staticuser.user</name>
     <value>dr.stack</value>
