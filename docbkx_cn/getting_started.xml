@@ -201,7 +201,7 @@ COLUMN                CELL
           </screen>
         </step>
         <step>
-          <title>使表不可用</title>
+          <title>禁用表</title>
           <para>如果你想要删除一个表或者更改该表的一些配置，那么你需要先将表设置为不可用，使用 <code>disable</code>
             命令可以将表设置为不可用。你可以使用 <code>enable</code> 命令使表重新变为可用。</para>
           <screen>
