@@ -442,10 +442,7 @@
                     <code>kerberos.removeRealmFromPrincipal</code></title>
                 <para />
             </section>
-
         </section>
-
-
     </section>
     <!-- SASL Authentication with ZooKeeper -->
 
