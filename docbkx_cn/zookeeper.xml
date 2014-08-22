@@ -1,98 +1,74 @@
 <?xml version="1.0"?>
 <chapter
-  xml:id="zookeeper"
-  version="5.0"
-  xmlns="http://docbook.org/ns/docbook"
-  xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  xmlns:svg="http://www.w3.org/2000/svg"
-  xmlns:m="http://www.w3.org/1998/Math/MathML"
-  xmlns:html="http://www.w3.org/1999/xhtml"
-  xmlns:db="http://docbook.org/ns/docbook">
-  <!--
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
--->
+        xml:id="zookeeper"
+        version="5.0"
+        xmlns="http://docbook.org/ns/docbook"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns:m="http://www.w3.org/1998/Math/MathML"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns:db="http://docbook.org/ns/docbook">
+    <!--
+  /**
+   * Licensed to the Apache Software Foundation (ASF) under one
+   * or more contributor license agreements.  See the NOTICE file
+   * distributed with this work for additional information
+   * regarding copyright ownership.  The ASF licenses this file
+   * to you under the Apache License, Version 2.0 (the
+   * "License"); you may not use this file except in compliance
+   * with the License.  You may obtain a copy of the License at
+   *
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+  -->
 
-  <title>ZooKeeper<indexterm>
-      <primary>ZooKeeper</primary>
+    <title>ZooKeeper<indexterm>
+        <primary>ZooKeeper</primary>
     </indexterm></title>
 
-  <para>A distributed Apache HBase installation depends on a running ZooKeeper cluster. All
-    participating nodes and clients need to be able to access the running ZooKeeper ensemble. Apache
-    HBase by default manages a ZooKeeper "cluster" for you. It will start and stop the ZooKeeper
-    ensemble as part of the HBase start/stop process. You can also manage the ZooKeeper ensemble
-    independent of HBase and just point HBase at the cluster it should use. To toggle HBase
-    management of ZooKeeper, use the <varname>HBASE_MANAGES_ZK</varname> variable in
-      <filename>conf/hbase-env.sh</filename>. This variable, which defaults to
-      <varname>true</varname>, tells HBase whether to start/stop the ZooKeeper ensemble servers as
-    part of HBase start/stop.</para>
+    <para>分布式安装的HBase依赖于一个运行的ZooKeeper集群，其中所有的节点及客户端都需要能访问Zookeeper集群。
+        HBase默认管理一个ZooKeeper“集群”，HBase在启动/结束进程中会同时启动/结束这个ZooKeeper集群。但你也可以独立管理一个ZooKeeper集群，
+        并将HBase指向它。HBase通过<filename>conf/hbase-env.sh</filename>文件中的 <varname>HBASE_MANAGES_ZK</varname>来
+        切换对ZooKeeper集群的管理。该属性默认为<varname>true</varname>，表示HBase是否在启动/结束进程中来启动/结束这个ZooKeeper集群。
+    </para>
 
-  <para>When HBase manages the ZooKeeper ensemble, you can specify ZooKeeper configuration using its
-    native <filename>zoo.cfg</filename> file, or, the easier option is to just specify ZooKeeper
-    options directly in <filename>conf/hbase-site.xml</filename>. A ZooKeeper configuration option
-    can be set as a property in the HBase <filename>hbase-site.xml</filename> XML configuration file
-    by prefacing the ZooKeeper option name with <varname>hbase.zookeeper.property</varname>. For
-    example, the <varname>clientPort</varname> setting in ZooKeeper can be changed by setting the
-      <varname>hbase.zookeeper.property.clientPort</varname> property. For all default values used
-    by HBase, including ZooKeeper configuration, see <xref
-      linkend="hbase_default_configurations" />. Look for the
-      <varname>hbase.zookeeper.property</varname> prefix <footnote>
-      <para>For the full list of ZooKeeper configurations, see ZooKeeper's
-          <filename>zoo.cfg</filename>. HBase does not ship with a <filename>zoo.cfg</filename> so
-        you will need to browse the <filename>conf</filename> directory in an appropriate ZooKeeper
-        download.</para>
-    </footnote></para>
+    <para>在HBase管理ZooKeeper时，你可以通过原生的 <filename>zoo.cfg</filename>文件来配置ZooKeeper，
+        或者，一个更简单的办法是直接在 <filename>conf/hbase-site.xml</filename>文件中配置。 ZooKeeper配置项可以在
+        HBase的<filename>hbase-site.xml</filename>文件中设置，配置项名以<varname>hbase.zookeeper.property</varname>开头。
+        例如，ZooKeeper的<varname>clientPort</varname>配置，即可通过 <varname>hbase.zookeeper.property.clientPort</varname>来修改。
+        HBase使用的所有默认值，包括ZooKeeper配置项，见<xref linkend="hbase_default_configurations" />.
+        可以查找<varname>hbase.zookeeper.property</varname>前缀，找到ZooKeeper相关的配置<footnote>
+            <para>ZooKeeper全部的配置项列表，见ZooKeeper的<filename>zoo.cfg</filename>文件。 HBase没有附带该文件，
+                但你可以下载适用的ZooKeeper，到 <filename>conf</filename>目录中浏览。</para>
+        </footnote></para>
 
-  <para>You must at least list the ensemble servers in <filename>hbase-site.xml</filename> using the
-      <varname>hbase.zookeeper.quorum</varname> property. This property defaults to a single
-    ensemble member at <varname>localhost</varname> which is not suitable for a fully distributed
-    HBase. (It binds to the local machine only and remote clients will not be able to connect). </para>
-  <note
-    xml:id="how_many_zks">
-    <title>How many ZooKeepers should I run?</title>
+    <para>在 <filename>hbase-site.xml</filename>中，你至少要列出Zookeeper的ensemble服务器，通过<varname>hbase.zookeeper.quorum</varname>属性。
+        该字段默认值为 <varname>localhost</varname>，但这对于完全分布式的Hbase显然是不合适的(无法远程连接)。 </para>
+    <note
+            xml:id="how_many_zks">
+        <title>我要运行几个ZooKeeper?</title>
 
-    <para>You can run a ZooKeeper ensemble that comprises 1 node only but in production it is
-      recommended that you run a ZooKeeper ensemble of 3, 5 or 7 machines; the more members an
-      ensemble has, the more tolerant the ensemble is of host failures. Also, run an odd number of
-      machines. In ZooKeeper, an even number of peers is supported, but it is normally not used
-      because an even sized ensemble requires, proportionally, more peers to form a quorum than an
-      odd sized ensemble requires. For example, an ensemble with 4 peers requires 3 to form a
-      quorum, while an ensemble with 5 also requires 3 to form a quorum. Thus, an ensemble of 5
-      allows 2 peers to fail, and thus is more fault tolerant than the ensemble of 4, which allows
-      only 1 down peer. </para>
-    <para>Give each ZooKeeper server around 1GB of RAM, and if possible, its own dedicated disk (A
-      dedicated disk is the best thing you can do to ensure a performant ZooKeeper ensemble). For
-      very heavily loaded clusters, run ZooKeeper servers on separate machines from RegionServers
-      (DataNodes and TaskTrackers).</para>
-  </note>
+        <para>你可以运行只有一个节点的ZooKeeper组，但在生产环境中，建议你部署3、5或7个节点。ZooKeeper组包含的节点越多，容错性越高。
+            ZooKeeper支持偶数个节点的配置，但很少被使用。因为同比例下，偶数级的ZooKeeper组需要更多的节点来选出仲裁者。例如，4个节点的Zookeeper组
+            需要3个节点来选出一个仲裁者，而5个节点的Zookeeper组也只需要3个节点来选出一个仲裁者。这样的话，5节点的Zookeeper组能允许2个节点失败，
+            比4节点的多一个，可靠性更高。</para>
+        <para>你需要给每个ZooKeeper 1GB左右的内存，若有可能，最好有独立的磁盘(独立磁盘是确保ZooKeeper高性能的最好方式)。对于高负载集群，
+            请让Zookeeper和RegionServer分别运行于不同机器上（类似DataNodes和TaskTrackers).</para>
+    </note>
 
-  <para>For example, to have HBase manage a ZooKeeper quorum on nodes
-      <emphasis>rs{1,2,3,4,5}.example.com</emphasis>, bound to port 2222 (the default is 2181)
-    ensure <varname>HBASE_MANAGE_ZK</varname> is commented out or set to <varname>true</varname> in
-      <filename>conf/hbase-env.sh</filename> and then edit <filename>conf/hbase-site.xml</filename>
-    and set <varname>hbase.zookeeper.property.clientPort</varname> and
-      <varname>hbase.zookeeper.quorum</varname>. You should also set
-      <varname>hbase.zookeeper.property.dataDir</varname> to other than the default as the default
-    has ZooKeeper persist data under <filename>/tmp</filename> which is often cleared on system
-    restart. In the example below we have ZooKeeper persist to
-      <filename>/user/local/zookeeper</filename>.</para>
-  <programlisting language="java"><![CDATA[
+    <para>下面举个例子, HBase管理一个ZooKeeper组，节点为<emphasis>rs{1,2,3,4,5}.example.com</emphasis>, 绑定2222端口(默认是2181)，
+        并确保<filename>conf/hbase-env.sh</filename>文件中的<varname>HBASE_MANAGE_ZK</varname>已被注释或设置为<varname>true</varname>，
+        接着再配置<filename>conf/hbase-site.xml</filename>中的<varname>hbase.zookeeper.property.clientPort</varname>和<varname>hbase.zookeeper.quorum</varname>。
+        你还应该用<varname>hbase.zookeeper.property.dataDir</varname>来设置Zookeeper保存数据的目录，默认值为<filename>/tmp</filename>，
+        temp目录会在操作系统重启时被清空。 例子中设为<filename>/user/local/zookeeper</filename>.</para>
+    <programlisting language="java"><![CDATA[
   <configuration>
     ...
     <property>
@@ -122,175 +98,150 @@
     </property>
     ...
   </configuration>]]></programlisting>
-  <caution
-    xml:id="zk.version">
-    <title>What verion of ZooKeeper should I use?</title>
-    <para>The newer version, the better. For example, some folks have been bitten by <link
-        xlink:href="https://issues.apache.org/jira/browse/ZOOKEEPER-1277">ZOOKEEPER-1277</link>. If
-      running zookeeper 3.5+, you can ask hbase to make use of the new multi operation by enabling <xref
-        linkend="hbase.zookeeper.useMulti" />" in your <filename>hbase-site.xml</filename>. </para>
-  </caution>
-  <caution>
-    <title>ZooKeeper Maintenance</title>
-    <para>Be sure to set up the data dir cleaner described under <link
-        xlink:href="http://zookeeper.apache.org/doc/r3.1.2/zookeeperAdmin.html#sc_maintenance">Zookeeper
-        Maintenance</link> else you could have 'interesting' problems a couple of months in; i.e.
-      zookeeper could start dropping sessions if it has to run through a directory of hundreds of
-      thousands of logs which is wont to do around leader reelection time -- a process rare but run
-      on occasion whether because a machine is dropped or happens to hiccup.</para>
-  </caution>
-
-  <section>
-    <title>Using existing ZooKeeper ensemble</title>
-
-    <para>To point HBase at an existing ZooKeeper cluster, one that is not managed by HBase, set
-        <varname>HBASE_MANAGES_ZK</varname> in <filename>conf/hbase-env.sh</filename> to
-      false</para>
-    <screen language="bourne">
-  ...
-  # Tell HBase whether it should manage its own instance of Zookeeper or not.
-  export HBASE_MANAGES_ZK=false</screen>
-    <para>Next set ensemble locations and client port, if non-standard, in
-        <filename>hbase-site.xml</filename>, or add a suitably configured
-        <filename>zoo.cfg</filename> to HBase's <filename>CLASSPATH</filename>. HBase will prefer
-      the configuration found in <filename>zoo.cfg</filename> over any settings in
-        <filename>hbase-site.xml</filename>.</para>
-
-    <para>When HBase manages ZooKeeper, it will start/stop the ZooKeeper servers as a part of the
-      regular start/stop scripts. If you would like to run ZooKeeper yourself, independent of HBase
-      start/stop, you would do the following</para>
-
-    <screen language="bourne">
-${HBASE_HOME}/bin/hbase-daemons.sh {start,stop} zookeeper
-</screen>
-
-    <para>Note that you can use HBase in this manner to spin up a ZooKeeper cluster, unrelated to
-      HBase. Just make sure to set <varname>HBASE_MANAGES_ZK</varname> to <varname>false</varname>
-      if you want it to stay up across HBase restarts so that when HBase shuts down, it doesn't take
-      ZooKeeper down with it.</para>
-
-    <para>For more information about running a distinct ZooKeeper cluster, see the ZooKeeper <link
-        xlink:href="http://hadoop.apache.org/zookeeper/docs/current/zookeeperStarted.html">Getting
-        Started Guide</link>. Additionally, see the <link
-        xlink:href="http://wiki.apache.org/hadoop/ZooKeeper/FAQ#A7">ZooKeeper Wiki</link> or the <link
-        xlink:href="http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#sc_zkMulitServerSetup">ZooKeeper
-        documentation</link> for more information on ZooKeeper sizing. </para>
-  </section>
-
-
-  <section
-    xml:id="zk.sasl.auth">
-    <title>SASL Authentication with ZooKeeper</title>
-    <para>Newer releases of Apache HBase (&gt;= 0.92) will support connecting to a ZooKeeper Quorum
-      that supports SASL authentication (which is available in Zookeeper versions 3.4.0 or
-      later).</para>
-
-    <para>This describes how to set up HBase to mutually authenticate with a ZooKeeper Quorum.
-      ZooKeeper/HBase mutual authentication (<link
-        xlink:href="https://issues.apache.org/jira/browse/HBASE-2418">HBASE-2418</link>) is required
-      as part of a complete secure HBase configuration (<link
-        xlink:href="https://issues.apache.org/jira/browse/HBASE-3025">HBASE-3025</link>). For
-      simplicity of explication, this section ignores additional configuration required (Secure HDFS
-      and Coprocessor configuration). It's recommended to begin with an HBase-managed Zookeeper
-      configuration (as opposed to a standalone Zookeeper quorum) for ease of learning. </para>
+    <caution
+            xml:id="zk.version">
+        <title>我应该使用哪个版本的 ZooKeeper?</title>
+        <para>版本越新越好。举个例子， 某些版本（3.3.3）就存在 <link
+                xlink:href="https://issues.apache.org/jira/browse/ZOOKEEPER-1277">ZOOKEEPER-1277</link>问题。如果ZooKeeper版本在3.5以上，
+            在<filename>hbase-site.xml</filename>中设置<xref linkend="hbase.zookeeper.useMulti" />"，就能让HBase使用新的multi操作。 </para>
+    </caution>
+    <caution>
+        <title>ZooKeeper 维护</title>
+        <para>一定要按照<link
+                xlink:href="http://zookeeper.apache.org/doc/r3.1.2/zookeeperAdmin.html#sc_maintenance">Zookeeper
+            Maintenance</link>设置数据目录的清理规则，否则要不了几个月，你可能会遇到一些“有趣”的问题。例如，在leader重新竞选的时候，
+            如果Zookeeper不得不经常穿越一个个有着成百上千日志的目录，它可能就会开始丢弃会话。这个过程很少见，只会在机器掉线或中断时出现。
+        </para>
+    </caution>
 
     <section>
-      <title>Operating System Prerequisites</title>
+        <title>使用已有的ZooKeeper组</title>
 
-      <para> You need to have a working Kerberos KDC setup. For each <code>$HOST</code> that will
-        run a ZooKeeper server, you should have a principle <code>zookeeper/$HOST</code>. For each
-        such host, add a service key (using the <code>kadmin</code> or <code>kadmin.local</code>
-        tool's <code>ktadd</code> command) for <code>zookeeper/$HOST</code> and copy this file to
-          <code>$HOST</code>, and make it readable only to the user that will run zookeeper on
-          <code>$HOST</code>. Note the location of this file, which we will use below as
-          <filename>$PATH_TO_ZOOKEEPER_KEYTAB</filename>. </para>
+        <para>让HBase使用一个已有的且不被其管理的ZooKeeper集群，需要设置
+            <filename>conf/hbase-env.sh</filename>文件中的 <varname>HBASE_MANAGES_ZK</varname>为false。</para>
+        <screen language="bourne">
+            ...
+            # Tell HBase whether it should manage its own instance of Zookeeper or not.
+            export HBASE_MANAGES_ZK=false</screen>
+        <para>接着设置Zookeeper组地址和端口, if non-standard, 可以在<filename>hbase-site.xml</filename>中设置,
+            或者在HBase的<filename>CLASSPATH</filename>下面加入一个<filename>zoo.cfg</filename>配置文件。
+            <filename>zoo.cfg</filename>中的配置会覆盖<filename>hbase-site.xml</filename>中相应的配置项。
 
-      <para> Similarly, for each <code>$HOST</code> that will run an HBase server (master or
-        regionserver), you should have a principle: <code>hbase/$HOST</code>. For each host, add a
-        keytab file called <filename>hbase.keytab</filename> containing a service key for
-          <code>hbase/$HOST</code>, copy this file to <code>$HOST</code>, and make it readable only
-        to the user that will run an HBase service on <code>$HOST</code>. Note the location of this
-        file, which we will use below as <filename>$PATH_TO_HBASE_KEYTAB</filename>. </para>
+        </para>
 
-      <para> Each user who will be an HBase client should also be given a Kerberos principal. This
-        principal should usually have a password assigned to it (as opposed to, as with the HBase
-        servers, a keytab file) which only this user knows. The client's principal's
-          <code>maxrenewlife</code> should be set so that it can be renewed enough so that the user
-        can complete their HBase client processes. For example, if a user runs a long-running HBase
-        client process that takes at most 3 days, we might create this user's principal within
-          <code>kadmin</code> with: <code>addprinc -maxrenewlife 3days</code>. The Zookeeper client
-        and server libraries manage their own ticket refreshment by running threads that wake up
-        periodically to do the refreshment. </para>
+        <para>当HBase管理ZooKeeper时, 它会在自己的启动/终止脚本中同时启动/终止ZooKeeper集群. 如果你想独立运行ZooKeeper而不依赖于HBase，
+            可以如下操作：
+        </para>
 
-      <para>On each host that will run an HBase client (e.g. <code>hbase shell</code>), add the
-        following file to the HBase home directory's <filename>conf</filename> directory:</para>
+        <screen language="bourne">
+            ${HBASE_HOME}/bin/hbase-daemons.sh {start,stop} zookeeper
+        </screen>
 
-      <programlisting language="java">
-Client {
-  com.sun.security.auth.module.Krb5LoginModule required
-  useKeyTab=false
-  useTicketCache=true;
-};
-                </programlisting>
+        <para>请注意，你可以以这种方式来启动ZooKeeper，如果在HBase的重启过程中，你不想ZooKeeper随着HBase而关闭，
+            一定要确保<varname>HBASE_MANAGES_ZK</varname>设置为 <varname>false</varname>。
+        </para>
 
-      <para>We'll refer to this JAAS configuration file as <filename>$CLIENT_CONF</filename>
-        below.</para>
+        <para>关于独立运行ZooKeeper集群的更多信息，请参考 <link
+                xlink:href="http://hadoop.apache.org/zookeeper/docs/current/zookeeperStarted.html">Getting
+            Started Guide</link>. 另外，ZooKeeper sizing相关的信息，请参考 <link
+                xlink:href="http://wiki.apache.org/hadoop/ZooKeeper/FAQ#A7">ZooKeeper Wiki</link> 或 <link
+                xlink:href="http://zookeeper.apache.org/doc/r3.3.3/zookeeperAdmin.html#sc_zkMulitServerSetup">ZooKeeper
+            documentation</link>. </para>
     </section>
-    <section>
-      <title>HBase-managed Zookeeper Configuration</title>
 
-      <para>On each node that will run a zookeeper, a master, or a regionserver, create a <link
-          xlink:href="http://docs.oracle.com/javase/1.4.2/docs/guide/security/jgss/tutorials/LoginConfigFile.html">JAAS</link>
-        configuration file in the conf directory of the node's <filename>HBASE_HOME</filename>
-        directory that looks like the following:</para>
 
-      <programlisting language="java">
-Server {
-  com.sun.security.auth.module.Krb5LoginModule required
-  useKeyTab=true
-  keyTab="$PATH_TO_ZOOKEEPER_KEYTAB"
-  storeKey=true
-  useTicketCache=false
-  principal="zookeeper/$HOST";
-};
-Client {
-  com.sun.security.auth.module.Krb5LoginModule required
-  useKeyTab=true
-  useTicketCache=false
-  keyTab="$PATH_TO_HBASE_KEYTAB"
-  principal="hbase/$HOST";
-};
-                </programlisting>
+    <section
+            xml:id="zk.sasl.auth">
+        <title>SASL 认证 与 ZooKeeper</title>
+        <para>新版本的HBase (&gt;= 0.92) 将支持连接到ZooKeeper组进行SASL认证（适用于ZooKeeper 3.4.0以上版本）。</para>
 
-      <para>where the <filename>$PATH_TO_HBASE_KEYTAB</filename> and
-          <filename>$PATH_TO_ZOOKEEPER_KEYTAB</filename> files are what you created above, and
-          <code>$HOST</code> is the hostname for that node.</para>
+        <para>这里描述了如果设置HBase与ZooKeeper组相互认证。
+            ZooKeeper/HBase相互认证(<link
+                    xlink:href="https://issues.apache.org/jira/browse/HBASE-2418">HBASE-2418</link>)是HBase安全配置必需的一部分(<link
+                    xlink:href="https://issues.apache.org/jira/browse/HBASE-3025">HBASE-3025</link>)。
+            简单起见，本节忽略额外的配置要求(HDFS安全及Coprocessor配置)。为方便学习，建议使用HBase内置的ZooKeeper配置(而不是一个独立的Zookeeper组)。
+        </para>
 
-      <para>The <code>Server</code> section will be used by the Zookeeper quorum server, while the
-          <code>Client</code> section will be used by the HBase master and regionservers. The path
-        to this file should be substituted for the text <filename>$HBASE_SERVER_CONF</filename> in
-        the <filename>hbase-env.sh</filename> listing below.</para>
+        <section>
+            <title>操作系统配置</title>
 
-      <para> The path to this file should be substituted for the text
-          <filename>$CLIENT_CONF</filename> in the <filename>hbase-env.sh</filename> listing below. </para>
+            <para> 你需要一个可行的Kerberos KDC配置。 每个<code>$HOST</code>运行一个ZooKeeper服务器,
+                应该还有个主要的<code>zookeeper/$HOST</code>。 对这些host, 为<code>zookeeper/$HOST</code>添加一个服务key (使用<code>kadmin</code>或<code>kadmin.local</code>
+                工具的<code>ktadd</code>命令)， 然后将key文件拷贝到<code>$HOST</code>, 并设置仅对该<code>$HOST</code>上运行ZooKeeper的用户可读。
+                注意文件位置，下面我们将以<filename>$PATH_TO_ZOOKEEPER_KEYTAB</filename>进行引用。 </para>
 
-      <para>Modify your <filename>hbase-env.sh</filename> to include the following:</para>
+            <para> 类似的, 对每一个将运行HBase服务器(master或regionserver)的<code>$HOST</code>,
+                你都应该有个主要的<code>hbase/$HOST</code>. 对这些host, 为 <code>hbase/$HOST</code>添加一个包含服务key的<filename>hbase.keytab</filename>文件。
+                , 将此文件拷贝到<code>$HOST</code>, 并设置仅对该<code>$HOST</code>上运行HBase的用户可读。
+                注意文件位置，下面我们将以<filename>$PATH_TO_HBASE_KEYTAB</filename>进行引用。
+            </para>
 
-      <programlisting language="bourne">
-export HBASE_OPTS="-Djava.security.auth.login.config=$CLIENT_CONF"
-export HBASE_MANAGES_ZK=true
-export HBASE_ZOOKEEPER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
-export HBASE_MASTER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
-export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
-                </programlisting>
+            <para>每个HBase客户端需要分配一个Kerberos主体。该主体通常配备一个私有密码(正如HBase服务器的keytab文件)。
+                应当设置主体的<code>maxrenewlife</code>，这样就能完整恢复，用户就能完成他们的HBase客户端操作。
+                例如，如果一个用户运行最多耗时3天的HBase客户端进程， 我们可能会在 <code>kadmin</code>内创建这个用户的主体：<code>addprinc -maxrenewlife 3days</code>。
+                Zookeeper客户端和服务器libraries管理各自的ticket refreshment，通过定期唤醒一个线程做refreshment操作。 </para>
 
-      <para>where <filename>$HBASE_SERVER_CONF</filename> and <filename>$CLIENT_CONF</filename> are
-        the full paths to the JAAS configuration files created above.</para>
+            <para>在每一个将运行HBase客户端 (e.g. <code>hbase shell</code>)的host上, 添加下面的文件到HBase根目录下的<filename>conf</filename>目录:</para>
 
-      <para>Modify your <filename>hbase-site.xml</filename> on each node that will run zookeeper,
-        master or regionserver to contain:</para>
+            <programlisting language="java">
+                Client {
+                com.sun.security.auth.module.Krb5LoginModule required
+                useKeyTab=false
+                useTicketCache=true;
+                };
+            </programlisting>
 
-      <programlisting language="java"><![CDATA[
+            <para>此JAAS配置文件，下面我们将以<filename>$CLIENT_CONF</filename>进行引用。</para>
+        </section>
+        <section>
+            <title>HBase内置的 Zookeeper 配置</title>
+
+            <para> 每个节点上将运行一个zookeeper, 一个master, 或一个regionserver, 在节点的 <filename>HBASE_HOME</filename>的conf目录中创建
+                一个<link xlink:href="http://docs.oracle.com/javase/1.4.2/docs/guide/security/jgss/tutorials/LoginConfigFile.html">JAAS</link>
+                配置文件，内容如下：</para>
+
+            <programlisting language="java">
+                Server {
+                com.sun.security.auth.module.Krb5LoginModule required
+                useKeyTab=true
+                keyTab="$PATH_TO_ZOOKEEPER_KEYTAB"
+                storeKey=true
+                useTicketCache=false
+                principal="zookeeper/$HOST";
+                };
+                Client {
+                com.sun.security.auth.module.Krb5LoginModule required
+                useKeyTab=true
+                useTicketCache=false
+                keyTab="$PATH_TO_HBASE_KEYTAB"
+                principal="hbase/$HOST";
+                };
+            </programlisting>
+
+            <para><filename>$PATH_TO_HBASE_KEYTAB</filename>和<filename>$PATH_TO_ZOOKEEPER_KEYTAB</filename>文件是在上节中创建的，
+                <code>$HOST</code>为该节点的主机名。</para>
+
+            <para> <code>Server</code>部分由Zookeeper服务器组使用, <code>Client</code>部分由HBase master和regionservers使用. 此文件的路径应以
+                <filename>hbase-env.sh</filename>文件中的<filename>$HBASE_SERVER_CONF</filename>代替。 </para>
+
+            <para> 此文件的路径应以 <filename>hbase-env.sh</filename>文件中的<filename>$CLIENT_CONF</filename>代替。 </para>
+
+            <para>修改<filename>hbase-env.sh</filename>文件，添加如下项：</para>
+
+            <programlisting language="bourne">
+                export HBASE_OPTS="-Djava.security.auth.login.config=$CLIENT_CONF"
+                export HBASE_MANAGES_ZK=true
+                export HBASE_ZOOKEEPER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
+                export HBASE_MASTER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
+                export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
+            </programlisting>
+
+            <para> <filename>$HBASE_SERVER_CONF</filename>和<filename>$CLIENT_CONF</filename>是上面创建的JAAS配置文件的全路径。
+            </para>
+
+            <para>修改运行zookeeper,master或regionserver的每个节点的<filename>hbase-site.xml</filename>文件，添加如下项:</para>
+
+            <programlisting language="java"><![CDATA[
 <configuration>
   <property>
     <name>hbase.zookeeper.quorum</name>
@@ -315,51 +266,47 @@ export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_
 </configuration>
                   ]]></programlisting>
 
-      <para>where <code>$ZK_NODES</code> is the comma-separated list of hostnames of the Zookeeper
-        Quorum hosts.</para>
+            <para><code>$ZK_NODES</code>是以逗号分隔的Zookeeper组的主机名列表。</para>
 
-      <para>Start your hbase cluster by running one or more of the following set of commands on the
-        appropriate hosts: </para>
+            <para>>在合适的主机上，运行以下一到多个命令启动HBase集群： </para>
 
-      <screen>
-bin/hbase zookeeper start
-bin/hbase master start
-bin/hbase regionserver start
-                </screen>
+            <screen>
+                bin/hbase zookeeper start
+                bin/hbase master start
+                bin/hbase regionserver start
+            </screen>
 
-    </section>
+        </section>
 
-    <section>
-      <title>External Zookeeper Configuration</title>
-      <para>Add a JAAS configuration file that looks like:</para>
-      <programlisting language="java">
-Client {
-  com.sun.security.auth.module.Krb5LoginModule required
-  useKeyTab=true
-  useTicketCache=false
-  keyTab="$PATH_TO_HBASE_KEYTAB"
-  principal="hbase/$HOST";
-};
-                </programlisting>
-      <para>where the <filename>$PATH_TO_HBASE_KEYTAB</filename> is the keytab created above for
-        HBase services to run on this host, and <code>$HOST</code> is the hostname for that node.
-        Put this in the HBase home's configuration directory. We'll refer to this file's full
-        pathname as <filename>$HBASE_SERVER_CONF</filename> below.</para>
+        <section>
+            <title>外部 Zookeeper 配置</title>
+            <para>添加 JAAS 配置文件：</para>
+            <programlisting language="java">
+                Client {
+                com.sun.security.auth.module.Krb5LoginModule required
+                useKeyTab=true
+                useTicketCache=false
+                keyTab="$PATH_TO_HBASE_KEYTAB"
+                principal="hbase/$HOST";
+                };
+            </programlisting>
+            <para><filename>$PATH_TO_HBASE_KEYTAB</filename>是上面创建的keytab，以便HBase服务可以在本主机运行
+                , <code>$HOST</code>是该节点的主机名。
+                将本配置放到HBase home的配置目录。 对该文件的全路径名，下面我们将以<filename>$HBASE_SERVER_CONF</filename> 进行引用。</para>
 
-      <para>Modify your hbase-env.sh to include the following:</para>
+            <para>修改hbase-env.sh，添加如下项：</para>
 
-      <programlisting language="bourne">
-export HBASE_OPTS="-Djava.security.auth.login.config=$CLIENT_CONF"
-export HBASE_MANAGES_ZK=false
-export HBASE_MASTER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
-export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
-                </programlisting>
+            <programlisting language="bourne">
+                export HBASE_OPTS="-Djava.security.auth.login.config=$CLIENT_CONF"
+                export HBASE_MANAGES_ZK=false
+                export HBASE_MASTER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
+                export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_CONF"
+            </programlisting>
 
 
-      <para>Modify your <filename>hbase-site.xml</filename> on each node that will run a master or
-        regionserver to contain:</para>
+            <para>修改将运行master或regionserver的每个节点的<filename>hbase-site.xml</filename>文件，包含以下项:</para>
 
-      <programlisting language="xml"><![CDATA[
+            <programlisting language="xml"><![CDATA[
 <configuration>
   <property>
     <name>hbase.zookeeper.quorum</name>
@@ -371,143 +318,136 @@ export HBASE_REGIONSERVER_OPTS="-Djava.security.auth.login.config=$HBASE_SERVER_
   </property>
 </configuration>
                   ]]>
-                </programlisting>
+            </programlisting>
 
-      <para>where <code>$ZK_NODES</code> is the comma-separated list of hostnames of the Zookeeper
-        Quorum hosts.</para>
+            <para> <code>$ZK_NODES</code> 是以逗号分隔的Zookeeper组的主机名列表。</para>
 
-      <para> Add a <filename>zoo.cfg</filename> for each Zookeeper Quorum host containing:</para>
-      <programlisting language="java">
-authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
-kerberos.removeHostFromPrincipal=true
-kerberos.removeRealmFromPrincipal=true
-                  </programlisting>
-      <para>Also on each of these hosts, create a JAAS configuration file containing:</para>
-      <programlisting language="java">
-Server {
-  com.sun.security.auth.module.Krb5LoginModule required
-  useKeyTab=true
-  keyTab="$PATH_TO_ZOOKEEPER_KEYTAB"
-  storeKey=true
-  useTicketCache=false
-  principal="zookeeper/$HOST";
-};
-                  </programlisting>
-      <para>where <code>$HOST</code> is the hostname of each Quorum host. We will refer to the full
-        pathname of this file as <filename>$ZK_SERVER_CONF</filename> below. </para>
+            <para> 为每个ZooKeeper组主机添加 <filename>zoo.cfg</filename>文件，包含以下内容:</para>
+            <programlisting language="java">
+                authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+                kerberos.removeHostFromPrincipal=true
+                kerberos.removeRealmFromPrincipal=true
+            </programlisting>
+            <para>为这些主机分别创建JAAS配置文件，包含以下内容:</para>
+            <programlisting language="java">
+                Server {
+                com.sun.security.auth.module.Krb5LoginModule required
+                useKeyTab=true
+                keyTab="$PATH_TO_ZOOKEEPER_KEYTAB"
+                storeKey=true
+                useTicketCache=false
+                principal="zookeeper/$HOST";
+                };
+            </programlisting>
+            <para> <code>$HOST</code> 为相应主机名。该文件的全路径名，下面我们以<filename>$ZK_SERVER_CONF</filename>进行引用。 </para>
 
-      <para> Start your Zookeepers on each Zookeeper Quorum host with:</para>
-      <programlisting language="bourne">
-SERVER_JVMFLAGS="-Djava.security.auth.login.config=$ZK_SERVER_CONF" bin/zkServer start
-                  </programlisting>
+            <para> 在每个Zookeeper组主机上启动ZooKeeper：</para>
+            <programlisting language="bourne">
+                SERVER_JVMFLAGS="-Djava.security.auth.login.config=$ZK_SERVER_CONF" bin/zkServer start
+            </programlisting>
 
-      <para> Start your HBase cluster by running one or more of the following set of commands on the
-        appropriate nodes: </para>
+            <para>在合适的主机上，运行以下一到多个命令启动HBase集群： </para>
 
-      <screen>
-bin/hbase master start
-bin/hbase regionserver start
+            <screen>
+                bin/hbase master start
+                bin/hbase regionserver start
+            </screen>
+
+
+        </section>
+
+        <section>
+            <title>Zookeeper 服务端认证日志输出 </title>
+            <para>如果以上配置成功，在ZooKeeper服务端日志中，你将看到如下内容：</para>
+            <screen>
+                11/12/05 22:43:39 INFO zookeeper.Login: successfully logged in.
+                11/12/05 22:43:39 INFO server.NIOServerCnxnFactory: binding to port 0.0.0.0/0.0.0.0:2181
+                11/12/05 22:43:39 INFO zookeeper.Login: TGT refresh thread started.
+                11/12/05 22:43:39 INFO zookeeper.Login: TGT valid starting at:        Mon Dec 05 22:43:39 UTC 2011
+                11/12/05 22:43:39 INFO zookeeper.Login: TGT expires:                  Tue Dec 06 22:43:39 UTC 2011
+                11/12/05 22:43:39 INFO zookeeper.Login: TGT refresh sleeping until: Tue Dec 06 18:36:42 UTC 2011
+                ..
+                11/12/05 22:43:59 INFO auth.SaslServerCallbackHandler:
+                Successfully authenticated client: authenticationID=hbase/ip-10-166-175-249.us-west-1.compute.internal@HADOOP.LOCALDOMAIN;
+                authorizationID=hbase/ip-10-166-175-249.us-west-1.compute.internal@HADOOP.LOCALDOMAIN.
+                11/12/05 22:43:59 INFO auth.SaslServerCallbackHandler: Setting authorizedID: hbase
+                11/12/05 22:43:59 INFO server.ZooKeeperServer: adding SASL authorization for authorizationID: hbase
+            </screen>
+
+        </section>
+
+        <section>
+            <title>Zookeeper 客户端认证日志输出</title>
+            <para>在Zookeeper客户端这边(HBase master or regionserver), 你应该可以看到如下内容：</para>
+            <screen>
+                11/12/05 22:43:59 INFO zookeeper.ZooKeeper: Initiating client connection, connectString=ip-10-166-175-249.us-west-1.compute.internal:2181 sessionTimeout=180000 watcher=master:60000
+                11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Opening socket connection to server /10.166.175.249:2181
+                11/12/05 22:43:59 INFO zookeeper.RecoverableZooKeeper: The identifier of this process is 14851@ip-10-166-175-249
+                11/12/05 22:43:59 INFO zookeeper.Login: successfully logged in.
+                11/12/05 22:43:59 INFO client.ZooKeeperSaslClient: Client will use GSSAPI as SASL mechanism.
+                11/12/05 22:43:59 INFO zookeeper.Login: TGT refresh thread started.
+                11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Socket connection established to ip-10-166-175-249.us-west-1.compute.internal/10.166.175.249:2181, initiating session
+                11/12/05 22:43:59 INFO zookeeper.Login: TGT valid starting at:        Mon Dec 05 22:43:59 UTC 2011
+                11/12/05 22:43:59 INFO zookeeper.Login: TGT expires:                  Tue Dec 06 22:43:59 UTC 2011
+                11/12/05 22:43:59 INFO zookeeper.Login: TGT refresh sleeping until: Tue Dec 06 18:30:37 UTC 2011
+                11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Session establishment complete on server ip-10-166-175-249.us-west-1.compute.internal/10.166.175.249:2181, sessionid = 0x134106594320000, negotiated timeout = 180000
+            </screen>
+        </section>
+
+        <section>
+            <title>从头开始配置</title>
+
+            <para>这个已经在当前标准的Amazon Linux AMI上测试通过。先按上所述配置KDC和principals，然后下载代码并进行检测：
+            </para>
+
+            <screen>
+                git clone git://git.apache.org/hbase.git
+                cd hbase
+                mvn clean test -Dtest=TestZooKeeperACL
+            </screen>
+
+            <para>接着如上配置HBase，手工编辑target/cached_classpath.txt (如下): </para>
+            <screen>
+                bin/hbase zookeeper &amp;
+                bin/hbase master &amp;
+                bin/hbase regionserver &amp;
+            </screen>
+        </section>
+
+
+        <section>
+            <title>未来改进</title>
+
+            <section>
+                <title>完善target/cached_classpath.txt</title>
+                <para> 你必须在 <code>target/cached_classpath.txt</code>中重写标准hadoop-core jar文件为包含HADOOP-7070修改的版本，可以使用以下脚本：
+                </para>
+                <screen language="bourne">
+                    echo `find ~/.m2 -name "*hadoop-core*7070*SNAPSHOT.jar"` ':' `cat target/cached_classpath.txt` | sed 's/ //g' > target/tmp.txt
+                    mv target/tmp.txt target/cached_classpath.txt
                 </screen>
+            </section>
+
+            <section>
+                <title>用程序配置JAAS</title>
+
+
+                <para>这将避免需要一个单独的修复 <link
+                        xlink:href="https://issues.apache.org/jira/browse/HADOOP-7070">HADOOP-7070</link> 的Hadoop jar.
+                </para>
+            </section>
+
+            <section>
+                <title>消除<code>kerberos.removeHostFromPrincipal</code> 和
+                    <code>kerberos.removeRealmFromPrincipal</code></title>
+                <para />
+            </section>
+
+        </section>
 
 
     </section>
-
-    <section>
-      <title>Zookeeper Server Authentication Log Output</title>
-      <para>If the configuration above is successful, you should see something similar to the
-        following in your Zookeeper server logs:</para>
-      <screen>
-11/12/05 22:43:39 INFO zookeeper.Login: successfully logged in.
-11/12/05 22:43:39 INFO server.NIOServerCnxnFactory: binding to port 0.0.0.0/0.0.0.0:2181
-11/12/05 22:43:39 INFO zookeeper.Login: TGT refresh thread started.
-11/12/05 22:43:39 INFO zookeeper.Login: TGT valid starting at:        Mon Dec 05 22:43:39 UTC 2011
-11/12/05 22:43:39 INFO zookeeper.Login: TGT expires:                  Tue Dec 06 22:43:39 UTC 2011
-11/12/05 22:43:39 INFO zookeeper.Login: TGT refresh sleeping until: Tue Dec 06 18:36:42 UTC 2011
-..
-11/12/05 22:43:59 INFO auth.SaslServerCallbackHandler:
-  Successfully authenticated client: authenticationID=hbase/ip-10-166-175-249.us-west-1.compute.internal@HADOOP.LOCALDOMAIN;
-  authorizationID=hbase/ip-10-166-175-249.us-west-1.compute.internal@HADOOP.LOCALDOMAIN.
-11/12/05 22:43:59 INFO auth.SaslServerCallbackHandler: Setting authorizedID: hbase
-11/12/05 22:43:59 INFO server.ZooKeeperServer: adding SASL authorization for authorizationID: hbase
-                </screen>
-
-    </section>
-
-    <section>
-      <title>Zookeeper Client Authentication Log Output</title>
-      <para>On the Zookeeper client side (HBase master or regionserver), you should see something
-        similar to the following:</para>
-      <screen>
-11/12/05 22:43:59 INFO zookeeper.ZooKeeper: Initiating client connection, connectString=ip-10-166-175-249.us-west-1.compute.internal:2181 sessionTimeout=180000 watcher=master:60000
-11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Opening socket connection to server /10.166.175.249:2181
-11/12/05 22:43:59 INFO zookeeper.RecoverableZooKeeper: The identifier of this process is 14851@ip-10-166-175-249
-11/12/05 22:43:59 INFO zookeeper.Login: successfully logged in.
-11/12/05 22:43:59 INFO client.ZooKeeperSaslClient: Client will use GSSAPI as SASL mechanism.
-11/12/05 22:43:59 INFO zookeeper.Login: TGT refresh thread started.
-11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Socket connection established to ip-10-166-175-249.us-west-1.compute.internal/10.166.175.249:2181, initiating session
-11/12/05 22:43:59 INFO zookeeper.Login: TGT valid starting at:        Mon Dec 05 22:43:59 UTC 2011
-11/12/05 22:43:59 INFO zookeeper.Login: TGT expires:                  Tue Dec 06 22:43:59 UTC 2011
-11/12/05 22:43:59 INFO zookeeper.Login: TGT refresh sleeping until: Tue Dec 06 18:30:37 UTC 2011
-11/12/05 22:43:59 INFO zookeeper.ClientCnxn: Session establishment complete on server ip-10-166-175-249.us-west-1.compute.internal/10.166.175.249:2181, sessionid = 0x134106594320000, negotiated timeout = 180000
-                </screen>
-    </section>
-
-    <section>
-      <title>Configuration from Scratch</title>
-
-      <para>This has been tested on the current standard Amazon Linux AMI. First setup KDC and
-        principals as described above. Next checkout code and run a sanity check.</para>
-
-      <screen>
-git clone git://git.apache.org/hbase.git
-cd hbase
-mvn clean test -Dtest=TestZooKeeperACL
-                </screen>
-
-      <para>Then configure HBase as described above. Manually edit target/cached_classpath.txt (see
-        below): </para>
-      <screen>
-bin/hbase zookeeper &amp;
-bin/hbase master &amp;
-bin/hbase regionserver &amp;
-                </screen>
-    </section>
-
-
-    <section>
-      <title>Future improvements</title>
-
-      <section>
-        <title>Fix target/cached_classpath.txt</title>
-        <para> You must override the standard hadoop-core jar file from the
-            <code>target/cached_classpath.txt</code> file with the version containing the
-          HADOOP-7070 fix. You can use the following script to do this:</para>
-        <screen language="bourne">
-echo `find ~/.m2 -name "*hadoop-core*7070*SNAPSHOT.jar"` ':' `cat target/cached_classpath.txt` | sed 's/ //g' > target/tmp.txt
-mv target/tmp.txt target/cached_classpath.txt
-                </screen>
-      </section>
-
-      <section>
-        <title>Set JAAS configuration programmatically</title>
-
-
-        <para>This would avoid the need for a separate Hadoop jar that fixes <link
-            xlink:href="https://issues.apache.org/jira/browse/HADOOP-7070">HADOOP-7070</link>.
-        </para>
-      </section>
-
-      <section>
-        <title>Elimination of <code>kerberos.removeHostFromPrincipal</code> and
-            <code>kerberos.removeRealmFromPrincipal</code></title>
-        <para />
-      </section>
-
-    </section>
-
-
-  </section>
-  <!-- SASL Authentication with ZooKeeper -->
+    <!-- SASL Authentication with ZooKeeper -->
 
 
 
