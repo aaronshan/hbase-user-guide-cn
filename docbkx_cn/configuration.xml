@@ -580,40 +580,29 @@ Index: pom.xml
       xml:id="distributed">
       <title>分布式</title>
 
-      <para>Distributed mode can be subdivided into distributed but all daemons run on a single node
-        -- a.k.a <emphasis>pseudo-distributed</emphasis>-- and
-          <emphasis>fully-distributed</emphasis> where the daemons are spread across all nodes in
-        the cluster <footnote>
-          <para>The pseudo-distributed vs fully-distributed nomenclature comes from Hadoop.</para>
+      <para>分布式模式可以分为所有守护进程运行在单个节点上的<emphasis>伪分布式</emphasis>和守护进程分布在集群上所有节点的<emphasis>完全分布式</emphasis>。<footnote>
+          <para>伪分布式和完全分布式的命名源自于Hadoop。</para>
         </footnote>.</para>
 
-      <para>Pseudo-distributed mode can run against the local filesystem or it can run against an
-        instance of the <emphasis>Hadoop Distributed File System</emphasis> (HDFS).
-        Fully-distributed mode can ONLY run on HDFS. See the Hadoop <link
+      <para>伪分布式模式可以运行在本地文件系统中或<emphasis>Hadoop分布式文件系统</emphasis> (Hadoop Distributed File System, HDFS)的一个实例中。完全分布式模式只能运行在HDFS上。
+        查看Hadoop <link
           xlink:href="http://hadoop.apache.org/common/docs/r1.1.1/api/overview-summary.html#overview_description">
-          requirements and instructions</link> for how to set up HDFS for Hadoop 1.x. A good
-        walk-through for setting up HDFS on Hadoop 2 is at <link
-          xlink:href="http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide">http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide</link>.</para>
+          requirements and instructions</link> 文献以便学习如何在Hadoop 1.x上设置HDFS。这里有一个关于如何在Hadoop 2上设置HDFS的指南： <link
+          xlink:href="http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide">http://www.alexjf.net/blog/distributed-systems/hadoop-yarn-installation-definitive-guide</link>。</para>
 
-      <para>Below we describe the different distributed setups. Starting, verification and
-        exploration of your install, whether a <emphasis>pseudo-distributed</emphasis> or
-          <emphasis>fully-distributed</emphasis> configuration is described in a section that
-        follows, <xref
-          linkend="confirm" />. The same verification script applies to both deploy types.</para>
+      <para>下面我们将介绍不同的分布式设置。首先，确认和验证你安装的是<xref
+              linkend="confirm" />中论述的<emphasis>伪分布式</emphasis>还是<emphasis>完全分布式</emphasis>。这两种类型的校验脚本是一样的。</para>
       <section
         xml:id="pseudo">
-        <title>Pseudo-distributed</title>
+        <title>伪分布式</title>
         <note>
-          <title>Pseudo-Distributed Quickstart</title>
-          <para>A quickstart has been added to the <xref
-              linkend="quickstart" /> chapter. See <xref
-              linkend="quickstart-pseudo" />. Some of the information that was originally in this
-            section has been moved there.</para>
+          <title>伪分布式快速入门</title>
+          <para>快速入门已经在 <xref
+              linkend="quickstart" /> 中有所论述。 请查看 <xref
+              linkend="quickstart-pseudo" />，一些原本在本节论述的内容本移到了那里。</para>
         </note>
 
-        <para>A pseudo-distributed mode is simply a fully-distributed mode run on a single host. Use
-          this configuration testing and prototyping on HBase. Do not use this configuration for
-          production nor for evaluating HBase performance.</para>
+        <para>伪分布式模式就是在单机上运行一个完全分布式模式。使用这样的配置可以测试和体验HBase。但是不要用这样的配置来用于生产环境，或者评估HBase的性能。</para>
 
       </section>
 
@@ -621,45 +610,30 @@ Index: pom.xml
 
     <section
       xml:id="fully_dist">
-      <title>Fully-distributed</title>
-      <para>By default, HBase runs in standalone mode. Both standalone mode and pseudo-distributed
-        mode are provided for the purposes of small-scale testing. For a production environment,
-        distributed mode is appropriate. In distributed mode, multiple instances of HBase daemons
-        run on multiple servers in the cluster.</para>
-      <para>Just as in pseudo-distributed mode, a fully distributed configuration requires that you
-        set the <code>hbase-cluster.distributed</code> property to <literal>true</literal>.
-        Typically, the <code>hbase.rootdir</code> is configured to point to a highly-available HDFS
-        filesystem. </para>
-      <para>In addition, the cluster is configured so that multiple cluster nodes enlist as
-        RegionServers, ZooKeeper QuorumPeers, and backup HMaster servers. These configuration basics
-        are all demonstrated in <xref
-          linkend="quickstart-fully-distributed" />.</para>
+      <title>完全分布式</title>
+      <para>默认情况下，HBase运行在单机模式。单机模式和伪分布式模式都用来提供一个小规模的测试。分布式模式更适合生产环境。在分布式模式下，多个HBase守护进程的实例运行在集群的多个服务器上。</para>
+      <para>和伪分布式模式一样，完全分布式需要你将配置中的<code>hbase-cluster.distributed</code>属性值设置为 <literal>true</literal>。通常，<code>hbase.rootdir</code>属性应该被设置指向HDFS系统。 </para>
+      <para>另外，集群的节点分为了
+        RegionServers、ZooKeeper QuorumPeers和backup HMaster servers。这些配置基本都在 <xref
+          linkend="quickstart-fully-distributed" />。</para>
 
       <formalpara
         xml:id="regionserver">
-        <title>Distributed RegionServers</title>
-        <para>Typically, your cluster will contain multiple RegionServers all running on different
-          servers, as well as primary and backup Master and Zookeeper daemons. The
-            <filename>conf/regionservers</filename> file on the master server contains a list of
-          hosts whose RegionServers are associated with this cluster. Each host is on a separate
-          line. All hosts listed in this file will have their RegionServer processes started and
-          stopped when the master server starts or stops.</para>
+        <title>分布式的RegionServers</title>
+        <para>通常，你的集群包含运行在所有不同服务器上的多个RegionServer，也包括主Master和备份Master和Zookeeper守护进程。主服务器的<filename>conf/regionservers</filename>文件包括了一个该集群被用作RegionServer的主机列表。文件的每一行代表一个主机，当主服务器启动或停止的时候，文件中的所有主机的RegionServer进程也会跟着启动或停止。</para>
       </formalpara>
 
       <formalpara
         xml:id="hbase.zookeeper">
-        <title>ZooKeeper and HBase</title>
-        <para>See section <xref
-            linkend="zookeeper" /> for ZooKeeper setup for HBase.</para>
+        <title>ZooKeeper和HBase</title>
+        <para>查看 <xref
+            linkend="zookeeper" /> 来设置用于HBase的ZooKeeper。</para>
       </formalpara>
 
       <example>
-        <title>Example Distributed HBase Cluster</title>
-        <para>This is a bare-bones <filename>conf/hbase-site.xml</filename> for a distributed HBase
-          cluster. A cluster that is used for real-world work would contain more custom
-          configuration parameters. Most HBase configuration directives have default values, which
-          are used unless the value is overridden in the <filename>hbase-site.xml</filename>. See <xref
-            linkend="config.files" /> for more information.</para>
+        <title>一个分布式的HBase集群实例</title>
+        <para>这是一个最基本的分布式HBase集群的 <filename>conf/hbase-site.xml</filename>文件。实际工作环境中的集群将包含更多的配置参数。除非你在<filename>hbase-site.xml</filename>文件中重新指定，否则大多数HBase的配置项都使用一个默认值。查看 <xref
+            linkend="config.files" /> 可以找到更多信息。</para>
         <programlisting language="xml"><![CDATA[
 <configuration>
   <property>
@@ -677,106 +651,72 @@ Index: pom.xml
 </configuration>
 ]]>
         </programlisting>
-        <para>This is an example <filename>conf/regionservers</filename> file, which contains a list
-          of each node that should run a RegionServer in the cluster. These nodes need HBase
-          installed and they need to use the same contents of the <filename>conf/</filename>
-          directory as the Master server..</para>
+        <para>这是一个 <filename>conf/regionservers</filename> 文件的例子，它包含了集群中用来运行RegionServer的每一个节点。这些节点也需要安装HBase，并且使用与主服务器的<filename>conf/</filename>目录中相同的配置。</para>
         <programlisting>
 node-a.example.com
 node-b.example.com
 node-c.example.com
         </programlisting>
-        <para>This is an example <filename>conf/backup-masters</filename> file, which contains a
-          list of each node that should run a backup Master instance. The backup Master instances
-          will sit idle unless the main Master becomes unavailable.</para>
+        <para>这是一个 <filename>conf/backup-masters</filename> 文件的例子, 它包含了用来运行备份Master实例的节点。如果主Master不可用，备份Master会接管主Master的职能，否则它会一直处于闲置状态。</para>
         <programlisting>
 node-b.example.com
 node-c.example.com
         </programlisting>
       </example>
       <formalpara>
-        <title>Distributed HBase Quickstart</title>
-        <para>See <xref
-            linkend="quickstart-fully-distributed" /> for a walk-through of a simple three-node
-          cluster configuration with multiple ZooKeeper, backup HMaster, and RegionServer
-          instances.</para>
+        <title>分布式HBase快速入门</title>
+        <para>请查看 <xref
+            linkend="quickstart-fully-distributed" /> ，它是一个配置了多个ZooKeeper、备份HMaster和RegionServer实例的具有三个节点的简单集群。</para>
       </formalpara>
 
       <procedure
         xml:id="hdfs_client_conf">
-        <title>HDFS Client Configuration</title>
+        <title>HDFS客户端配置</title>
         <step>
-          <para>Of note, if you have made HDFS client configuration on your Hadoop cluster, such as
-            configuration directives for HDFS clients, as opposed to server-side configurations, you
-            must use one of the following methods to enable HBase to see and use these configuration
-            changes:</para>
+          <para>值得注意的是，如果你已经在你的Hadoop集群中进行了HDFS客户端的配置，，而不是服务器端，例如配置了HDFS的路径。那么你必须使用如下方式使得HBase能查看并使用这些配置：</para>
           <stepalternatives>
             <step>
-              <para>Add a pointer to your <varname>HADOOP_CONF_DIR</varname> to the
-                  <varname>HBASE_CLASSPATH</varname> environment variable in
-                  <filename>hbase-env.sh</filename>.</para>
+              <para>
+                  在<filename>hbase-env.sh</filename>文件中给<varname>HBASE_CLASSPATH</varname>环境变量增加一个指向<varname>HADOOP_CONF_DIR</varname>的路径。</para>
             </step>
 
             <step>
-              <para>Add a copy of <filename>hdfs-site.xml</filename> (or
-                  <filename>hadoop-site.xml</filename>) or, better, symlinks, under
-                  <filename>${HBASE_HOME}/conf</filename>, or</para>
+              <para>将 <filename>hdfs-site.xml</filename>文件拷贝到<filename>${HBASE_HOME}/conf</filename>。或者增加一个指向<filename>${HBASE_HOME}/conf</filename>的链接，或者</para>
             </step>
 
             <step>
-              <para>if only a small set of HDFS client configurations, add them to
-                  <filename>hbase-site.xml</filename>.</para>
+              <para>如果HDFS客户端的配置较少，那么直接让这些配置增加到
+                  <filename>hbase-site.xml</filename>文件中。</para>
             </step>
           </stepalternatives>
         </step>
       </procedure>
-      <para>An example of such an HDFS client configuration is <varname>dfs.replication</varname>.
-        If for example, you want to run with a replication factor of 5, hbase will create files with
-        the default of 3 unless you do the above to make the configuration available to
-        HBase.</para>
+      <para>一个最简单的HDFS客户端配置是<varname>dfs.replication</varname>。如果你想在运行时使用复制因子为5的配置，那么你必须在HBase中进行相应配置。否则，HBase将使用的默认为3的复制因子。</para>
     </section>
   </section>
 
     <section
       xml:id="confirm">
-      <title>Running and Confirming Your Installation</title>
-
-
-
-      <para>Make sure HDFS is running first. Start and stop the Hadoop HDFS daemons by running
-          <filename>bin/start-hdfs.sh</filename> over in the <varname>HADOOP_HOME</varname>
-        directory. You can ensure it started properly by testing the <command>put</command> and
-          <command>get</command> of files into the Hadoop filesystem. HBase does not normally use
-        the mapreduce daemons. These do not need to be started.</para>
-      <para><emphasis>If</emphasis> you are managing your own ZooKeeper, start it and confirm its
-        running else, HBase will start up ZooKeeper for you as part of its start process.</para>
-      <para>Start HBase with the following command:</para>
+      <title>运行且确认你的安装</title>
+      <para>首先确认HDFS已经在运行。通过运行<varname>HADOOP_HOME</varname>目录中的<filename>bin/start-hdfs.sh</filename>来启动或停止Hadoop HDFS守护进程。为了确定是否启动成功，你可以运行<command>put</command>和<command>get</command>命令来操作Hadoop文件系统中的文件。HBase通常不使用mapreduce守护进程。它们不需要被启动。</para>
+      <para><emphasis>如果</emphasis> 你正在管理你自己的ZooKeeper，启动它并且确认它正在正常运行，否则HBase将作为启动过程的一部分来启动它。</para>
+      <para>使用如下命令可以启动HBase</para>
       <screen>bin/start-hbase.sh</screen>
-      <para>Run the above from the <varname>HBASE_HOME</varname> directory.</para>
-      <para>You should now have a running HBase instance. HBase logs can be found in the
-          <filename>logs</filename> subdirectory. Check them out especially if HBase had trouble
-        starting.</para>
+      <para>该命令在 <varname>HBASE_HOME</varname> 目录下。</para>
+      <para>你现在应该有了一个正在运行的HBase实例。你可以在<filename>logs</filename> 子目录中看到HBase的日志文件。如果HBase的启动出现问题，请检查它们。</para>
 
-      <para>HBase also puts up a UI listing vital attributes. By default its deployed on the Master
-        host at port 16010 (HBase RegionServers listen on port 16020 by default and put up an
-        informational http server at 16030). If the Master were running on a host named
-          <varname>master.example.org</varname> on the default port, to see the Master's homepage
-        you'd point your browser at <filename>http://master.example.org:16010</filename>.</para>
+      <para>HBase有一个界面列出了重要的属性。默认在部署在Master主机上的16010端口 (HBase RegionServer 默认监听16020端口并且将信息输出到16030端口)。 如果运行Master的主机名是
+          <varname>master.example.org</varname> 并且使用默认端口，那么可以在你的浏览器中进入<filename>http://master.example.org:16010</filename>来查看Master的主页。</para>
 
-      <para>Prior to HBase 0.98, the default ports the master ui was deployed on port 16010, and the
-        HBase RegionServers would listen on port 16020 by default and put up an informational http
-        server at 16030. </para>
+      <para>在HBase 0.98之前，默认的master界面的端口是16010，并且HBase RegionServer监听16020端口，将信息输出到16030端口。</para>
 
-      <para>Once HBase has started, see the <xref
-          linkend="shell_exercises" /> for how to create tables, add data, scan your insertions, and
-        finally disable and drop your tables.</para>
+      <para>一旦HBase成功启动，可以查看 <xref
+          linkend="shell_exercises" /> 来学习如何创建表、增加数据、遍历你插入的数据以及最终禁用表和删除表。</para>
 
-      <para>To stop HBase after exiting the HBase shell enter</para>
+      <para>为了在退出HBase shell之后停止HBase，可以使用如下命令：</para>
       <screen language="bourne">$ ./bin/stop-hbase.sh
 stopping hbase...............</screen>
-      <para>Shutdown can take a moment to complete. It can take longer if your cluster is comprised
-        of many machines. If you are running a distributed operation, be sure to wait until HBase
-        has shut down completely before stopping the Hadoop daemons.</para>
+      <para>关闭操作将花费一段时间。如果你的集群包含了多台机器，那么它花费的时间可能会更长。如果你正在运行分布式操作，请等到HBase完全关闭之后再关闭Hadoop守护进程。</para>
     </section>
 
   <!--  run modes -->
@@ -785,22 +725,17 @@ stopping hbase...............</screen>
 
   <section
     xml:id="config.files">
-    <title>Configuration Files</title>
+    <title>配置文件</title>
 
     <section
       xml:id="hbase.site">
-      <title><filename>hbase-site.xml</filename> and <filename>hbase-default.xml</filename></title>
-      <para>Just as in Hadoop where you add site-specific HDFS configuration to the
-          <filename>hdfs-site.xml</filename> file, for HBase, site specific customizations go into
-        the file <filename>conf/hbase-site.xml</filename>. For the list of configurable properties,
-        see <xref
-          linkend="hbase_default_configurations" /> below or view the raw
-          <filename>hbase-default.xml</filename> source file in the HBase source code at
-          <filename>src/main/resources</filename>. </para>
-      <para> Not all configuration options make it out to <filename>hbase-default.xml</filename>.
-        Configuration that it is thought rare anyone would change can exist only in code; the only
-        way to turn up such configurations is via a reading of the source code itself. </para>
-      <para> Currently, changes here will require a cluster restart for HBase to notice the change. </para>
+      <title><filename>hbase-site.xml</filename> 和 <filename>hbase-default.xml</filename></title>
+      <para>正如你在Hadoop中需要在<filename>hdfs-site.xml</filename>文件中指定HDFS的地址，在HBase中，也需要在<filename>conf/hbase-site.xml</filename>文件中指定HDFS的地址。配置属性的列表，请查看 <xref
+          linkend="hbase_default_configurations" /> 或者阅读HBase源代码中的<filename>src/main/resources</filename>中原始的
+          <filename>hbase-default.xml</filename> 源文件。 </para>
+      <para> 不是所有的配置项都在 <filename>hbase-default.xml</filename>文件中。
+        有一些配置仅仅存在于源代码中。调整这些配置的唯一方式就是阅读源代码并且修改源代码。</para>
+      <para> 目前，所有对配置做的修改都需要重启集群以使配置生效。 </para>
       <!--The file hbase-default.xml is generated as part of
     the build of the hbase site.  See the hbase pom.xml.
     The generated file is a docbook section with a glossary
@@ -812,15 +747,13 @@ stopping hbase...............</screen>
         <xi:fallback>
           <section
             xml:id="hbase_default_configurations">
-            <title />
+            <title >HBase默认配置</title>
             <para>
-              <emphasis>This file is fallback content</emphasis>. If you are seeing this, something
-              is wrong with the build of the HBase documentation or you are doing pre-build
-              verification. </para>
-            <para> The file hbase-default.xml is generated as part of the build of the hbase site.
-              See the hbase <filename>pom.xml</filename>. The generated file is a docbook glossary. </para>
+              <emphasis>这个文件是错误提示</emphasis>。如果看到这个信息，那么证明你在构建HBase文档的过程中出错。 </para>
+            <para> hbase-default.xml是构建hbase站点之后的生成结果的一部分。
+              查阅 <filename>pom.xml</filename>。这是使用docbook词汇产生的文件。 </para>
             <section>
-              <title>IDs that are auto-generated and cause validation errors if not present</title>
+              <title>IDs自动生成，如果不存在，则会出现校验错误</title>
               <para> Each of these is a reference to a configuration file parameter which will cause
                 an error if you are using the fallback content here. This is a dirty dirty hack. </para>
               <section
@@ -897,41 +830,27 @@ stopping hbase...............</screen>
     <section
       xml:id="hbase.env.sh">
       <title><filename>hbase-env.sh</filename></title>
-      <para>Set HBase environment variables in this file. Examples include options to pass the JVM
-        on start of an HBase daemon such as heap size and garbage collector configs. You can also
-        set configurations for HBase configuration, log directories, niceness, ssh options, where to
-        locate process pid files, etc. Open the file at <filename>conf/hbase-env.sh</filename> and
-        peruse its content. Each option is fairly well documented. Add your own environment
-        variables here if you want them read by HBase daemons on startup.</para>
-      <para> Changes here will require a cluster restart for HBase to notice the change. </para>
+      <para>HBase环境变量在该文件中进行设置。例如在启动HBase守护进程时需要的JVM信息、堆大小、垃圾收集，pid文件的位置等。打开文件<filename>conf/hbase-env.sh</filename>并且仔细查看其中的内容。每一个配置项都是有据可查的。如果你想让HBase守护进程在启动时使用某些环境变量，那么就把它们添加到这儿。</para>
+      <para> 对该文件所处的改变需要重启集群才能生效。 </para>
     </section>
 
     <section
       xml:id="log4j">
       <title><filename>log4j.properties</filename></title>
-      <para>Edit this file to change rate at which HBase files are rolled and to change the level at
-        which HBase logs messages. </para>
-      <para> Changes here will require a cluster restart for HBase to notice the change though log
-        levels can be changed for particular daemons via the HBase UI. </para>
+      <para>编辑该文件可以改变HBase日志信息的级别和其他日志记录的相关信息。 </para>
+      <para>对该文件做出的改变需要重启集群才能生效，尽管某些守护进程可以通过HBase用户界面来改变日志记录的级别。 </para>
     </section>
 
     <section
       xml:id="client_dependencies">
-      <title>Client configuration and dependencies connecting to an HBase cluster</title>
-      <para>If you are running HBase in standalone mode, you don't need to configure anything for
-        your client to work provided that they are all on the same machine.</para>
-      <para> Since the HBase Master may move around, clients bootstrap by looking to ZooKeeper for
-        current critical locations. ZooKeeper is where all these values are kept. Thus clients
-        require the location of the ZooKeeper ensemble information before they can do anything else.
-        Usually this the ensemble location is kept out in the <filename>hbase-site.xml</filename>
-        and is picked up by the client from the <varname>CLASSPATH</varname>.</para>
-
-      <para>If you are configuring an IDE to run a HBase client, you should include the
-          <filename>conf/</filename> directory on your classpath so
-          <filename>hbase-site.xml</filename> settings can be found (or add
-          <filename>src/test/resources</filename> to pick up the hbase-site.xml used by tests). </para>
-      <para> Minimally, a client of HBase needs several libraries in its
-          <varname>CLASSPATH</varname> when connecting to a cluster, including:
+      <title>客户端的配置和连接HBase集群的依赖项</title>
+      <para>如果你在单机模式下运行HBase，你不需要对你的客户端做任何配置，只要它们都在同一台机器上。</para>
+      <para>由于HBase的Master可能变化，所以客户端需要通过Zookeeper来定位HBase Master的位置。Zookeeper中保存着这些值。因此客户端需要在获取信息前需要指导Zookeeper的位置。通常该信息保存在<filename>hbase-site.xml</filename> 文件中，并且被客户端从<varname>CLASSPATH</varname>中获取。</para>
+      <para>如果你正在配置一个IDE用来运行HBase客户端，你应该将<filename>conf/</filename> 目录放到你的classpath中，以便 so
+          <filename>hbase-site.xml</filename> 设置能被找到 (或者在测试时添加hbase-site.xml到
+          <filename>src/test/resources</filename> )。 </para>
+      <para> 最起码，一个HBase客户端在连接集群时，需要在它
+          <varname>CLASSPATH</varname> 需要几个类库，包括：
         <programlisting>
 commons-configuration (commons-configuration-1.6.jar)
 commons-lang (commons-lang-2.5.jar)
@@ -943,8 +862,7 @@ slf4j-api (slf4j-api-1.5.8.jar)
 slf4j-log4j (slf4j-log4j12-1.5.8.jar)
 zookeeper (zookeeper-3.4.2.jar)</programlisting>
       </para>
-      <para> An example basic <filename>hbase-site.xml</filename> for client only might look as
-        follows: <programlisting language="xml"><![CDATA[
+      <para> 一个基本的客户端的 <filename>hbase-site.xml</filename> 文件示例看起来是下面这个样子： <programlisting language="xml"><![CDATA[
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
@@ -960,24 +878,17 @@ zookeeper (zookeeper-3.4.2.jar)</programlisting>
 
       <section
         xml:id="java.client.config">
-        <title>Java client configuration</title>
-        <para>The configuration used by a Java client is kept in an <link
+        <title>Java客户端配置</title>
+        <para>Java客户端的配置被保存在一个<link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HBaseConfiguration">HBaseConfiguration</link>
-          instance. The factory method on HBaseConfiguration,
-            <code>HBaseConfiguration.create();</code>, on invocation, will read in the content of
-          the first <filename>hbase-site.xml</filename> found on the client's
-            <varname>CLASSPATH</varname>, if one is present (Invocation will also factor in any
-            <filename>hbase-default.xml</filename> found; an hbase-default.xml ships inside the
-            <filename>hbase.X.X.X.jar</filename>). It is also possible to specify configuration
-          directly without having to read from a <filename>hbase-site.xml</filename>. For example,
-          to set the ZooKeeper ensemble for the cluster programmatically do as follows:
+          类实例中。 HBaseConfiguration的工厂方法，
+            <code>HBaseConfiguration.create();</code>, 在调用时，将会读取客户端最初在<varname>CLASSPATH</varname>中找到的<filename>hbase-site.xml</filename> ，如果存在 (调用时也会寻找名为
+            <filename>hbase-default.xml</filename> 的文件;hbase-default.xml文件在
+            <filename>hbase.X.X.X.jar</filename>中可以被找到).。也可以直接指定配置，如果没有找到 <filename>hbase-site.xml</filename>文件。例如，设置集群ZooKeeper地址的语句如下：
           <programlisting language="java">Configuration config = HBaseConfiguration.create();
 config.set("hbase.zookeeper.quorum", "localhost");  // Here we are running zookeeper locally</programlisting>
-          If multiple ZooKeeper instances make up your ZooKeeper ensemble, they may be specified in
-          a comma-separated list (just as in the <filename>hbase-site.xml</filename> file). This
-          populated <classname>Configuration</classname> instance can then be passed to an <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html">HTable</link>,
-          and so on. </para>
+          如果ZooKeeper集群有多个ZooKeeper实例，它们应该使用逗号分割 (就像在 <filename>hbase-site.xml</filename> 文件中那样)。这个<classname>Configuration</classname>实例可以被传递给一个 <link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html">HTable</link>，等等。 </para>
       </section>
     </section>
 
@@ -986,22 +897,19 @@ config.set("hbase.zookeeper.quorum", "localhost");  // Here we are running zooke
 
   <section
     xml:id="example_config">
-    <title>Example Configurations</title>
+    <title>配置示例</title>
 
     <section>
-      <title>Basic Distributed HBase Install</title>
+      <title>基本的分布式HBase安装</title>
 
-      <para>Here is an example basic configuration for a distributed ten node cluster. The nodes are
-        named <varname>example0</varname>, <varname>example1</varname>, etc., through node
-          <varname>example9</varname> in this example. The HBase Master and the HDFS namenode are
-        running on the node <varname>example0</varname>. RegionServers run on nodes
-          <varname>example1</varname>-<varname>example9</varname>. A 3-node ZooKeeper ensemble runs
-        on <varname>example1</varname>, <varname>example2</varname>, and <varname>example3</varname>
-        on the default ports. ZooKeeper data is persisted to the directory
-          <filename>/export/zookeeper</filename>. Below we show what the main configuration files --
-          <filename>hbase-site.xml</filename>, <filename>regionservers</filename>, and
-          <filename>hbase-env.sh</filename> -- found in the HBase <filename>conf</filename>
-        directory might look like.</para>
+      <para>下面是一个有10个节点的集群的基本配置的例子。节点被命名为 <varname>example0</varname>、 <varname>example1</varname>直到节点
+          <varname>example9</varname>。 HBase Master和HDFS namenode运行在节点 <varname>example0</varname>。 RegionServers 运行在节点
+          <varname>example1</varname>-<varname>example9</varname>。 ZooKeeper运行在 <varname>example1</varname>, <varname>example2</varname>, and <varname>example3</varname>
+        上，使用默认端口。 ZooKeeper的持久化数据被保存在
+          <filename>/export/zookeeper</filename>。 下面我们展示主要的配置文件 --
+          <filename>hbase-site.xml</filename>、<filename>regionservers</filename>和
+          <filename>hbase-env.sh</filename> -- 它们在HBase <filename>conf</filename>
+        目录中。</para>
 
       <section
         xml:id="hbase_site">
@@ -1068,9 +976,8 @@ example9
         xml:id="hbase_env">
         <title><filename>hbase-env.sh</filename></title>
 
-        <para>Below we use a <command>diff</command> to show the differences from default in the
-            <filename>hbase-env.sh</filename> file. Here we are setting the HBase heap to be 4G
-          instead of the default 1G.</para>
+        <para>下面我们使用 <command>diff</command> 命令来展示下面的文件和默认的
+            <filename>hbase-env.sh</filename> 文件的不同。此处我们将默认的1G的堆大小设置为4G。</para>
 
         <screen language="bourne">
 
@@ -1091,8 +998,7 @@ index e70ebc6..96f8c27 100644
 
         </screen>
 
-        <para>Use <command>rsync</command> to copy the content of the <filename>conf</filename>
-          directory to all nodes of the cluster.</para>
+        <para>使用 <command>rsync</command> 命令拷贝 <filename>conf</filename> 目录到集群上的其他所有节点。</para>
       </section>
     </section>
   </section>
@@ -1101,86 +1007,61 @@ index e70ebc6..96f8c27 100644
 
   <section
     xml:id="important_configurations">
-    <title>The Important Configurations</title>
-    <para>Below we list what the <emphasis>important</emphasis> Configurations. We've divided this
-      section into required configuration and worth-a-look recommended configs. </para>
-
+    <title>重要配置</title>
+    <para>下面我们列举一些 <emphasis>重要</emphasis> 配置。 我们将这部分分为需要的配置和推荐的值得一看的配置两部分。 </para>
 
     <section
       xml:id="required_configuration">
-      <title>Required Configurations</title>
-      <para>Review the <xref
-          linkend="os" /> and <xref
-          linkend="hadoop" /> sections. </para>
+      <title>需要的配置</title>
+      <para>阅览 <xref
+          linkend="os" /> 和 <xref
+          linkend="hadoop" /> 部分。 </para>
       <section
         xml:id="big.cluster.config">
-        <title>Big Cluster Configurations</title>
-        <para>If a cluster with a lot of regions, it is possible if an eager beaver regionserver
-          checks in soon after master start while all the rest in the cluster are laggardly, this
-          first server to checkin will be assigned all regions. If lots of regions, this first
-          server could buckle under the load. To prevent the above scenario happening up the
-            <varname>hbase.master.wait.on.regionservers.mintostart</varname> from its default value
-          of 1. See <link
+        <title>大集群配置</title>
+        <para>如果一个集群有大量的region，那么这种情况是可能的。Master在启动后迅速检查所有的regionserver。然而因为其他regionserver启动滞后，导致所有的region被分配到了第一台regionserver上。如果region数目过多，那么会导致第一台regionserver的负载过高。为了阻止上述情况的发生，将<varname>hbase.master.wait.on.regionservers.mintostart</varname>的默认值1设置为其他值。查看<link
             xlink:href="https://issues.apache.org/jira/browse/HBASE-6389">HBASE-6389 Modify the
             conditions to ensure that Master waits for sufficient number of Region Servers before
-            starting region assignments</link> for more detail. </para>
+            starting region assignments</link> 可以获得更多信息。 </para>
       </section>
       <section
         xml:id="backup.master.fail.fast">
-        <title>If a backup Master, making primary Master fail fast</title>
-        <para>If the primary Master loses its connection with ZooKeeper, it will fall into a loop
-          where it keeps trying to reconnect. Disable this functionality if you are running more
-          than one Master: i.e. a backup Master. Failing to do so, the dying Master may continue to
-          receive RPCs though another Master has assumed the role of primary. See the configuration <xref
-            linkend="fail.fast.expired.active.master" />. </para>
+        <title>如果一个备份Master使主Master很快失败</title>
+        <para>如果一个主Master与Zookeeper失去了连接，那它将一直循环重试与zookeeper进行连接。如果你有多个Master，比如有一个备份Master，那禁用这个功能。如果在失败的时候还继续这个功能，那尽管另外一个Master已经承担了主Master的职责，但死掉的Master还会继续受到RPC请求。可以参照着 <xref
+            linkend="fail.fast.expired.active.master" />进行配置。 </para>
       </section>
     </section>
 
     <section
       xml:id="recommended_configurations">
-      <title>Recommended Configurations</title>
+      <title>推荐的配置</title>
       <section
         xml:id="recommended_configurations.zk">
-        <title>ZooKeeper Configuration</title>
+        <title>ZooKeeper配置</title>
         <section
           xml:id="sect.zookeeper.session.timeout">
           <title><varname>zookeeper.session.timeout</varname></title>
-          <para>The default timeout is three minutes (specified in milliseconds). This means that if
-            a server crashes, it will be three minutes before the Master notices the crash and
-            starts recovery. You might like to tune the timeout down to a minute or even less so the
-            Master notices failures the sooner. Before changing this value, be sure you have your
-            JVM garbage collection configuration under control otherwise, a long garbage collection
-            that lasts beyond the ZooKeeper session timeout will take out your RegionServer (You
-            might be fine with this -- you probably want recovery to start on the server if a
-            RegionServer has been in GC for a long period of time).</para>
+          <para>默认的时间是3分钟（单位是毫秒）。这意味着如果一个服务器宕机，3分钟后Master才能知道它已经当即并且开始恢复工作。
+              你可能想将这个值调整为1分钟或者更短的时间，使得Master尽快知道服务器已经宕机。在改变这个值之前，请确定你的JVM的垃圾收集配置在控制以内，否则大量的垃圾收集将导致你的RegionServer的Zookeeper的session会话超时（你可能会受到惩罚 -- 因为启动一个进行垃圾收集的RegionServer将花费很长时间）。</para>
 
-          <para>To change this configuration, edit <filename>hbase-site.xml</filename>, copy the
-            changed file around the cluster and restart.</para>
+          <para>为了改变这个配置，编辑 <filename>hbase-site.xml</filename>，拷贝改变后的文件到集群其他节点并且重启集群。</para>
 
-          <para>We set this value high to save our having to field noob questions up on the mailing
-            lists asking why a RegionServer went down during a massive import. The usual cause is
-            that their JVM is untuned and they are running into long GC pauses. Our thinking is that
-            while users are getting familiar with HBase, we'd save them having to know all of its
-            intricacies. Later when they've built some confidence, then they can play with
-            configuration such as this. </para>
+          <para>我们将该值调高以便不需要去邮件列表中询问在大规模导入时RegionServer宕机这种菜鸟问题。通常的原因是，JVM已经停止了运行，它们陷入了长时间的垃圾收集等待中。我们认为随着用户越来越熟悉HBase，他们已经了解了所有的复杂性。之后当他们建立了一定的信心后，就可以像这样玩转配置了。 </para>
         </section>
         <section
           xml:id="zookeeper.instances">
-          <title>Number of ZooKeeper Instances</title>
-          <para>See <xref
-              linkend="zookeeper" />. </para>
+          <title>ZooKeeper实例数目</title>
+          <para>查看 <xref
+              linkend="zookeeper" />。 </para>
         </section>
       </section>
       <section
         xml:id="recommended.configurations.hdfs">
-        <title>HDFS Configurations</title>
+        <title>HDFS配置</title>
         <section
           xml:id="dfs.datanode.failed.volumes.tolerated">
           <title>dfs.datanode.failed.volumes.tolerated</title>
-          <para>This is the "...number of volumes that are allowed to fail before a datanode stops
-            offering service. By default any volume failure will cause a datanode to shutdown" from
-            the <filename>hdfs-default.xml</filename> description. If you have > three or four
-            disks, you might want to set this to 1 or if you have many disks, two or more. </para>
+          <para>从<filename>hdfs-default.xml</filename>的描述中，我们指导这是“datanode停止服务之前允许失败的卷的数目，默认任何卷的失败将导致datanode宕掉”。如果你有大于3个或4个磁盘或者更多个磁盘，你可能想要将这个值设为1。 </para>
         </section>
       </section>
       <section
