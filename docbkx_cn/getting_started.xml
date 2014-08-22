@@ -39,7 +39,7 @@
 
   <section
     xml:id="quickstart">
-    <title>快速开始 - 单机HBase</title>
+    <title>快速入门 - 单机HBase</title>
 
     <para>该指南将会描述如何设置一个运行在本地文件系统上的单机版HBase。对于生产环境来讲，这样的配置是不合适的，但是它可以让你体验一下HBase。本节将展示如何使用<command>HBase Shell</command>命令来在HBase中创建一个表，在该表中插入几行数据，执行针对该表的Put和Scan操作，enable或disable该表，开启和关闭HBase。从下载完HBase到执行完上述操作，花费的时间将少于10分钟。 </para>
     <warning
