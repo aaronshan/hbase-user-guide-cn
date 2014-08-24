@@ -210,51 +210,39 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.regionserver.global.memstore.size</name>
     <value>0.4</value>
-    <description>Maximum size of all memstores in a region server before new
-      updates are blocked and flushes are forced. Defaults to 40% of heap.
-      Updates are blocked and flushes are forced until size of all memstores
-      in a region server hits hbase.regionserver.global.memstore.size.lower.limit.</description>
+    <description>单个region server的全部memstore的最大值。一旦超过这个值，一个新的更新操作会被挂起，强制执行刷写操作。默认值是堆的40%。直到单个region server上的全部memstore达到了hbase.regionserver.global.memstore.size.lower.limit，被挂起的更新操作和刷写操作会被强制执行。</description>
   </property>
   <property>
     <name>hbase.regionserver.global.memstore.size.lower.limit</name>
     <value>0.95</value>
-    <description>Maximum size of all memstores in a region server before flushes are forced.
-      Defaults to 95% of hbase.regionserver.global.memstore.size.
-      A 100% value for this value causes the minimum possible flushing to occur when updates are 
-      blocked due to memstore limiting.</description>
+    <description>在被强制刷写之前，单个region server上的全部memstore所能达到的最大数目。默认值是hbase.regionserver.global.memstore.size的95%。一旦达到100%，即该值与hbase.regionserver.global.memstore.size相等时，更新操作由于memstore限制被阻塞时，系统会以尽可能小的刷写量刷写数据。</description>
   </property>
   <property>
     <name>hbase.regionserver.optionalcacheflushinterval</name>
-    <value>3600000</value>
+    <value>3600000(1小时)</value>
     <description>
-    Maximum amount of time an edit lives in memory before being automatically flushed.
-    Default 1 hour. Set it to 0 to disable automatic flushing.</description>
+        一个edit在内存中的最大生存时长，默认3600000毫秒，即1小时。设置为0的话则禁止自动flush。</description>
   </property>
   <property>
     <name>hbase.regionserver.catalog.timeout</name>
-    <value>600000</value>
-    <description>Timeout value for the Catalog Janitor from the regionserver to META.</description>
+    <value>600000(10分钟)</value>
+    <description>regionserver的Catalog监控.META.的超时时间。</description>
   </property>
   <property>
     <name>hbase.regionserver.dns.interface</name>
     <value>default</value>
-    <description>The name of the Network Interface from which a region server
-      should report its IP address.</description>
+    <description>region server报告自己IP地址的dns接口。</description>
   </property>
   <property>
     <name>hbase.regionserver.dns.nameserver</name>
     <value>default</value>
-    <description>The host name or IP address of the name server (DNS)
-      which a region server should use to determine the host name used by the
-      master for communication and display purposes.</description>
+    <description>region server使用的dns主机名或者IP。</description>
   </property>
   <property>
     <name>hbase.regionserver.region.split.policy</name>
     <value>org.apache.hadoop.hbase.regionserver.IncreasingToUpperBoundRegionSplitPolicy</value>
-    <description>
-      A split policy determines when a region should be split. The various other split policies that
-      are available currently are ConstantSizeRegionSplitPolicy, DisabledRegionSplitPolicy, 
-      DelimitedKeyPrefixRegionSplitPolicy, KeyPrefixRegionSplitPolicy etc.  
+    <description> 当一个region进行split操作时使用的具体方法。当前可用的split方法有：ConstantSizeRegionSplitPolicy、
+        DisabledRegionSplitPolicy、DelimitedKeyPrefixRegionSplitPolicy、KeyPrefixRegionSplitPolicy等。
     </description>
   </property>
 
@@ -315,21 +303,12 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.zookeeper.useMulti</name>
     <value>false</value>
-    <description>Instructs HBase to make use of ZooKeeper's multi-update functionality.
-    This allows certain ZooKeeper operations to complete more quickly and prevents some issues
-    with rare Replication failure scenarios (see the release note of HBASE-2611 for an example).
-    IMPORTANT: only set this to true if all ZooKeeper servers in the cluster are on version 3.4+
-    and will not be downgraded.  ZooKeeper versions before 3.4 do not support multi-update and
-    will not fail gracefully if multi-update is invoked (see ZOOKEEPER-1495).</description>
+    <description>Zookeeper支持多重更新功能。它将使Zookeeper操作完成的更快并且能防止一些很难出现的复制失败问题（可以查看 HBASE-2611的作为一个实例）。重要的是：只有在集群中Zookeeper服务器的版本是3.4以上的时候，该值才能被设置为true。Zookeeper在3.4之前的版本不支持多重更新并且如果多重更新被调用会引发故障（查看ZOOKEEPER-1495）。</description>
   </property>
   <property>
     <name>hbase.config.read.zookeeper.config</name>
     <value>false</value>
-    <description>
-        Set to true to allow HBaseConfiguration to read the
-        zoo.cfg file for ZooKeeper properties. Switching this to true
-        is not recommended, since the functionality of reading ZK
-        properties from a zoo.cfg file has been deprecated.</description>
+    <description> 该值为true的时候会允许HBaseConfiguration从zoo.cfg中读ZooKeeper的属性值，默认为false。切换该值为true不被推荐，因为从zoo.cfg中读取ZK的属性已经被废弃了。</description>
   </property>
   <!--
   Beginning of properties that are directly mapped from ZooKeeper's zoo.cfg.
@@ -344,125 +323,92 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.zookeeper.property.initLimit</name>
     <value>10</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    The number of ticks that the initial synchronization phase can take.</description>
+    <description> ZooKeeper的配置文件zoo.cfg中的属性，表示同步个数限制，默认10个。</description>
   </property>
   <property>
     <name>hbase.zookeeper.property.syncLimit</name>
     <value>5</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    The number of ticks that can pass between sending a request and getting an
-    acknowledgment.</description>
+    <description>ZooKeeper的配置文件zoo.cfg中的属性，表示同步时每次请求和响应的条数，默认是5个。</description>
   </property>
   <property>
     <name>hbase.zookeeper.property.dataDir</name>
     <value>${hbase.tmp.dir}/zookeeper</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    The directory where the snapshot is stored.</description>
+    <description>ZooKeeper的配置文件zoo.cfg中的属性，snapshot存放的目录，默认是${hbase.tmp.dir}/zookeeper。</description>
   </property>
   <property>
     <name>hbase.zookeeper.property.clientPort</name>
     <value>2181</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    The port at which the clients will connect.</description>
+    <description>ZooKeeper的配置文件zoo.cfg中的属性，client连zk的端口，默认2181。</description>
   </property>
   <property>
     <name>hbase.zookeeper.property.maxClientCnxns</name>
     <value>300</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    Limit on number of concurrent connections (at the socket level) that a
-    single client, identified by IP address, may make to a single member of
-    the ZooKeeper ensemble. Set high to avoid zk connection issues running
-    standalone and pseudo-distributed.</description>
+    <description>ZooKeeper的配置文件zoo.cfg中的属性，允许接入zk的最大并发连接数的限制，按ip分配，默认300。当HBase运行在单机模式和伪分布式模式时，应该给将该值调高以防止zk连接出现问题。</description>
   </property>
   <!-- End of properties that are directly mapped from ZooKeeper's zoo.cfg -->
 
   <!--Client configurations-->
   <property>
     <name>hbase.client.write.buffer</name>
-    <value>2097152</value>
-    <description>Default size of the HTable client write buffer in bytes.
-    A bigger buffer takes more memory -- on both the client and server
-    side since server instantiates the passed write buffer to process
-    it -- but a larger buffer size reduces the number of RPCs made.
-    For an estimate of server-side memory-used, evaluate
-    hbase.client.write.buffer * hbase.regionserver.handler.count</description>
+    <value>2097152(2*1024*1024字节)</value>
+    <description>HTable客户端写缓冲的默认字节大小。该值越大消耗的内存越多 -- 由于服务器端也需要消耗内存来处理传入
+        的数据，客户端与服务器端都会消耗更多的内存 -- 较大的缓冲区有助于减少RPC的调用次数。例如，服务器端的消耗大概等于
+        hbase.client.write.buffer * hbase.regionserver.handler.count。</description>
   </property>
   <property>
     <name>hbase.client.pause</name>
     <value>100</value>
-    <description>General client pause value.  Used mostly as value to wait
-    before running a retry of a failed get, region lookup, etc.
-    See hbase.client.retries.number for description of how we backoff from
-    this initial pause amount and how this pause works w/ retries.</description>
+    <description>通常的客户端暂停时间。最多的用法是客户端在重试前的等待时间。比如失败的get操作和region查询操作等都很可能用到。
+    查看hbase.client.retries.number的描述以便了解这个暂停的初始值以及如果写/读仍然失败之后的避退策略。</description>
   </property>
   <property>
     <name>hbase.client.retries.number</name>
     <value>35</value>
-    <description>Maximum retries.  Used as maximum for all retryable
-    operations such as the getting of a cell's value, starting a row update,
-    etc.  Retry interval is a rough function based on hbase.client.pause.  At
-    first we retry at this interval but then with backoff, we pretty quickly reach
-    retrying every ten seconds.  See HConstants#RETRY_BACKOFF for how the backup
-    ramps up.  Change this setting and hbase.client.pause to suit your workload.</description>
+    <description>最大重试次数。例如，region查询、get和update操作等发生错误时最大重试次数的值。
+        重试的间隔时间为hbase.client.pause。刚开始使用一个初始的时间间隔，如果仍然失败会使用避退的时间间隔。可以查看HConstants#RETRY_BACKOFF来了解具体的避退策略。请根据你的工作负载来设置该值和hbase.client.pause的值。</description>
   </property>
   <property>
     <name>hbase.client.max.total.tasks</name>
     <value>100</value>
-    <description>The maximum number of concurrent tasks a single HTable instance will
-    send to the cluster.</description>
+    <description>一个HTable实例可以提交给集群的最大并发任务数，默认是100。</description>
   </property>
   <property>
     <name>hbase.client.max.perserver.tasks</name>
     <value>5</value>
-    <description>The maximum number of concurrent tasks a single HTable instance will
-    send to a single region server.</description>
+    <description>一个HTable实例给一台regionserver提交的最大并发任务数，默认是5。</description>
   </property>
   <property>
     <name>hbase.client.max.perregion.tasks</name>
     <value>1</value>
-    <description>The maximum number of concurrent connections the client will
-    maintain to a single Region. That is, if there is already
-    hbase.client.max.perregion.tasks writes in progress for this region, new puts
-    won't be sent to this region until some writes finishes.</description>
+    <description>客户端并发连接一个region的最大连接数，换句话说，当在region有hbase.client.max.perregion.tasks个写正在处理时，新的Put操作是不会被发送到这个region的，直到该region上的写操作执行完为止，默认是1。</description>
   </property>
   <property>
     <name>hbase.client.scanner.caching</name>
     <value>100</value>
-    <description>Number of rows that will be fetched when calling next
-    on a scanner if it is not served from (local, client) memory. Higher
-    caching values will enable faster scanners but will eat up more memory
-    and some calls of next may take longer and longer times when the cache is empty.
-    Do not set this value such that the time between invocations is greater
-    than the scanner timeout; i.e. hbase.client.scanner.timeout.period</description>
+    <description>
+        扫描器调用next方法的时候发现本地客户端内存的数据已经取完，就会向服务器端发起请求，该值就是扫描器调用next方法一次性从服务器返回的最大行数。该值越大，扫描器整体的返回速度就越快，但同时依赖的内存也就越多，并且当请求的数据没有在内存命中的话，next方法的返回时间可能会更长，因此要避免这个时间长于扫描器超时的时间。即hbase.client.scanner.timeout.period。</description>
   </property>
   <property>
     <name>hbase.client.keyvalue.maxsize</name>
-    <value>10485760</value>
-    <description>Specifies the combined maximum allowed size of a KeyValue
-    instance. This is to set an upper boundary for a single entry saved in a
-    storage file. Since they cannot be split it helps avoiding that a region
-    cannot be split any further because the data is too large. It seems wise
-    to set this to a fraction of the maximum region size. Setting it to zero
-    or less disables the check.</description>
+    <value>10485760(10*1024*1024字节)</value>
+    <description>设置KeyValue实例大小的上限，这是为了协助设置存储文件中单个条目存储的上限。这种做法有利于避免region过大但不能被拆分的现象。最好将其设置为最大的region大小。如果用户想绕开这个检查，可以将这个参数设置为0或者更少。</description>
   </property>
   <property>
     <name>hbase.client.scanner.timeout.period</name>
-    <value>60000</value>
-    <description>Client scanner lease period in milliseconds.</description>
+    <value>60000(1分钟)</value>
+    <description>客户端扫描器的超时时间，单位是毫秒。</description>
   </property>
   <property>
     <name>hbase.client.localityCheck.threadPoolSize</name>
     <value>2</value>
+    <description>做localityCheck的线程池大小，默认是2。</description>
   </property>
 
   <!--Miscellaneous configuration-->
   <property>
     <name>hbase.bulkload.retries.number</name>
     <value>0</value>
-    <description>Maximum retries.  This is maximum number of iterations
-    to atomic bulk loads are attempted in the face of splitting operations
-    0 means never give up.</description>
+    <description>做bulk load的最大重试次数，默认是0，即代表不断重试。</description>
   </property>
   <property>
     <name>hbase.balancer.period
@@ -473,30 +419,25 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.balancer.backupMasterWeight</name>
     <value>1</value>
-    <description>Used to control how many regions the region balancer can assign to
-    backup Masters, compared to normal region servers. The default value 1 means a
-    backup Master can host as many regions as a normal region server. The bigger the
-    weight, the less the regions a backup Master will host. If the weight is less than 1,
-    the balancer will not assign any region to any backup Master</description>
+    <description>用来控制相对于普通的region server，region均衡器能分配给多少个region给备份Master。默认值为1代表着备份Master能拥有和普通region server一样多的region。权重越大，备份Master将持有的region数就越少。如果该权重小于1，那么均衡器将不会分配region给备份Master。</description>
   </property>
   <property>
     <name>hbase.regions.slop</name>
     <value>0.2</value>
-    <description>Rebalance if any regionserver has average + (average * slop) regions.</description>
+    <description>
+        如果有regionserver的region数目超过average + (average * slop)，则重新balance，默认是0.2。</description>
   </property>
   <property>
     <name>hbase.server.thread.wakefrequency</name>
     <value>10000</value>
-    <description>Time to sleep in between searches for work (in milliseconds).
-    Used as sleep interval by service threads such as log roller.</description>
+    <description>
+        两次查询工作的间隔时间，单位为毫秒。通常被用作像log roller这样的服务线程的休息间隔时间。</description>
   </property>
   <property>
     <name>hbase.server.versionfile.writeattempts</name>
     <value>3</value>
     <description>
-    How many time to retry attempting to write a version file
-    before just aborting. Each attempt is seperated by the
-    hbase.server.thread.wakefrequency milliseconds.</description>
+        退出前写version file文件的重试次数，默认值是3，每次尝试的间隔由参数hbase.server.thread.wakefrequency控制。</description>
   </property>
   <property>
     <name>hbase.hregion.memstore.flush.size</name>
@@ -537,25 +478,18 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.hregion.majorcompaction.jitter</name>
     <value>0.50</value>
-    <description>A multiplier applied to hbase.hregion.majorcompaction to cause compaction to occur
-      a given amount of time either side of hbase.hregion.majorcompaction. The smaller the number,
-      the closer the compactions will happen to the hbase.hregion.majorcompaction
-      interval.</description>
+    <description>
+        合并的时间不仅仅是由hbase.hregion.majorcompaction指定的，也就是说，hbase.hregion.majorcompaction并不是一个严格的时间。合并时间是存在抖动的。这个参数就是这个抖动的比例。该值越小，合并的时间就会越接近hbase.hregion.majorcompaction指定的时间。</description>
   </property>
   <property>
     <name>hbase.hstore.compactionThreshold</name>
     <value>3</value>
-    <description> If more than this number of StoreFiles exist in any one Store 
-      (one StoreFile is written per flush of MemStore), a compaction is run to rewrite all 
-      StoreFiles into a single StoreFile. Larger values delay compaction, but when compaction does
-      occur, it takes longer to complete.</description>
+    <description> 如果在一个Store（一个MemStore的一次刷写将产生一个一个StoreFile文件）中的StoreFile文件超过了该值，那么将会产生将会产生一个合并操作，该操作将多个StoreFile文件合并成一个StoreFile。该值越大意味着合并操作会延迟，但是当合并发生的时候，也会花费更长的时间。</description>
   </property>
   <property>
     <name>hbase.hstore.flusher.count</name>
     <value>2</value>
-    <description> The number of flush threads. With fewer threads, the MemStore flushes will be
-      queued. With more threads, the flushes will be executed in parallel, increasing the load on
-      HDFS, and potentially causing more compactions. </description>
+    <description>刷写线程的数量。线程数越少，MemStore的刷写操作将会被排成队列。线程数越多，刷写将会并行执行，也将会增加HDFS的负载，并且也可能会引发更多的合并操作。</description>
   </property>
   <property>
     <name>hbase.hstore.blockingStoreFiles</name>
