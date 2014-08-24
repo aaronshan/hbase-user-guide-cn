@@ -141,104 +141,70 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.ipc.server.callqueue.handler.factor</name>
     <value>0.1</value>
-    <description>Factor to determine the number of call queues.
-      A value of 0 means a single queue shared between all the handlers.
-      A value of 1 means that each handler has its own queue.</description>
+    <description>用来确定请求队列的数目。值为0表示所有的处理器共享一个队列，值为1表示每一个处理器都拥有自己的队列。</description>
   </property>
 <property>
     <name>hbase.ipc.server.callqueue.read.ratio</name>
     <value>0</value>
-    <description>Split the call queues into read and write queues.
-      The specified interval (which should be between 0.0 and 1.0)
-      will be multiplied by the number of call queues.
-      A value of 0 indicate to not split the call queues, meaning that both read and write
-      requests will be pushed to the same set of queues.
-      A value lower than 0.5 means that there will be less read queues than write queues.
-      A value of 0.5 means there will be the same number of read and write queues.
-      A value greater than 0.5 means that there will be more read queues than write queues.
-      A value of 1.0 means that all the queues except one are used to dispatch read requests.
-
-      Example: Given the total number of call queues being 10
-      a read.ratio of 0 means that: the 10 queues will contain both read/write requests.
-      a read.ratio of 0.3 means that: 3 queues will contain only read requests
-      and 7 queues will contain only write requests.
-      a read.ratio of 0.5 means that: 5 queues will contain only read requests
-      and 5 queues will contain only write requests.
-      a read.ratio of 0.8 means that: 8 queues will contain only read requests
-      and 2 queues will contain only write requests.
-      a read.ratio of 1 means that: 9 queues will contain only read requests
-      and 1 queues will contain only write requests.
+    <description>将所有的请求队列分为读和写两种队列。指定的间隔（在0.0和1.0之间）将被用来和呼叫队列数相乘。值为0表示没有对呼叫队列进行切分，意味着读和写请求将被放入同一个队列集合中。值小于0.5表示读队列比写队列少。值为0.5表示渡河写队列的数目相同。值超过0.5表示读队列比写队列多。值为1.0表示除了一个队列之外的其他所有队列都用于分派读请求。
+      例如，假定请求队列数目为10。
+      read.ratio值为0表示：10个队列都包含读/写请求。
+      read.ratio值为0.3表示：3个队列只包含读请求，7个队列只包含写请求。
+      read.ratio值为0.5表示：5个队列只包含读请求，5个队列只包含写请求。
+      read.ratio值为0.8表示：8个队列只包含读请求，2个队列只包含写请求。
+      read.ratio值为1表示：9个队列只包含读请求，1个队列只包含写请求。
     </description>
   </property>
   <property>
     <name>hbase.ipc.server.callqueue.scan.ratio</name>
     <value>0</value>
-    <description>Given the number of read call queues, calculated from the total number
-      of call queues multiplied by the callqueue.read.ratio, the scan.ratio property
-      will split the read call queues into small-read and long-read queues.
-      A value lower than 0.5 means that there will be less long-read queues than short-read queues.
-      A value of 0.5 means that there will be the same number of short-read and long-read queues.
-      A value greater than 0.5 means that there will be more long-read queues than short-read queues
-      A value of 0 or 1 indicate to use the same set of queues for gets and scans.
-
-      Example: Given the total number of read call queues being 8
-      a scan.ratio of 0 or 1 means that: 8 queues will contain both long and short read requests.
-      a scan.ratio of 0.3 means that: 2 queues will contain only long-read requests
-      and 6 queues will contain only short-read requests.
-      a scan.ratio of 0.5 means that: 4 queues will contain only long-read requests
-      and 4 queues will contain only short-read requests.
-      a scan.ratio of 0.8 means that: 6 queues will contain only long-read requests
-      and 2 queues will contain only short-read requests.
+    <description>给定读请求队列的数目。根据总的请求队列乘以callqueue.read.ratio和scan.ratio属性值，来将读请求队列分为短读队列和长读队列。
+      值小于0.5表示长读队列比短读队列少。
+      值为0.5表示长读队列和短读队列一样多。
+      值大于0.5表示长读队列比短读队列多。
+      值为1表示对get和scan操作使用相同的队列集合。
+      例如：假定读请求队列的数目是8。
+      scan.ratio为0或者1表示：8个队列中既包含长读队列也包含短读队列。
+        scan.ratio为0.3表示：2个队列只包含长读请求，6个队列只包含短读请求。
+        scan.ratio为0.5表示：4个队列只包含长读请求，4个队列只包含短读请求。
+        scan.ratio为0.8表示：6个队列只包含长读请求，2个队列只包含短读请求。
     </description>
   </property>
   <property>
     <name>hbase.regionserver.msginterval</name>
-    <value>3000</value>
-    <description>Interval between messages from the RegionServer to Master
-    in milliseconds.</description>
+    <value>3000(3秒)</value>
+    <description>RegionServer和Master之间传递消息的时间间隔，单位是毫秒。</description>
   </property>
   <property>
     <name>hbase.regionserver.regionSplitLimit</name>
     <value>2147483647</value>
-    <description>Limit for the number of regions after which no more region
-    splitting should take place. This is not a hard limit for the number of
-    regions but acts as a guideline for the regionserver to stop splitting after
-    a certain limit. Default is MAX_INT; i.e. do not block splitting.</description>
+    <description>如果在线的region数目超过该值，则不再进行split。该值不是一个硬性限定，但是它会指导regionserver在一个确定的限定值后就不再进行split操作。默认值是MAX_INT。设置为1就可以关闭自动split。</description>
   </property>
   <property>
     <name>hbase.regionserver.logroll.period</name>
-    <value>3600000</value>
-    <description>Period at which we will roll the commit log regardless
-    of how many edits it has.</description>
+    <value>3600000(1小时)</value>
+    <description>在这段时期内，所有的日志都会提交到同一个文件中。也就是说，每隔1小时（默认值），就会打开一个新的日志文件。单位是毫秒，默认值是1小时。</description>
   </property>
   <property>
     <name>hbase.regionserver.logroll.errors.tolerated</name>
     <value>2</value>
-    <description>The number of consecutive WAL close errors we will allow
-    before triggering a server abort.  A setting of 0 will cause the
-    region server to abort if closing the current WAL writer fails during
-    log rolling.  Even a small value (2 or 3) will allow a region server
-    to ride over transient HDFS errors.</description>
+    <description>日志轮转时，能承受的最大WAL Writer关闭失败次数。值为0时，当日志轮转时如果WAL Writer关闭失败，那么region server就会终止。即使是一个比较小的值(2或者3)也会使得在HDFS错误出现时，region server能有机会将错误修复。</description>
   </property>
   <property>
     <name>hbase.regionserver.hlog.reader.impl</name>
     <value>org.apache.hadoop.hbase.regionserver.wal.ProtobufLogReader</value>
-    <description>The HLog file reader implementation.</description>
+    <description>HLog file reader 的实现。</description>
   </property>
   <property>
     <name>hbase.regionserver.hlog.writer.impl</name>
     <value>org.apache.hadoop.hbase.regionserver.wal.ProtobufLogWriter</value>
-    <description>The HLog file writer implementation.</description>
+    <description>HLog file writer 的实现。</description>
   </property>
   <property>
     <name>hbase.master.distributed.log.replay</name>
     <value>true</value>
-    <description>Enable 'distributed log replay' as default engine splitting
-    WAL files on server crash.  This default is new in hbase 1.0.  To fall
-    back to the old mode 'distributed log splitter', set the value to
-    'false'.  'Disributed log replay' improves MTTR because it does not
-    write intermediate files.  'DLR' required that 'hfile.format.version'
-    be set to version 3 or higher. 
+    <description>控制日志的split是在region的reopen前执行还是reopen后执行。如果是true表示在reopen后执行,否则相反。
+        'distributed log replay'作为服务器宕机时的默认切分WAL文件的引擎。在hbase 1.0中有新的默认值。为了兼容旧的'分布式日志切分器'，需要将该值设置为false。'Disributed log replay'减少了MTTR(Mean Time To Restoration，平均恢复时间)。因为它不需要写一些中间文件。'DLR'需要将'hfile.format.version'设置为3或者更高。
     </description>
   </property>
   <property>
