@@ -21,3 +21,7 @@ HBase用户指南（中文版）
 
 编译完成后，会在target/docbkx目录下生成multipage和onepage两个目录，分别代表多页和单页。 分别进入这两个目录，打开对应的book.html文件即可。
 
+译者
+-------------------
+* [@aaronshan](https://github.com/aaronshan)
+* [@desilting](https://github.com/desilting)
