@@ -479,7 +479,7 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.hregion.majorcompaction.jitter</name>
     <value>0.50</value>
     <description>
-        合并的时间不仅仅是由hbase.hregion.majorcompaction指定的，也就是说，hbase.hregion.majorcompaction并不是一个严格的时间。合并时间是存在抖动的。这个参数就是这个抖动的比例。该值越小，合并的时间就会越接近hbase.hregion.majorcompaction指定的时间。</description>
+        合并的时间不仅仅是由hbase.hregion.majorcompaction指定的，也就是说，hbase.hregion.majorcompaction并不是一个严格的时间。合并时间是存在抖动的。这个参数就是这个抖动的比例。假如该值和hbase.hregion.majorcompaction都使用默认值，则最终的合并时间在（7-7*0.5）~（7+7*0.5）之间。所以该值越小，合并的时间就会越接近hbase.hregion.majorcompaction指定的时间。</description>
   </property>
   <property>
     <name>hbase.hstore.compactionThreshold</name>
@@ -513,22 +513,16 @@ possible configurations would overwhelm and obscure the important.
   </property>
   <property>
     <name>hbase.hstore.compaction.min.size</name>
-    <value>134217728</value>
-    <description>A StoreFile smaller than this size will always be eligible for minor compaction. 
-      HFiles this size or larger are evaluated by hbase.hstore.compaction.ratio to determine if 
-      they are eligible. Because this limit represents the "automatic include"limit for all 
-      StoreFiles smaller than this value, this value may need to be reduced in write-heavy 
-      environments where many StoreFiles in the 1-2 MB range are being flushed, because every 
-      StoreFile will be targeted for compaction and the resulting StoreFiles may still be under the
-      minimum size and require further compaction. If this parameter is lowered, the ratio check is
-      triggered more quickly. This addressed some issues seen in earlier versions of HBase but 
-      changing this parameter is no longer necessary in most situations. Default: 128 MB expressed 
-      in bytes.</description>
+    <value>134217728(128*1024*1024字节)</value>
+    <description>
+        StoreFile文件的大小如果小于该值，那在minor合并的时候，肯定会将该文件加入。会通过hbase.hstore.compaction.ratio来评估故HFile的大小，看它们在minor合并时是否应该被加入。因为该值代表着所有如果小于该值的StoreFile会被“自动加入”。如果在频繁写的环境中，刷写操作可能会产生很多大小在1~2MB的StoreFile文件，那么该值就应该被适当减小。因为这些小文件在合并之后很可能会继续触发合并操作。如果该值减小，合并的触发检查也会更加迅速。在早期的HBase版本中，如果该参数不设置可能会有一些问题。但是现在的大多数环境下，已经不再需要改变该参数了。该参数默认值是：128MB。
+      </description>
   </property>
     <property>
     <name>hbase.hstore.compaction.max.size</name>
     <value>9223372036854775807</value>
-    <description>A StoreFile larger than this size will be excluded from compaction. The effect of 
+    <description>如果一个StoreFile的大小比该值还大，那么当合并发生时，该StoreFile就会被排除在外。
+        A StoreFile larger than this size will be excluded from compaction. The effect of
       raising hbase.hstore.compaction.max.size is fewer, larger StoreFiles that do not get 
       compacted often. If you feel that compaction is happening too often without much benefit, you
       can try raising this value. Default: the value of LONG.MAX_VALUE, expressed in bytes.</description>
