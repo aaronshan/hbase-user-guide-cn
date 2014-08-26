@@ -110,7 +110,7 @@
         <para>一定要按照<link
                 xlink:href="http://zookeeper.apache.org/doc/r3.1.2/zookeeperAdmin.html#sc_maintenance">Zookeeper
             Maintenance</link>设置数据目录的清理规则，否则要不了几个月，你可能会遇到一些“有趣”的问题。例如，在leader重新竞选的时候，
-            如果Zookeeper不得不经常穿越一个个有着成百上千日志的目录，它可能就会开始丢弃会话。这个过程很少见，只会在机器掉线或中断时出现。
+            如果Zookeeper不得不经常“穿越”一个个有着成百上千日志的目录，它可能就会开始丢弃会话。这个过程很少见，只会在机器掉线或中断时出现。
         </para>
     </caution>
 
