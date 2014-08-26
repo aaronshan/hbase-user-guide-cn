@@ -1029,7 +1029,7 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.rest.filter.classes</name>
     <value>org.apache.hadoop.hbase.rest.filter.GzipFilter</value>
     <description>
-      Servlet filters for REST service.
+      对于REST服务的Servlet过滤器。
     </description>
   </property>
   <property>
