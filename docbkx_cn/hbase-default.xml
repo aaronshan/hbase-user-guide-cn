@@ -521,163 +521,133 @@ possible configurations would overwhelm and obscure the important.
     <property>
     <name>hbase.hstore.compaction.max.size</name>
     <value>9223372036854775807</value>
-    <description>如果一个StoreFile的大小比该值还大，那么当合并发生时，该StoreFile就会被排除在外。
-        A StoreFile larger than this size will be excluded from compaction. The effect of
-      raising hbase.hstore.compaction.max.size is fewer, larger StoreFiles that do not get 
-      compacted often. If you feel that compaction is happening too often without much benefit, you
-      can try raising this value. Default: the value of LONG.MAX_VALUE, expressed in bytes.</description>
+    <description>如果一个StoreFile的大小比该值还大，那么当minor合并发生时，该StoreFile就会被排除在外。把hbase.hstore.compaction.max.size的值增大带来的影响是很小的，大的StoreFile不会经常被合并。如果你觉得压缩的太频繁没有多少好处，那么可以将该值提高。默认值是LONG.MAX_VALUE，单位是字节。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.ratio</name>
     <value>1.2F</value>
-    <description>For minor compaction, this ratio is used to determine whether a given StoreFile 
-      which is larger than hbase.hstore.compaction.min.size is eligible for compaction. Its
-      effect is to limit compaction of large StoreFiles. The value of hbase.hstore.compaction.ratio
-      is expressed as a floating-point decimal. A large ratio, such as 10, will produce a single 
-      giant StoreFile. Conversely, a low value, such as .25, will produce behavior similar to the 
-      BigTable compaction algorithm, producing four StoreFiles. A moderate value of between 1.0 and
-      1.4 is recommended. When tuning this value, you are balancing write costs with read costs. 
-      Raising the value (to something like 1.4) will have more write costs, because you will 
-      compact larger StoreFiles. However, during reads, HBase will need to seek through fewer 
-      StoreFiles to accomplish the read. Consider this approach if you cannot take advantage of 
-      Bloom filters. Otherwise, you can lower this value to something like 1.0 to reduce the 
-      background cost of writes, and use Bloom filters to control the number of StoreFiles touched 
-      during reads. For most cases, the default value is appropriate.</description>
+    <description>
+        对于minor合并，该值被用来确定是否一个大小比hbase.hstore.compaction.min.size指定的值大的StoreFile可以进行合并。它通常用来限制大StoreFile的合并。
+        hbase.hstore.compaction.ratio是一个浮点数。该值越大，比如取值10，将会导致生成一个巨大的StoreFile文件。相反的，该值越小，比如取值0.25，将会和BigTable的合并算法类似
+        ，产生四个StoreFile文件。该值的推荐值在1.0到1.4之间。调整该值，你可以平衡写操作和读操作的消耗。将该值增大（比如1.4）,将会导致更多的写消耗，因为你需要合并更大的StoreFile文件。然而，在读操作期间，HBase需要寻找几个StoreFile文件就可以完成读操作。如果你没有使用布隆过滤器，你可以考虑该方法。否则，你可以降低该值到1.0来减少写操作的损耗，并且使用布隆过滤器来控制读操作期间的损耗。在大多数情况下，默认值是适用的。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.ratio.offpeak</name>
     <value>5.0F</value>
-    <description>Allows you to set a different (by default, more aggressive) ratio for determining
-      whether larger StoreFiles are included in compactions during off-peak hours. Works in the 
-      same way as hbase.hstore.compaction.ratio. Only applies if hbase.offpeak.start.hour and 
-      hbase.offpeak.end.hour are also enabled.</description>
+    <description>
+        对于确定是否一个大StoreFile文件是否在非高峰时段的合并过程中应该被加入，允许你设置一个不同的（通常情况下，更积极）比值。和hbase.hstore.compaction.ratio的工作方式相同。
+        但仅仅在hbase.offpeak.start.hour和hbase.offpeak.end.hour启用的时候会被应用。</description>
   </property>
   <property>
     <name>hbase.hstore.time.to.purge.deletes</name>
     <value>0</value>
-    <description>The amount of time to delay purging of delete markers with future timestamps. If 
-      unset, or set to 0, all delete markers, including those with future timestamps, are purged 
-      during the next major compaction. Otherwise, a delete marker is kept until the major compaction 
-      which occurs after the marker's timestamp plus the value of this setting, in milliseconds.
+    <description>
+        含有删除标记的那些值被完全删除的延迟时间。如果不设定该值，或者设定该值为0，那么在major合并期间，含有删除标记的记录将会被完全删除。
+        否则，在major合并期间，那些含有删除标记的记录会在时间（删除标记的时间戳加上该值）才会被完全删除。
     </description>
   </property>
   <property>
     <name>hbase.offpeak.start.hour</name>
     <value>-1</value>
-    <description>The start of off-peak hours, expressed as an integer between 0 and 23, inclusive.
-      Set to -1 to disable off-peak.</description>
+    <description>非高峰时间段的开始时间。使用整数0-23来表示。设置为-1将禁止使用非高峰时段。</description>
   </property>
   <property>
     <name>hbase.offpeak.end.hour</name>
     <value>-1</value>
-    <description>The end of off-peak hours, expressed as an integer between 0 and 23, inclusive. Set
-      to -1 to disable off-peak.</description>
+    <description>非高峰时段的结束时间。使用整数0-23来表示。设置为-1将禁止使用非高峰时段。</description>
   </property>
   <property>
     <name>hbase.regionserver.thread.compaction.throttle</name>
     <value>2560</value>
-    <description>There are two different thread pools for compactions, one for large compactions and
-      the other for small compactions. This helps to keep compaction of lean tables (such as
-        <systemitem>hbase:meta</systemitem>) fast. If a compaction is larger than this threshold, it
-      goes into the large compaction pool. In most cases, the default value is appropriate. Default:
-      2 x hbase.hstore.compaction.max x hbase.hregion.memstore.flush.size (which defaults to 128).
-      The value field assumes that the value of hbase.hregion.memstore.flush.size is unchanged from
-      the default.</description>
+    <description>
+          合并时有两个不同的线程池，一个用于大合并，一个用于小合并。这有助于保证瘦表(例如<systemitem>hbase:meta</systemitem>)
+        合并快速完成。如果有一个大于该阈值的合并，它将会进入大合并池。在多数情况下，默认值是合适的。
+        默认值：2 x hbase.hstore.compaction.max x hbase.hregion.memstore.flush.size (默认值为128)。
+        该值假定hbase.hregion.memstore.flush.size使用默认值。</description>
   </property>
   <property>
     <name>hbase.hstore.compaction.kv.max</name>
     <value>10</value>
-    <description>The maximum number of KeyValues to read and then write in a batch when flushing or
-      compacting. Set this lower if you have big KeyValues and problems with Out Of Memory
-      Exceptions Set this higher if you have wide, small rows. </description>
+    <description>
+        进行刷写或合并操作时，一次批量读和写的KeyValue的最大数目。如果你有的KeyValue很大，并且可能会有OOM(Out Of Memory
+        Exceptions)异常，那么将该值调小。反之，将该值调大。 </description>
   </property>
   <property>
     <name>hbase.storescanner.parallel.seek.enable</name>
     <value>false</value>
     <description>
-      Enables StoreFileScanner parallel-seeking in StoreScanner,
-      a feature which can reduce response latency under special conditions.</description>
+        在StoreScanner中启用并行查询，这样可以在一定条件下减少响应延迟。</description>
   </property>
   <property>
     <name>hbase.storescanner.parallel.seek.threads</name>
     <value>10</value>
     <description>
-      The default thread pool size if parallel-seeking feature enabled.</description>
+        如果并行查找特性被启用，该值表示默认的线程池大小。</description>
   </property>
   <property>
     <name>hfile.block.cache.size</name>
     <value>0.4</value>
-    <description>Percentage of maximum heap (-Xmx setting) to allocate to block cache
-        used by a StoreFile. Default of 0.4 means allocate 40%.
-        Set to 0 to disable but it's not recommended; you need at least
-        enough cache to hold the storefile indices.</description>
+    <description>
+        用于StoreFile的块缓存使用最大堆(设置-Xmx)的百分比。默认的0.4意味着分配了40%.设置成0将禁用块缓存，但是不推荐这样做。你至少需要足够的
+        缓存来保存一些storefile。</description>
   </property>
   <property>
       <name>hfile.block.index.cacheonwrite</name>
       <value>false</value>
-      <description>This allows to put non-root multi-level index blocks into the block
-          cache at the time the index is being written.</description>
+      <description>当索引被写入时是否允许插入非根的多层索引块到块缓存。</description>
   </property>
   <property>
       <name>hfile.index.block.max.size</name>
       <value>131072</value>
-      <description>When the size of a leaf-level, intermediate-level, or root-level
-          index block in a multi-level block index grows to this size, the
-          block is written out and a new block is started.</description>
+      <description>
+          当多层块索引的叶子层、中间层或者根的索引块的大小超过了该值，块将会写入完成并且开始一个新的块。
+          </description>
   </property>
   <property>
       <name>hfile.format.version</name>
       <value>3</value>
-      <description>The HFile format version to use for new files.
-      Version 3 adds support for tags in hfiles (See http://hbase.apache.org/book.html#hbase.tags).
-      Distributed Log Replay requires that tags are enabled.
+      <description>HFile的格式化版本号。现在已经在HFile的版本3中加入了对标签的支持 (查看 http://hbase.apache.org/book.html#hbase.tags)。
+      分布式日志回访需要启用标签。
       </description>
   </property>
   <property>
       <name>hfile.block.bloom.cacheonwrite</name>
       <value>false</value>
-      <description>Enables cache-on-write for inline blocks of a compound Bloom filter.</description>
+      <description>启用一个组合布隆过滤器的内联(inline)块的写缓存。</description>
   </property>
   <property>
       <name>io.storefile.bloom.block.size</name>
       <value>131072</value>
-      <description>The size in bytes of a single block ("chunk") of a compound Bloom
-          filter. This size is approximate, because Bloom blocks can only be
-          inserted at data block boundaries, and the number of keys per data
-          block varies.</description>
+      <description>组合布隆过滤器的单个块("chunk")的字节大小。 这个大小是大概值，因为布隆块仅仅在数据块的边界被插入，并且
+          每个数据块中包含的键(key)数目也不同。</description>
   </property>
   <property>
       <name>hbase.rs.cacheblocksonwrite</name>
       <value>false</value>
-      <description>Whether an HFile block should be added to the block cache when the
-          block is finished.</description>
+      <description>当块完成的时候，该HFile块是否应该被加入块缓存。</description>
   </property>
   <property>
     <name>hbase.rpc.server.engine</name>
     <value>org.apache.hadoop.hbase.ipc.ProtobufRpcServerEngine</value>
-    <description>Implementation of org.apache.hadoop.hbase.ipc.RpcServerEngine to be
-    used for server RPC call marshalling.</description>
+    <description>org.apache.hadoop.hbase.ipc.RpcServerEngine的实现。用于服务器RPC调用。</description>
   </property>
   <property>
     <name>hbase.rpc.timeout</name>
     <value>60000</value>
-    <description>This is for the RPC layer to define how long HBase client applications
-        take for a remote call to time out. It uses pings to check connections
-        but will eventually throw a TimeoutException.</description>
+    <description>该值用于定义HBase客户端应用执行RPC远程调用需要花费的时间。它通常用来检查连接连通情况，但是最终会
+        抛出一个TimeoutException异常。</description>
   </property>
   <property>
     <name>hbase.rpc.shortoperation.timeout</name>
     <value>10000</value>
-    <description>This is another version of "hbase.rpc.timeout". For those RPC operation
-        within cluster, we rely on this configuration to set a short timeout limitation
-        for short operation. For example, short rpc timeout for region server's trying
-        to report to active master can benefit quicker master failover process.</description>
+    <description>这是另一个版本的"hbase.rpc.timeout"。对于那些集群中的RPC操作，我们使用该配置来对短操作设定一个超时限定。
+        例如，短的rpc超时用于服务器给master报告活动状态的时候，这将有利于master进行容灾处理。</description>
   </property>
   <property>
     <name>hbase.ipc.client.tcpnodelay</name>
     <value>true</value>
-    <description>Set no delay on rpc socket connections.  See
-    http://docs.oracle.com/javase/1.5.0/docs/api/java/net/Socket.html#getTcpNoDelay()</description>
+    <description>设置rpc套接字链接是否延迟。查看
+    http://docs.oracle.com/javase/1.5.0/docs/api/java/net/Socket.html#getTcpNoDelay()可以获取更多信息。</description>
   </property>
   <!-- The following properties configure authentication information for
        HBase processes when using Kerberos security.  There are no default
@@ -708,45 +678,44 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hadoop.policy.file</name>
     <value>hbase-policy.xml</value>
-    <description>The policy configuration file used by RPC servers to make
-      authorization decisions on client requests.  Only used when HBase
-      security is enabled.</description>
+    <description>
+        用于HBase客户端请求发起时，RPC服务器做出认证决策的决策配置文件。仅仅当HBase启用了安全配置时可用。
+        </description>
   </property>
   <property>
     <name>hbase.superuser</name>
     <value></value>
-    <description>List of users or groups (comma-separated), who are allowed
-    full privileges, regardless of stored ACLs, across the cluster.
-    Only used when HBase security is enabled.</description>
+    <description>
+        在集群中拥有所有权利，可以无视ACLs文件，即HBase集群的超级用户或组，使用逗号分割。仅仅当HBase启用了安全配置时可用。
+        </description>
   </property>
   <property>
     <name>hbase.auth.key.update.interval</name>
     <value>86400000</value>
-    <description>The update interval for master key for authentication tokens
-    in servers in milliseconds.  Only used when HBase security is enabled.</description>
+    <description>
+        在服务器中用于认证令牌的master密钥的更新间隔，单位为毫秒。仅仅当HBase启用了安全配置时可用。
+        </description>
   </property>
   <property>
     <name>hbase.auth.token.max.lifetime</name>
     <value>604800000</value>
-    <description>The maximum lifetime in milliseconds after which an
-    authentication token expires.  Only used when HBase security is enabled.</description>
+    <description>
+        一个认证令牌过期之后的最大失效时间，单位为毫秒。仅仅当HBase启用了安全配置时可用。
+        </description>
   </property>
   <property>
     <name>hbase.ipc.client.fallback-to-simple-auth-allowed</name>
     <value>false</value>
-    <description>When a client is configured to attempt a secure connection, but attempts to
-      connect to an insecure server, that server may instruct the client to
-      switch to SASL SIMPLE (unsecure) authentication. This setting controls
-      whether or not the client will accept this instruction from the server.
-      When false (the default), the client will not allow the fallback to SIMPLE
-      authentication, and will abort the connection.</description>
+    <description>
+        当一个配置成进行安全连接的客户端，试图连接一个不安全的服务器，服务器将会指导客户端切换到SASL简单认证（不安全）。
+        这个设置控制客户端是否将接受服务器的指导。如果是false（默认值），客户端将不允许进行简单认证并且将退出连接。
+        </description>
   </property>
   <property>
     <name>hbase.display.keys</name>
     <value>true</value>
-    <description>When this is set to true the webUI and such will display all start/end keys
-                 as part of the table details, region names, etc. When this is set to false,
-                 the keys are hidden.</description>
+    <description>
+        当该值设置为true，网页UI将显示所有的表的region名，起始和结束主键，以及表的其他信息。如果该值设置成false，那么主键值将被隐藏。</description>
   </property>
   <property>
     <name>hbase.coprocessor.region.classes</name>
@@ -756,36 +725,33 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.rest.port</name>
     <value>8080</value>
-    <description>The port for the HBase REST server.</description>
+    <description>用于HBase REST 服务器的端口。</description>
   </property>
   <property>
     <name>hbase.rest.readonly</name>
     <value>false</value>
-    <description>Defines the mode the REST server will be started in. Possible values are:
-    false: All HTTP methods are permitted - GET/PUT/POST/DELETE.
-    true: Only the GET method is permitted.</description>
+    <description>
+        定义REST服务器被启动的模式。可能的值为：false：允许所有的HTTP方法- GET/PUT/POST/DELETE。true:仅仅允许GET方法。
+        </description>
   </property>
   <property>
     <name>hbase.rest.threads.max</name>
     <value>100</value>
-    <description>The maximum number of threads of the REST server thread pool.
-        Threads in the pool are reused to process REST requests. This
-        controls the maximum number of requests processed concurrently.
-        It may help to control the memory used by the REST server to
-        avoid OOM issues. If the thread pool is full, incoming requests
-        will be queued up and wait for some free threads.</description>
+    <description>
+        REST服务器线程池的最大线程数。线程池中的线程在处理REST请求时重用。这将控制并发处理请求的最大数目。它可以帮助控制REST服务器的内存使用，防止OOM错误。
+        如果线程池满了，新进入的请求将会等待直到有空闲的线程可用。</description>
   </property>
   <property>
     <name>hbase.rest.threads.min</name>
     <value>2</value>
-    <description>The minimum number of threads of the REST server thread pool.
-        The thread pool always has at least these number of threads so
-        the REST server is ready to serve incoming requests.</description>
+    <description>
+        REST服务器线程池的最小线程数。REST服务器将会保证线程池中至少有一些线程来服务新进入的请求。
+        </description>
   </property>
   <property>
     <name>hbase.rest.support.proxyuser</name>
     <value>false</value>
-    <description>Enables running the REST server to support proxy-user mode.</description>
+    <description>在运行REST服务器时启用对代理用户模式的支持。</description>
   </property>
   <property skipInDoc="true">
     <name>hbase.defaults.for.version</name>
@@ -807,133 +773,128 @@ possible configurations would overwhelm and obscure the important.
   <property>
       <name>hbase.coprocessor.abortonerror</name>
       <value>true</value>
-      <description>Set to true to cause the hosting server (master or regionserver)
-      to abort if a coprocessor fails to load, fails to initialize, or throws an
-      unexpected Throwable object. Setting this to false will allow the server to
-      continue execution but the system wide state of the coprocessor in question
-      will become inconsistent as it will be properly executing in only a subset
-      of servers, so this is most useful for debugging only.</description>
+      <description>
+          如果该值为true，当协处理器加载失败、初始化失败或者抛出异常时，托管的服务器（master或regionserver）将会中止。
+          设置为false则在错误发生时将允许服务器继续执行，但是协处理器的问题将会导致一部分服务器和其他服务器状态不一致。因此，false最好仅仅用于调试阶段。</description>
   </property>
   <property>
     <name>hbase.online.schema.update.enable</name>
     <value>true</value>
-    <description>Set true to enable online schema changes.</description>
+    <description>设定为true将启用在线模式更改。</description>
   </property>
   <property>
     <name>hbase.table.lock.enable</name>
     <value>true</value>
-    <description>Set to true to enable locking the table in zookeeper for schema change operations.
-    Table locking from master prevents concurrent schema modifications to corrupt table
-    state.</description>
+    <description>
+        设置为true将启用在zookeeper中对该表的锁定以进行模式改变操作。表的锁定将使得master组织并发的模式修改，防止对表的状态造成破坏。
+       </description>
   </property>
   <property>
     <name>hbase.table.max.rowsize</name>
     <value>1073741824</value>
     <description>
-      Maximum size of single row in bytes (default is 1 Gb) for Get'ting
-      or Scan'ning without in-row scan flag set. If row size exceeds this limit
-      RowTooBigException is thrown to client.
+        Get或Scan操作单行的最大字节（默认是1Gb）如果行的大小超过了这个限制，将会在客户端抛出RowTooBigException异常。
     </description>
   </property>
   <property>
     <name>hbase.thrift.minWorkerThreads</name>
     <value>16</value>
-    <description>The "core size" of the thread pool. New threads are created on every
-    connection until this many threads are created.</description>
+    <description>
+        线程池的“核心大小”。每个连接会创建新线程，一直创建到该值表示的数目为止。
+        </description>
   </property>
   <property>
     <name>hbase.thrift.maxWorkerThreads</name>
     <value>1000</value>
-    <description>The maximum size of the thread pool. When the pending request queue
-    overflows, new threads are created until their number reaches this number.
-    After that, the server starts dropping connections.</description>
+    <description>
+        线程池的最大大小。当等待的请求队列溢出，新的线程将会被创建，直到数目达到该值表示的数目位置。之后，服务器将开始删除连接。
+        </description>
   </property>
   <property>
     <name>hbase.thrift.maxQueuedRequests</name>
     <value>1000</value>
-    <description>The maximum number of pending Thrift connections waiting in the queue. If
-     there are no idle threads in the pool, the server queues requests. Only
-     when the queue overflows, new threads are added, up to
-     hbase.thrift.maxQueuedRequests threads.</description>
+    <description>
+        在队列中等待的Thrift连接的最大数目。在服务器队列请求线程池中没有空闲的线程。只有当队列溢出时，新的线程才会被加入，，直到达到
+        hbase.thrift.maxQueuedRequests个线程为止。
+        </description>
   </property>
   <property>
     <name>hbase.thrift.htablepool.size.max</name>
     <value>1000</value>
-    <description>The upper bound for the table pool used in the Thrift gateways server.
-      Since this is per table name, we assume a single table and so with 1000 default
-      worker threads max this is set to a matching number. For other workloads this number
-      can be adjusted as needed.
+    <description>
+        Thrift网关服务器中的存储表的池的最大大小。因为对于每个表名，我们假定单个表，默认最大有1000个工作线程。对于负载超过该值的情况，需要对该值进行调整。
     </description>
   </property>
   <property>
     <name>hbase.regionserver.thrift.framed</name>
     <value>false</value>
-    <description>Use Thrift TFramedTransport on the server side.
-      This is the recommended transport for thrift servers and requires a similar setting
-      on the client side. Changing this to false will select the default transport,
-      vulnerable to DoS when malformed requests are issued due to THRIFT-601.
+    <description>
+        在服务器端使用Thrift TFramedTransport。对于thrift服务器，推荐这个传输并且需要在客户端也做相同的配置。将该值改为false将选择默认的传输，
+        当请求格式不正确时，容易受DoS攻击。这归因于THRIFT-601。
     </description>
   </property>
   <property>
    <name>hbase.regionserver.thrift.framed.max_frame_size_in_mb</name>
     <value>2</value>
-    <description>Default frame size when using framed transport</description>
+    <description>当使用帧传输时，默认的帧大小。</description>
   </property>
   <property>
     <name>hbase.regionserver.thrift.compact</name>
     <value>false</value>
-    <description>Use Thrift TCompactProtocol binary serialization protocol.</description>
+    <description>使用Thrift TCompactProtocol二进制序列化协议。</description>
   </property>
   <property>
     <name>hbase.data.umask.enable</name>
     <value>false</value>
-    <description>Enable, if true, that file permissions should be assigned
-      to the files written by the regionserver</description>
+    <description>如果值为true，启用。该文件的权限应该被分配给被regionserver写入的那些文件。</description>
   </property>
   <property>
     <name>hbase.data.umask</name>
     <value>000</value>
-    <description>File permissions that should be used to write data
-      files when hbase.data.umask.enable is true</description>
+    <description>
+        当hbase.data.umask.enable值为true时，写入的数据文件应该被用于文件权限。</description>
   </property>
   <property>
     <name>hbase.metrics.showTableName</name>
     <value>true</value>
-    <description>Whether to include the prefix "tbl.tablename" in per-column family metrics.
-	If true, for each metric M, per-cf metrics will be reported for tbl.T.cf.CF.M, if false,
-	per-cf metrics will be aggregated by column-family across tables, and reported for cf.CF.M.
-	In both cases, the aggregated metric M across tables and cfs will be reported.</description>
+    <description>
+        是否在每一个列簇metrics中包括这样一个前缀 "tbl.tablename"。如果为true，对于每一个metricsM，每一个列簇metrics将会被报告成tbl.T.cf.CF.M，如果为false，
+        则每一个列簇metrics将会被整个表的列簇汇总，并且被报告成cf.CF.M。在这两种情况下，整个表汇总的metric M和列簇总会在报告中出现。
+        </description>
   </property>
   <property>
     <name>hbase.metrics.exposeOperationTimes</name>
     <value>true</value>
-    <description>Whether to report metrics about time taken performing an
-      operation on the region server.  Get, Put, Delete, Increment, and Append can all
-      have their times exposed through Hadoop metrics per CF and per region.</description>
+    <description>
+        是否通过指定每个列簇和每个region的Hadoop metrics来报告在region server上完成一个操作(Get, Put, Delete, Increment, and Appen)花费的时间。
+        </description>
   </property>
   <property>
     <name>hbase.snapshot.enabled</name>
     <value>true</value>
-    <description>Set to true to allow snapshots to be taken / restored / cloned.</description>
+    <description>设置为true将允许快照被设置(taken）/ 恢复(restored) / 拷贝(cloned)。</description>
   </property>
   <property>
     <name>hbase.snapshot.restore.take.failsafe.snapshot</name>
     <value>true</value>
-    <description>Set to true to take a snapshot before the restore operation.
-      The snapshot taken will be used in case of failure, to restore the previous state.
-      At the end of the restore operation this snapshot will be deleted</description>
+    <description>
+        设置为true以便恢复之前操作的快照。
+        快照被用来防止失败，以便恢复到之前的状态。在快照恢复成功后，快照应该被删除。
+        </description>
   </property>
   <property>
     <name>hbase.snapshot.restore.failsafe.name</name>
     <value>hbase-failsafe-{snapshot.name}-{restore.timestamp}</value>
-    <description>Name of the failsafe snapshot taken by the restore operation.
-      You can use the {snapshot.name}, {table.name} and {restore.timestamp} variables
-      to create a name based on what you are restoring.</description>
+    <description>
+        在恢复操作时采用的故障安全快照的名字。你可以使用{snapshot.name}、{table.name}和{restore.timestamp}变量来创建一个名字。
+        </description>
   </property>
   <property>
     <name>hbase.server.compactchecker.interval.multiplier</name>
     <value>1000</value>
-    <description>The number that determines how often we scan to see if compaction is necessary.
+    <description>
+        hbase.server.compactchecker.interval.multiplier * hbase.server.thread.wakefrequency，默认1000；
+        The number that determines how often we scan to see if compaction is necessary.
         Normally, compactions are done after some events (such as memstore flush), but if
         region didn't receive a lot of writes for some time, or due to different compaction
         policies, it may be necessary to check it periodically. The interval between checks is
