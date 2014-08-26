@@ -893,18 +893,15 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.server.compactchecker.interval.multiplier</name>
     <value>1000</value>
     <description>
-        hbase.server.compactchecker.interval.multiplier * hbase.server.thread.wakefrequency，默认1000；
-        The number that determines how often we scan to see if compaction is necessary.
-        Normally, compactions are done after some events (such as memstore flush), but if
-        region didn't receive a lot of writes for some time, or due to different compaction
-        policies, it may be necessary to check it periodically. The interval between checks is
-        hbase.server.compactchecker.interval.multiplier multiplied by
-        hbase.server.thread.wakefrequency.</description>
+        我们每隔一段时间需要查看是否需要合并。通常，合并发生在某些操作（比如memstore刷写）之后，但是如果在一段时间region没有接收
+		到大量写入，或者因为不同的合并策略，就需要定期进行检查。检查的时间间隔为：
+		hbase.server.compactchecker.interval.multiplier * hbase.server.thread.wakefrequency。
+		</description>
   </property>
   <property>
     <name>hbase.lease.recovery.timeout</name>
-    <value>900000</value>
-    <description>How long we wait on dfs lease recovery in total before giving up.</description>
+    <value>900000(15分钟)</value>
+    <description>dfs租约超时时限，超时则放弃。默认是15分钟。</description>
   </property>
   <property>
     <name>hbase.lease.recovery.dfs.timeout</name>
@@ -918,21 +915,14 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.column.max.version</name>
     <value>1</value>
-    <description>New column family descriptors will use this value as the default number of versions
-      to keep.</description>
+    <description>新的列簇描述符将使用该值作为默认保存的版本数。</description>
   </property>
   <property>
     <name>hbase.dfs.client.read.shortcircuit.buffer.size</name>
     <value>131072</value>
-    <description>If the DFSClient configuration
-    dfs.client.read.shortcircuit.buffer.size is unset, we will
-    use what is configured here as the short circuit read default
-    direct byte buffer size. DFSClient native default is 1MB; HBase
-    keeps its HDFS files open so number of file blocks * 1MB soon
-    starts to add up and threaten OOME because of a shortage of
-    direct memory.  So, we set it down from the default.  Make
-    it > the default hbase block size set in the HColumnDescriptor
-    which is usually 64k.
+    <description>如果DFSClient的配置项dfs.client.read.shortcircuit.buffer.size没被设置，我们将使用该配置作为一次短读默认读取的缓冲字节数。
+	DFSClient本地的默认值是1MB。HBase需要一直打开HDFS文件，因此打开大小为块数*1MB的文件将很快会造成OOME异常。因此，我们需要将默认值调低。在HColumnDescriptor
+	中将hbase默认的块大小设置为64k。
     </description>
   </property>
   <property>
@@ -982,28 +972,28 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.status.publisher.class</name>
     <value>org.apache.hadoop.hbase.master.ClusterStatusPublisher$MulticastPublisher</value>
     <description>
-      Implementation of the status publication with a multicast message.
+      使用多播消息来实现的状态发布器。
     </description>
   </property>
   <property>
     <name>hbase.status.listener.class</name>
     <value>org.apache.hadoop.hbase.client.ClusterStatusListener$MulticastListener</value>
     <description>
-      Implementation of the status listener with a multicast message.
+      使用多播消息来实现的状态监听器。
     </description>
   </property>
   <property>
     <name>hbase.status.multicast.address.ip</name>
     <value>226.1.1.3</value>
     <description>
-      Multicast address to use for the status publication by multicast.
+      通过多播发布状态时使用的多播地址。
     </description>
   </property>
   <property>
     <name>hbase.status.multicast.address.port</name>
     <value>16100</value>
     <description>
-      Multicast port to use for the status publication by multicast.
+      通过多播发布状态时候使用的多播端口。
     </description>
   </property>
 
@@ -1021,8 +1011,7 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.security.authentication</name>
     <value>simple</value>
     <description>
-      Controls whether or not secure authentication is enabled for HBase.
-      Possible values are 'simple' (no authentication), and 'kerberos'.
+      用来控制HBase安全验证是否可用。可用的值有：'simple' (不验证)和'kerberos'。
     </description>
   </property>
   <property>
