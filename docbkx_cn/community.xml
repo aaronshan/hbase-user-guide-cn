@@ -1,152 +1,139 @@
 <?xml version="1.0"?>
 <chapter
-  xml:id="community"
-  version="5.0"
-  xmlns="http://docbook.org/ns/docbook"
-  xmlns:xlink="http://www.w3.org/1999/xlink"
-  xmlns:xi="http://www.w3.org/2001/XInclude"
-  xmlns:svg="http://www.w3.org/2000/svg"
-  xmlns:m="http://www.w3.org/1998/Math/MathML"
-  xmlns:html="http://www.w3.org/1999/xhtml"
-  xmlns:db="http://docbook.org/ns/docbook">
-  <!--
-/**
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
--->
-  <title>Community</title>
-  <section
-    xml:id="decisions">
-    <title>Decisions</title>
+        xml:id="community"
+        version="5.0"
+        xmlns="http://docbook.org/ns/docbook"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns:m="http://www.w3.org/1998/Math/MathML"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns:db="http://docbook.org/ns/docbook">
+    <!--
+  /**
+   * Licensed to the Apache Software Foundation (ASF) under one
+   * or more contributor license agreements.  See the NOTICE file
+   * distributed with this work for additional information
+   * regarding copyright ownership.  The ASF licenses this file
+   * to you under the Apache License, Version 2.0 (the
+   * "License"); you may not use this file except in compliance
+   * with the License.  You may obtain a copy of the License at
+   *
+   *     http://www.apache.org/licenses/LICENSE-2.0
+   *
+   * Unless required by applicable law or agreed to in writing, software
+   * distributed under the License is distributed on an "AS IS" BASIS,
+   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   * See the License for the specific language governing permissions and
+   * limitations under the License.
+   */
+  -->
+    <title>社区</title>
     <section
-      xml:id="feature_branches">
-      <title>Feature Branches</title>
-      <para>Feature Branches are easy to make. You do not have to be a committer to make one. Just
-        request the name of your branch be added to JIRA up on the developer's mailing list and a
-        committer will add it for you. Thereafter you can file issues against your feature branch in
-        Apache HBase JIRA. Your code you keep elsewhere -- it should be public so it can be observed
-        -- and you can update dev mailing list on progress. When the feature is ready for commit, 3
-        +1s from committers will get your feature merged<footnote>
-          <para>See <link
-              xlink:href="http://search-hadoop.com/m/asM982C5FkS1">HBase, mail # dev - Thoughts
-              about large feature dev branches</link></para>
-        </footnote>
-      </para>
+            xml:id="decisions">
+        <title>决策</title>
+        <section
+                xml:id="feature_branches">
+            <title>特征分支</title>
+            <para>特征分支很容易创建，你不需要是一个代码提交者，只需向开发者邮件列表，提供需要添加到JIRA的分支名称，就会有提交者帮你添加该分支.
+                然后，你就可以提交各种发行文件到Apache HBase JIRA中，分支代码可以保存在任何地方，但应当是公开可见的，同时你可以通过开发者邮件列表更新进展。
+                当特征准备好提交时，3+1为提交者将合并你的分支<footnote>
+                    <para>见 <link
+                            xlink:href="http://search-hadoop.com/m/asM982C5FkS1">HBase, mail # dev - Thoughts
+                        about large feature dev branches</link></para>
+                </footnote>
+            </para>
+        </section>
+        <section
+                xml:id="patchplusonepolicy">
+            <title>补丁 +1 规则</title>
+            <para> 以下规则是我们在09/2012制定的，只是一些建议并不是硬性规定。在它们固定下来前，我们想先试试看它们是否有效。 </para>
+            <para> HBase由很多组件组成<link
+                    xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel"></link>。
+                组件有一个或多个<xref
+                        linkend="OWNER" />所有者。 <link
+                        xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel">组件</link>
+                JIRA 页面的‘Description’字段描述了组件的当前所有者。 </para>
+            <para> 提交补丁至少需要一个其适用的HBase组件所有者+1，如果所有者不在（太忙或其他原因），两个以上的非所有者+1也可以。 </para>
+            <para> 跨组件补丁提交时，至少需要两个+1, preferably +1s by owners of components touched by the x-component patch
+                (TODO: 这一点还需加强，但我认为对于首次提交来说这也可以）。
+            </para>
+            <para>任何人反对这个补丁将-1，只有当所有-1被处理后补丁才能提交。 </para>
+        </section>
+        <section
+                xml:id="hbase.fix.version.in.JIRA">
+            <title>对于解决的问题，怎样在JIRA中设置修复版本号</title>
+            <para>当我们解决问题时，我们一致认为应该<link
+                    xlink:href="http://search-hadoop.com/m/azemIi5RCJ1">这样</link>设置JIRA中的版本。
+                如果trunk是0.98.0： </para>
+            <itemizedlist>
+                <listitem>
+                    <para> 只提交的trunk:标上0.98 </para>
+                </listitem>
+                <listitem>
+                    <para> 提交到0.95和trunk : 标上0.98和0.95.x </para>
+                </listitem>
+                <listitem>
+                    <para> 提交到0.94.x，0.95 和 trunk: 标上0.98, 0.95.x, 和 0.94.x </para>
+                </listitem>
+                <listitem>
+                    <para> 提交到 89-fb: 标上 89-fb </para>
+                </listitem>
+                <listitem>
+                    <para> 提交site的修复: 无版本 </para>
+                </listitem>
+            </itemizedlist>
+        </section>
+        <section
+                xml:id="hbase.when.to.close.JIRA">
+            <title>何时关闭一个RESOLVED JIRA</title>
+            <para>我们 <link
+                    xlink:href="http://search-hadoop.com/m/4cIKs1iwXMS1">认为</link>，对于那些罗列了多个修复版本的问题，
+                在这些版本的发布版上都会关闭这个问题，该问题以后的更改必须出现在一个新的JIRA中。
+            </para>
+        </section>
+        <section
+                xml:id="no.permanent.state.in.zk">
+            <title>ZooKeeper中只有瞬态！</title>
+            <para> 我们应当能去除Zookeeper中的数据，且hbase应该会慢慢重建这些ZK内容。在这几部分，这是个老格言。我们刚刚才注意到它。
+                另外，我们现在正在违背这个基本原则—— replication至少保持了ZooKeeper中的永久状态——但我们正在努力取消这个对黄金法则的破坏。
+            </para>
+        </section>
     </section>
     <section
-      xml:id="patchplusonepolicy">
-      <title>Patch +1 Policy</title>
-      <para> The below policy is something we put in place 09/2012. It is a suggested policy rather
-        than a hard requirement. We want to try it first to see if it works before we cast it in
-        stone. </para>
-      <para> Apache HBase is made of <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel">components</link>.
-        Components have one or more <xref
-          linkend="OWNER" />s. See the 'Description' field on the <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel">components</link>
-        JIRA page for who the current owners are by component. </para>
-      <para> Patches that fit within the scope of a single Apache HBase component require, at least,
-        a +1 by one of the component's owners before commit. If owners are absent -- busy or
-        otherwise -- two +1s by non-owners will suffice. </para>
-      <para> Patches that span components need at least two +1s before they can be committed,
-        preferably +1s by owners of components touched by the x-component patch (TODO: This needs
-        tightening up but I think fine for first pass). </para>
-      <para> Any -1 on a patch by anyone vetos a patch; it cannot be committed until the
-        justification for the -1 is addressed. </para>
+            xml:id="community.roles">
+        <title>社区角色</title>
+        <section
+                xml:id="OWNER">
+            <title>组件所有者/助理</title>
+            <para> 组件所有者在Apache HBase JIRA <link
+                    xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel">组件</link>
+                页中的description字段中列出。
+                所有者们之所以在 'Description'字段中列出而不是 'Component Lead'字段，是因为后者只允许列出一个所有者，而我们鼓励组件拥有多个所有者。
+
+            </para>
+            <para> 所有者或组件助理是一些志愿者，他们通常（也不一定）在所在的组件领域中是专家，对Apache HBase组件应该怎样发展可能会有相应的议程。
+            </para>
+            <orderedlist>
+                <title>组件所有者责任</title>
+                <listitem>
+                    <para> 所有者需要测试检验他们的组件范围内的补丁。
+                    </para>
+                </listitem>
+                <listitem>
+                    <para> 如果适用，如果所有者有一个议程表，他们将会向着他们的组件的推进方向，发布目标或构想。
+                    </para>
+                </listitem>
+            </orderedlist>
+            <para> 如果你想成为一名组件所有者， 就写好dev列表，我们稍后会签署。所有者不需要是代码提交者。 </para>
+        </section>
     </section>
     <section
-      xml:id="hbase.fix.version.in.JIRA">
-      <title>How to set fix version in JIRA on issue resolve</title>
-      <para>Here is how <link
-          xlink:href="http://search-hadoop.com/m/azemIi5RCJ1">we agreed</link> to set versions in
-        JIRA when we resolve an issue. If trunk is going to be 0.98.0 then: </para>
-      <itemizedlist>
-        <listitem>
-          <para> Commit only to trunk: Mark with 0.98 </para>
-        </listitem>
-        <listitem>
-          <para> Commit to 0.95 and trunk : Mark with 0.98, and 0.95.x </para>
-        </listitem>
-        <listitem>
-          <para> Commit to 0.94.x and 0.95, and trunk: Mark with 0.98, 0.95.x, and 0.94.x </para>
-        </listitem>
-        <listitem>
-          <para> Commit to 89-fb: Mark with 89-fb. </para>
-        </listitem>
-        <listitem>
-          <para> Commit site fixes: no version </para>
-        </listitem>
-      </itemizedlist>
+            xml:id="hbase.commit.msg.format">
+        <title>提交消息格式</title>
+        <para>我们 <link
+                xlink:href="http://search-hadoop.com/m/Gwxwl10cFHa1">认为</link>SVN提交消息格式如下所示：
+            <programlisting>HBASE-xxxxx &lt;title>. (&lt;contributor>)</programlisting> 如果是contributor在提交，
+            ,则不用 '(&lt;contributor>)'。 </para>
     </section>
-    <section
-      xml:id="hbase.when.to.close.JIRA">
-      <title>Policy on when to set a RESOLVED JIRA as CLOSED</title>
-      <para>We <link
-          xlink:href="http://search-hadoop.com/m/4cIKs1iwXMS1">agreed</link> that for issues that
-        list multiple releases in their <emphasis>Fix Version/s</emphasis> field, CLOSE the issue on
-        the release of any of the versions listed; subsequent change to the issue must happen in a
-        new JIRA. </para>
-    </section>
-    <section
-      xml:id="no.permanent.state.in.zk">
-      <title>Only transient state in ZooKeeper!</title>
-      <para> You should be able to kill the data in zookeeper and hbase should ride over it
-        recreating the zk content as it goes. This is an old adage around these parts. We just made
-        note of it now. We also are currently in violation of this basic tenet -- replication at
-        least keeps permanent state in zk -- but we are working to undo this breaking of a golden
-        rule. </para>
-    </section>
-  </section>
-  <section
-    xml:id="community.roles">
-    <title>Community Roles</title>
-    <section
-      xml:id="OWNER">
-      <title>Component Owner/Lieutenant</title>
-      <para> Component owners are listed in the description field on this Apache HBase JIRA <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE#selectedTab=com.atlassian.jira.plugin.system.project%3Acomponents-panel">components</link>
-        page. The owners are listed in the 'Description' field rather than in the 'Component Lead'
-        field because the latter only allows us list one individual whereas it is encouraged that
-        components have multiple owners. </para>
-      <para> Owners or component lieutenants are volunteers who are (usually, but not necessarily)
-        expert in their component domain and may have an agenda on how they think their Apache HBase
-        component should evolve. </para>
-      <orderedlist>
-        <title>Component Owner Duties</title>
-        <listitem>
-          <para> Owners will try and review patches that land within their component's scope.
-          </para>
-        </listitem>
-        <listitem>
-          <para> If applicable, if an owner has an agenda, they will publish their goals or the
-            design toward which they are driving their component </para>
-        </listitem>
-      </orderedlist>
-      <para> If you would like to be volunteer as a component owner, just write the dev list and
-        we'll sign you up. Owners do not need to be committers. </para>
-    </section>
-  </section>
-  <section
-    xml:id="hbase.commit.msg.format">
-    <title>Commit Message format</title>
-    <para>We <link
-        xlink:href="http://search-hadoop.com/m/Gwxwl10cFHa1">agreed</link> to the following SVN
-      commit message format:
-      <programlisting>HBASE-xxxxx &lt;title>. (&lt;contributor>)</programlisting> If the person
-      making the commit is the contributor, leave off the '(&lt;contributor>)' element. </para>
-  </section>
 </chapter>
