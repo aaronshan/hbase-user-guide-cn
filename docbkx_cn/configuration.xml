@@ -1061,20 +1061,15 @@ index e70ebc6..96f8c27 100644
         <section
           xml:id="dfs.datanode.failed.volumes.tolerated">
           <title>dfs.datanode.failed.volumes.tolerated</title>
-          <para>从<filename>hdfs-default.xml</filename>的描述中，我们指导这是“datanode停止服务之前允许失败的卷的数目，默认任何卷的失败将导致datanode宕掉”。如果你有大于3个或4个磁盘或者更多个磁盘，你可能想要将这个值设为1。 </para>
+          <para>从<filename>hdfs-default.xml</filename>的描述中，我们知道这是“datanode停止服务之前允许失败的卷的数目，默认任何卷的失败将导致datanode宕掉”。如果你有大于3个或4个磁盘或者更多个磁盘，你可能想要将这个值设为1。 </para>
         </section>
       </section>
       <section
         xml:id="hbase.regionserver.handler.count-description">
         <title><varname>hbase.regionserver.handler.count</varname></title>
-        <para> This setting defines the number of threads that are kept open to answer incoming
-          requests to user tables. The rule of thumb is to keep this number low when the payload per
-          request approaches the MB (big puts, scans using a large cache) and high when the payload
-          is small (gets, small puts, ICVs, deletes). The total size of the queries in progress is
-          limited by the setting "hbase.ipc.server.max.callqueue.size". </para>
-        <para> It is safe to set that number to the maximum number of incoming clients if their
-          payload is small, the typical example being a cluster that serves a website since puts
-          aren't typically buffered and most of the operations are gets. </para>
+        <para> 这个设置定义了响应用户表的请求所打开的线程数目。一个经验是：当每一个请求的有效负载达到了MB级别(大的puts、使用大缓存量的scan操作)，那么应该将该值调低。
+如果有效负载很小（gets、小的puts、ICVs、deletes操作），将该值调高。可以通过设置"hbase.ipc.server.max.callqueue.size"来限定处理队列的总的大小。</para>
+        <para>如果新的客户端请求的有效负载都很小，那么将该值设置为这些客户端的总数目是安全的。一个典型的实例是服务站点的hbase集群的put操作没有被缓存并且大多数操作都是gets。 </para>
         <para> The reason why it is dangerous to keep this setting high is that the aggregate size
           of all the puts that are currently happening in a region server may impose too much
           pressure on its memory, or even trigger an OutOfMemoryError. A region server running on
