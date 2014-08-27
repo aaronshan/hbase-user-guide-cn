@@ -906,11 +906,10 @@ possible configurations would overwhelm and obscure the important.
   <property>
     <name>hbase.lease.recovery.dfs.timeout</name>
     <value>64000</value>
-    <description>How long between dfs recover lease invocations. Should be larger than the sum of
-        the time it takes for the namenode to issue a block recovery command as part of
-        datanode; dfs.heartbeat.interval and the time it takes for the primary
-        datanode, performing block recovery to timeout on a dead datanode; usually
-        dfs.client.socket-timeout. See the end of HBASE-8389 for more.</description>
+    <description>
+dfs恢复租约调用的超时时限。它应该比namenode给datanode发出块恢复命令花费的总时间（包括dfs.heartbeat.interval和它在主datanode上花费的时间以及在死亡的datanode的块恢复时间、dfs.client.socket-timeout）更长。
+可以查看HBASE-8389以了解更多内容。        
+    </description>
   </property>
   <property>
     <name>hbase.column.max.version</name>
@@ -929,32 +928,24 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.regionserver.checksum.verify</name>
     <value>true</value>
     <description>
-        If set to true (the default), HBase verifies the checksums for hfile
-        blocks. HBase writes checksums inline with the data when it writes out
-        hfiles. HDFS (as of this writing) writes checksums to a separate file
-        than the data file necessitating extra seeks.  Setting this flag saves
-        some on i/o.  Checksum verification by HDFS will be internally disabled
-        on hfile streams when this flag is set.  If the hbase-checksum verification
-        fails, we will switch back to using HDFS checksums (so do not disable HDFS
-        checksums!  And besides this feature applies to hfiles only, not to WALs).
-        If this parameter is set to false, then hbase will not verify any checksums,
-        instead it will depend on checksum verification being done in the HDFS client.  
+        如果设置为true(默认值)，HBase将验证hfile块的校验。HBase在写入数据时会将校验值一起写入hfile。
+因为一些原因，HDFS（截止撰写本文档时）会将校验值写入一个独立的文件中。设定该值可以节省一些I/O。当该值被设定时，HDFS的校验检查将会被禁用。如果HBase的校验检查失败，
+才会切换到HDFS的校验检查（因此不要禁用HDFS的校验检查！并且该特性只适用于HFile，不适用于WALs）。如果该参数被设置为false，hbase将不会验证任何校验值，它将仅仅依赖在HDFS客户端
+上完成检查校验。
     </description>
   </property>
   <property>
     <name>hbase.hstore.bytes.per.checksum</name>
     <value>16384</value>
     <description>
-        Number of bytes in a newly created checksum chunk for HBase-level
-        checksums in hfile blocks.
+        在hfile块中新创建的HBase级别的校验块的字节数。
     </description>
   </property>
   <property>
     <name>hbase.hstore.checksum.algorithm</name>
     <value>CRC32</value>
     <description>
-      Name of an algorithm that is used to compute checksums. Possible values
-      are NULL, CRC32, CRC32C.
+用来计算校验值的算法名。可用的值有：NULL、CRC32和CRC32C。
     </description>
   </property>
 
@@ -962,10 +953,7 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.status.published</name>
     <value>false</value>
     <description>
-      This setting activates the publication by the master of the status of the region server.
-      When a region server dies and its recovery starts, the master will push this information
-      to the client application, to let them cut the connection immediately instead of waiting
-      for a timeout.
+该设置激活master公布region server的状态。当一个regionserver死亡并且对于它的恢复开启，master将会将该消息发给客户端应用，让它们立刻切断连接并等待一段时间。
     </description>
   </property>
   <property>
@@ -1001,10 +989,8 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.dynamic.jars.dir</name>
     <value>${hbase.rootdir}/lib</value>
     <description>
-      The directory from which the custom filter/co-processor jars can be loaded
-      dynamically by the region server without the need to restart. However,
-      an already loaded filter/co-processor class would not be un-loaded. See
-      HBASE-1936 for more details.
+该目录指向用户不需要重启就可以被动态加载的过滤器/协处理器的jar文件的目录。然而已经加载的过滤器/协处理器的类将不能被卸载。
+可以查看HBASE-1936以了解更多细节。
     </description>
   </property>
   <property>
@@ -1025,66 +1011,46 @@ possible configurations would overwhelm and obscure the important.
     <name>hbase.master.loadbalancer.class</name>
     <value>org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer</value>
     <description>
-      Class used to execute the regions balancing when the period occurs.
-      See the class comment for more on how it works
-      http://hbase.apache.org/devapidocs/org/apache/hadoop/hbase/master/balancer/StochasticLoadBalancer.html
-      It replaces the DefaultLoadBalancer as the default (since renamed
-      as the SimpleLoadBalancer).
+当需要进行balance操作时，执行region的balance操作的类。可以在 http://hbase.apache.org/devapidocs/org/apache/hadoop/hbase/master/balancer/StochasticLoadBalancer.html
+查看更多关于该类的细节以及它如何工作。它将替换默认值DefaultLoadBalancer（后改名为SimpleLoadBalancer）。
     </description>
   </property>
   <property>
     <name>hbase.security.exec.permission.checks</name>
     <value>false</value>
     <description>
-      If this setting is enabled and ACL based access control is active (the
-      AccessController coprocessor is installed either as a system coprocessor
-      or on a table as a table coprocessor) then you must grant all relevant
-      users EXEC privilege if they require the ability to execute coprocessor
-      endpoint calls. EXEC privilege, like any other permission, can be
-      granted globally to a user, or to a user on a per table or per namespace
-      basis. For more information on coprocessor endpoints, see the coprocessor
-      section of the HBase online manual. For more information on granting or
-      revoking permissions using the AccessController, see the security
-      section of the HBase online manual.
+如果该设置被启用并且ACL访问控制处于激活状态（无论是系统或表设置了AccessController协处理器。）。那么如果用户需要执行协处理器endpoint调用，你需要授予他们EXEC权限。
+和其他权限的授予一样，你可以授予用户所有权限，也可以授予用户对某一个表或某一个命名空间的权限。更多关于协处理器endpoint的信息，可以查看HBase指导手册的协处理器部分。
+更多的使用AccessController授予或回收权限的内容，可以查看HBase指导手册的HBase安全部分。
     </description>
   </property>
   <property>
     <name>hbase.procedure.regionserver.classes</name>
     <value></value>
-    <description>A comma-separated list of 
-    org.apache.hadoop.hbase.procedure.RegionServerProcedureManager procedure managers that are 
-    loaded by default on the active HRegionServer process. The lifecycle methods (init/start/stop) 
-    will be called by the active HRegionServer process to perform the specific globally barriered 
-    procedure. After implementing your own RegionServerProcedureManager, just put it in 
-    HBase's classpath and add the fully qualified class name here.
+    <description>
+一个用逗号分割的org.apache.hadoop.hbase.procedure.RegionServerProcedureManager列表。它们在激活状态的HRegionServer进程中被默认加载。生命周期方法（init/start/stop）
+将会由一个激活状态的HRegionServer指定的程序来调用。你可以实现你自己的RegionServerProcedureManager，仅仅需要将它们放到HBase的类路径(classpath)下，并且将完整的类名放在这里。
     </description>
   </property>
     <property>
     <name>hbase.procedure.master.classes</name>
     <value></value>
-    <description>A comma-separated list of
-    org.apache.hadoop.hbase.procedure.MasterProcedureManager procedure managers that are
-    loaded by default on the active HMaster process. A procedure is identified by its signature and
-    users can use the signature and an instant name to trigger an execution of a globally barriered
-    procedure. After implementing your own MasterProcedureManager, just put it in HBase's classpath
-    and add the fully qualified class name here.</description>
+    <description>
+一个用逗号分割的 org.apache.hadoop.hbase.procedure.MasterProcedureManager列表。它在激活状态的HMaster进程中被默认加载。程序由它自己的签名和用户使用的签名以及执行程序时的一个临时名来进行验证。
+你可以实现你自己的MasterProcedureManager，仅仅需要将它们放到HBase的类路径(classpath)下，并且将完整的类名放在这里。
+</description>
   </property>
   <property>
     <name>hbase.coordinated.state.manager.class</name>
     <value>org.apache.hadoop.hbase.coordination.ZkCoordinatedStateManager</value>
-    <description>Fully qualified name of class implementing coordinated state manager.</description>
+    <description>实现的协调状态管理器的完整的类名。</description>
   </property>
   <property>
     <name>hbase.regionserver.storefile.refresh.period</name>
     <value>0</value>
     <description>
-      The period (in milliseconds) for refreshing the store files for the secondary regions. 0
-      means this feature is disabled. Secondary regions sees new files (from flushes and
-      compactions) from primary once the secondary region refreshes the list of files in the
-      region (there is no notification mechanism). But too frequent refreshes might cause
-      extra Namenode pressure. If the files cannot be refreshed for longer than HFile TTL
-      (hbase.master.hfilecleaner.ttl) the requests are rejected. Configuring HFile TTL to a larger
-      value is also recommended with this setting.
+备份region的store file文件的刷新周期（单位是毫秒）。值为0意味着该特性被禁用。一旦备份region刷新了region中的文件列表（没有一个通知机制），备份region将查看主region中新的文件（那些刷写和合并时产生的）。
+但是太频繁的刷新将可能对Namenode造成额外的压力。如果文件在超过HFile TTL（hbase.master.hfilecleaner.ttl）的时间还不能被刷新，那么请求将会被拒绝。所以对于该设置，推荐将hbase.master.hfilecleaner.ttl设置为一个更大的值。
     </description>
   </property>
   <property>
@@ -1111,7 +1077,7 @@ possible configurations would overwhelm and obscure the important.
   <!-- Static Web User Filter properties. -->
   <property>
     <description>
-      n用户名过滤器。当在静态网页上呈现内容时的过滤器。一个使用的例子是HDFS的网页UI（用于浏览文件的用户）。
+      用户名过滤器。当在静态网页上呈现内容时的过滤器。一个使用的例子是HDFS的网页UI（用于浏览文件的用户）。
     </description>
     <name>hbase.http.staticuser.user</name>
     <value>dr.stack</value>
