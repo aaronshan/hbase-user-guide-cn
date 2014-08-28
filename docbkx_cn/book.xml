@@ -100,62 +100,54 @@
   <chapter
     xml:id="datamodel">
     <title>数据模型</title>
-    <para>In HBase, data is stored in tables, which have rows and columns. This is a terminology
-      overlap with relational databases (RDBMSs), but this is not a helpful analogy. Instead, it can
-    be helpful to think of an HBase table as a multi-dimensional map.</para>
+    <para>
+        在HBase中，数据被存储在表中。表包含行和列。这个术语和关系型数据库(RDBMSs)的有些重叠，但是它们是不同的。你可以将HBase的表看做是一个多维的map。</para>
     <variablelist>
-      <title>HBase Data Model Terminology</title>
+      <title>HBase数据模型术语</title>
       <varlistentry>
-        <term>Table</term>
+        <term>表(Table)</term>
         <listitem>
-          <para>An HBase table consists of multiple rows.</para>
+          <para>一个HBase表包含多行。</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Row</term>
+        <term>行(Row)</term>
         <listitem>
-          <para>A row in HBase consists of a row key and one or more columns with values associated
-            with them. Rows are sorted alphabetically by the row key as they are stored. For this
-            reason, the design of the row key is very important. The goal is to store data in such a
-            way that related rows are near each other. A common row key pattern is a website domain.
-            If your row keys are domains, you should probably store them in reverse (org.apache.www,
-            org.apache.mail, org.apache.jira). This way, all of the Apache domains are near each
-            other in the table, rather than being spread out based on the first letter of the
-            subdomain.</para>
+          <para>
+              HBase中的一行包含一个行键和一个或多个列。行按照行键的字母序进行排序存储。因为这个原因，行键的设计就非常重要。
+              设计的目标是让那些彼此相近的行存在一起。一个通用的行键模式是网址。如果你的行键是域名，你可以需要对他们进行逆序(org.apache.www,
+              org.apache.mail, org.apache.jira).在这方式中，所有Apache的网址会在表中存储在一起，而不是基于字母序被分开存储。
+              </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Column</term>
+        <term>列(Column)</term>
         <listitem>
-          <para>A column in HBase consists of a column family and a column qualifier, which are
-            delimited by a <literal>:</literal> (colon) character.</para>
+          <para>HBase中的列由一个列族和一个列限定符组成，它们之间使用分隔符<literal>:</literal>分割。</para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Column Family</term>
+        <term>列族(Column Family)</term>
         <listitem>
-          <para>Column families physically colocate a set of columns and their values, often for
-            performance reasons. Each column family has a set of storage properties, such as whether
-            its values should be cached in memory, how its data is compressed or its row keys are
-            encoded, and others. Each row in a table has the same column
-            families, though a given row might not store anything in a given column family.</para>
-          <para>Column families are specified when you create your table, and influence the way your
-            data is stored in the underlying filesystem. Therefore, the column families should be
-            considered carefully during schema design.</para>
+          <para>
+              在物理上，一个的列族成员在文件系统上都被存储在一起。因为存储优化都是针对列族级别的，这就意味着，一个列族的所有成员的使用相同的方式被访问。
+             每一个列族有一系列存储属性，例如是否值应该被缓存到内存，它的数据是否被压缩或者它的行键是否被编码等等。表中的每一行有相同的列族，尽管一个给定的行可能在一个给定的列簇上没有存储任何数据。</para>
+          <para>
+              列族在创建表的时候指定，并且影响你的数据在文件系统中被存储的方式。因此，在模式设计时，应该仔细考虑如何设计列族。
+              </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Column Qualifier</term>
+        <term>列限定符(Column Qualifier)</term>
         <listitem>
-          <para>A column qualifier is added to a column family to provide the index for a given
-            piece of data. Given a column family <literal>content</literal>, a column qualifier
-            might be <literal>content:html</literal>, and another might be
-            <literal>content:pdf</literal>. Though column families are fixed at table creation,
-            column qualifiers are mutable and may differ greatly between rows.</para>
+          <para>
+              列族加上列限定符就可以给一块数据提供索引。给定一个列族<literal>content</literal>，一个列限定符可能是<literal>content:html</literal>，另一个可能是
+              <literal>content:pdf</literal>。尽管列族在表创建的时候是固定的，但列限定符是可变的，并且不同行的列限定符可以不同。
+              </para>
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Cell</term>
+        <term>单元格(Cell)</term>
         <listitem>
           <para>A cell is a combination of row, column family, and column qualifier, and contains a
             value and a timestamp, which represents the value's version.</para>
@@ -163,7 +155,7 @@
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term>Timestamp</term>
+        <term>时间戳(Timestamp)</term>
         <listitem>
           <para>A timestamp is written alongside each value, and is the identifier for a given
             version of a value. By default, the timestamp represents the time on the RegionServer
@@ -183,7 +175,7 @@
 
     <section
       xml:id="conceptual.view">
-      <title>Conceptual View</title>
+      <title>概念视图</title>
       <para>You can read a very understandable explanation of the HBase data model in the blog post <link
           xlink:href="http://jimbojw.com/wiki/index.php?title=Understanding_Hbase_and_BigTable">Understanding
           HBase and BigTable</link> by Jim R. Wilson. Another good explanation is available in the
@@ -325,7 +317,7 @@
     </section>
     <section
       xml:id="physical.view">
-      <title>Physical View</title>
+      <title>物理视图</title>
       <para> Although at a conceptual level tables may be viewed as a sparse set of rows, they are
         physically stored by column family. A new column qualifier (column_family:column_qualifier)
         can be added to an existing column family at any time.</para>
@@ -423,7 +415,7 @@
 
     <section
       xml:id="namespace">
-      <title>Namespace</title>
+      <title>命名空间</title>
       <para> A namespace is a logical grouping of tables analogous to a database in relation
         database systems. This abstraction lays the groundwork for upcoming multi-tenancy related
         features: <itemizedlist>
@@ -500,13 +492,13 @@ create 'bar', 'fam'
 
     <section
       xml:id="table">
-      <title>Table</title>
+      <title>表</title>
       <para> Tables are declared up front at schema definition time. </para>
     </section>
 
     <section
       xml:id="row">
-      <title>Row</title>
+      <title>行</title>
       <para>Row keys are uninterrpreted bytes. Rows are lexicographically sorted with the lowest
         order appearing first in a table. The empty byte array is used to denote both the start and
         end of a tables' namespace.</para>
@@ -514,7 +506,7 @@ create 'bar', 'fam'
 
     <section
       xml:id="columnfamily">
-      <title>Column Family<indexterm><primary>Column Family</primary></indexterm></title>
+      <title>列族<indexterm><primary>Column Family</primary></indexterm></title>
       <para> Columns in Apache HBase are grouped into <emphasis>column families</emphasis>. All
         column members of a column family have the same prefix. For example, the columns
           <emphasis>courses:history</emphasis> and <emphasis>courses:math</emphasis> are both
@@ -534,13 +526,13 @@ create 'bar', 'fam'
     </section>
     <section
       xml:id="cells">
-      <title>Cells<indexterm><primary>Cells</primary></indexterm></title>
+      <title>单元格<indexterm><primary>Cells</primary></indexterm></title>
       <para>A <emphasis>{row, column, version} </emphasis>tuple exactly specifies a
           <literal>cell</literal> in HBase. Cell content is uninterrpreted bytes</para>
     </section>
     <section
       xml:id="data_model_operations">
-      <title>Data Model Operations</title>
+      <title>数据模型操作</title>
       <para>The four primary data model operations are Get, Put, Scan, and Delete. Operations are
         applied via <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html">HTable</link>
