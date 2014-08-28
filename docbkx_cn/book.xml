@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <!--
 /**
  *
@@ -149,20 +149,22 @@
       <varlistentry>
         <term>单元格(Cell)</term>
         <listitem>
-          <para>A cell is a combination of row, column family, and column qualifier, and contains a
-            value and a timestamp, which represents the value's version.</para>
-          <para>A cell's value is an uninterpreted array of bytes.</para>
+          <para>
+		一个单元格由行、列族和列限定符还有一个值和一个代表该值版本的时间戳组成。
+		</para>
+          <para>一个单元格的值是一个字节数组。</para>
         </listitem>
       </varlistentry>
       <varlistentry>
         <term>时间戳(Timestamp)</term>
         <listitem>
-          <para>A timestamp is written alongside each value, and is the identifier for a given
-            version of a value. By default, the timestamp represents the time on the RegionServer
-            when the data was written, but you can specify a different timestamp value when you put
-            data into the cell.</para>
+          <para>时间戳和值一起被写入，并且指定了该值的版本。默认情况下，时间戳的值是数据被写入时RegionServer的时间，
+		但是你可以在你插入(put)数据进入一个单元格时，可以自己指定一个时间戳。
+		</para>
           <caution>
-            <para>Direct manipulation of timestamps is an advanced feature which is only exposed for
+            <para>
+		直接操作时间戳是HBase的高级特性，只有在特定情况下才被使用，一般情况下不鼓励这样做。
+		Direct manipulation of timestamps is an advanced feature which is only exposed for
               special cases that are deeply integrated with HBase, and is discouraged in general.
               Encoding a timestamp at the application level is the preferred pattern.</para>
           </caution>
