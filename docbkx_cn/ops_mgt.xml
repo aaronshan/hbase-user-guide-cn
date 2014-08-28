@@ -636,17 +636,17 @@
                </para>
             <note>
                 <title>下线节点前要停止 Load Balancer</title>
-                <para>If the load balancer runs while a node is shutting down, then there could be
-                    contention between the Load Balancer and the Master's recovery of the just decommissioned
-                    RegionServer. Avoid any problems by disabling the balancer first. See <xref
-                            linkend="lb" /> below. </para>
+                <para>如果load balancer运行的时候，刚好有节点要关闭，
+                    则Load Balancer和Master的recovery可能会竞争这个下线的RegionServer。应先关闭balancer以避免这个问题出现，
+                     参考下面的<xref
+                            linkend="lb" />  </para>
             </note>
-            <para> A downside to the above stop of a RegionServer is that regions could be offline for a
-                good period of time. Regions are closed in order. If many regions on the server, the first
-                region to close may not be back online until all regions close and after the master notices
-                the RegionServer's znode gone. In Apache HBase 0.90.2, we added facility for having a node
-                gradually shed its load and then shutdown itself down. Apache HBase 0.90.2 added the
-                <filename>graceful_stop.sh</filename> script. Here is its usage:</para>
+            <para>
+               上文说的下线RegionServer有一个缺点就是其中的region会离线好一段时间。Regions是按顺序关闭的。如果服务器上有很多region，
+                第一个region关闭后，直到最后一个region被关闭，并且Master认为该RegionServer的znode都死了，该region才可以上线。
+                在HBase 0.90.2中，我们加入了一个功能，可以让节点逐步摆脱其负载后，再关闭。 HBase 0.90.2中增加了 <filename>graceful_stop.sh</filename>脚本，
+                使用方法如下：
+                </para>
             <screen language="bourne">$ ./bin/graceful_stop.sh
                 Usage: graceful_stop.sh [--config &amp;conf-dir>] [--restart] [--reload] [--thrift] [--rest] &amp;hostname>
                 thrift      If we should stop/start thrift before/after the hbase stop/start
@@ -655,91 +655,79 @@
                 reload      Move offloaded regions back on to the stopped server
                 debug       Move offloaded regions back on to the stopped server
                 hostname    Hostname of server we are to stop</screen>
-            <para> To decommission a loaded RegionServer, run the following: <command>$
-                ./bin/graceful_stop.sh HOSTNAME</command> where <varname>HOSTNAME</varname> is the host
-                carrying the RegionServer you would decommission. </para>
+            <para> 要下线一台 RegionServer, 可以这样做：<command>$
+                ./bin/graceful_stop.sh HOSTNAME</command>  <varname>HOSTNAME</varname>是你要下线的RegionServer的主机名。 </para>
             <note>
-                <title>On <varname>HOSTNAME</varname></title>
-                <para>The <varname>HOSTNAME</varname> passed to <filename>graceful_stop.sh</filename> must
-                    match the hostname that hbase is using to identify RegionServers. Check the list of
-                    RegionServers in the master UI for how HBase is referring to servers. Its usually hostname
-                    but can also be FQDN. Whatever HBase is using, this is what you should pass the
-                    <filename>graceful_stop.sh</filename> decommission script. If you pass IPs, the script
-                    is not yet smart enough to make a hostname (or FQDN) of it and so it will fail when it
-                    checks if server is currently running; the graceful unloading of regions will not run.
-                </para>
+                <title> <varname>HOSTNAME</varname></title>
+                传递到graceful_stop.sh的HOSTNAME必须和hbase使用的hostname一致，
+                hbase用它来区分RegionServers。可以用master的UI来检查RegionServers的id。
+                通常是hostname,也可能是FQDN。不管HBase使用的哪一个，你可以将它传到 graceful_stop.sh脚本中去，
+                目前他还不支持使用IP地址来推断hostname。
+                所以使用IP就会发现server不在运行，也没有办法下线了。
+                <para>传给<filename>graceful_stop.sh</filename>的 <varname>HOSTNAME</varname>，
+                    必须与hbase用来区分RegionServers的hostname一致。检查下 master UI中的RegionServers列表，
+                    你会看到HBase是怎么提及这些servers的。
+                    通常是hostname，也可能是FQDN。不管HBase使用的哪个，你应当将它传到 <filename>graceful_stop.sh</filename>脚本中去。
+                    目前该脚本还没聪明到通过IP地址来推断hostname (or FQDN)，因此传递IP地址时会检查失败，也就无法下线节点。
+                    </para>
             </note>
-            <para> The <filename>graceful_stop.sh</filename> script will move the regions off the
-                decommissioned RegionServer one at a time to minimize region churn. It will verify the
-                region deployed in the new location before it will moves the next region and so on until the
-                decommissioned server is carrying zero regions. At this point, the
-                <filename>graceful_stop.sh</filename> tells the RegionServer <command>stop</command>. The
-                master will at this point notice the RegionServer gone but all regions will have already
-                been redeployed and because the RegionServer went down cleanly, there will be no WAL logs to
-                split. </para>
+            <para> <filename>graceful_stop.sh</filename>脚本会一个个将region从下线的RegionServer上移除。
+                它会对部署到新位置的region先进行验证，再移除下一个，直到全部移除。最后，<filename>graceful_stop.sh</filename> 脚本会让
+                RegionServer <command>stop</command>。这时候Master会注意到 RegionServer已经下线，而所有的regions已经重新部署好。
+                RegionServer就可以干干净净的结束，没有WAL日志需要切分。 </para>
             <note
                     xml:id="lb">
                 <title>Load Balancer</title>
-                <para> It is assumed that the Region Load Balancer is disabled while the
-                    <command>graceful_stop</command> script runs (otherwise the balancer and the
-                    decommission script will end up fighting over region deployments). Use the shell to
-                    disable the balancer:</para>
+                <para>
+                    当执行<command>graceful_stop</command>脚本时，
+                    要将 Region Load Balancer 关掉（否则balancer和下线脚本会在region部署上存在冲突）
+                    使用 shell 命令关闭 balancer：</para>
                 <programlisting>hbase(main):001:0> balance_switch false
                     true
                     0 row(s) in 0.3590 seconds</programlisting>
-                <para> This turns the balancer OFF. To reenable, do:</para>
+                <para> 上面是将 balancer 关闭，开启命令是：</para>
                 <programlisting>hbase(main):001:0> balance_switch true
                     false
                     0 row(s) in 0.3590 seconds</programlisting>
-                <para>The <command>graceful_stop</command> will check the balancer and if enabled, will turn
-                    it off before it goes to work. If it exits prematurely because of error, it will not have
-                    reset the balancer. Hence, it is better to manage the balancer apart from
-                    <command>graceful_stop</command> reenabling it after you are done w/ graceful_stop.
+                <para> <command>graceful_stop</command>脚本会检查balancer，如果开启了，将关闭它。
+                    如果脚本由于错误而过早退出，它不会重置balancer。因此，你最好在graceful_stop完成后，单独开启balancer。
                 </para>
             </note>
             <section
                     xml:id="draining.servers">
-                <title>Decommissioning several Regions Servers concurrently</title>
-                <para>If you have a large cluster, you may want to decommission more than one machine at a
-                    time by gracefully stopping mutiple RegionServers concurrently. To gracefully drain
-                    multiple regionservers at the same time, RegionServers can be put into a "draining" state.
-                    This is done by marking a RegionServer as a draining node by creating an entry in
-                    ZooKeeper under the <filename>hbase_root/draining</filename> znode. This znode has format
-                    <code>name,port,startcode</code> just like the regionserver entries under
-                    <filename>hbase_root/rs</filename> znode. </para>
-                <para>Without this facility, decommissioning mulitple nodes may be non-optimal because
-                    regions that are being drained from one region server may be moved to other regionservers
-                    that are also draining. Marking RegionServers to be in the draining state prevents this
-                    from happening<footnote>
-                        <para>See this <link
+                <title>同时下线多台Regions Servers</title>
+                <para>如果你的集群很大，你可能想同时下线多台机器。
+                    可以将这些RegionServers置为“draining”状态，可以在ZooKeeper的<filename>hbase_root/draining</filename>节点下
+                    创建条目，标记相应RegionServer为draining节点。
+                    这些znode的格式<code>name,port,startcode</code>与<filename>hbase_root/rs</filename>下的regionserver一样。
+
+                </para>
+                <para>如果没有这项措施，下线多个节点可能不太理想，因为一台regionserver上的drain regions，
+                    可能会被移动到其它也处于draining状态的regionservers上。将RegionServers标记未draining状态能防止这种情况发生。<footnote>
+                        <para> 更多细节，请参考 <link
                                 xlink:href="http://inchoate-clatter.blogspot.com/2012/03/hbase-ops-automation.html">blog
-                            post</link> for more details.</para>
+                            post</link> </para>
                     </footnote>. </para>
             </section>
 
             <section
                     xml:id="bad.disk">
-                <title>Bad or Failing Disk</title>
-                <para>It is good having <xref
-                        linkend="dfs.datanode.failed.volumes.tolerated" /> set if you have a decent number of
-                    disks per machine for the case where a disk plain dies. But usually disks do the "John
-                    Wayne" -- i.e. take a while to go down spewing errors in <filename>dmesg</filename> -- or
-                    for some reason, run much slower than their companions. In this case you want to
-                    decommission the disk. You have two options. You can <link
+                <title>坏的或失效磁盘</title>
+                <para>如果你的每台机器上都有充足的磁盘，为了预防磁盘坏死，最好还是设置下 <xref
+                        linkend="dfs.datanode.failed.volumes.tolerated" /> 。
+                    但通常磁盘都是"John Wayne"（美国硬汉） -- 需要一段时间才在 <filename>dmesg</filename> 输出错误信息
+                    -- 或者由于某些原因，会比其它磁盘运行得慢。这种情况下，如果要下线磁盘，你有两个选择。你可以<link
                             xlink:href="http://wiki.apache.org/hadoop/FAQ#I_want_to_make_a_large_cluster_smaller_by_taking_out_a_bunch_of_nodes_simultaneously._How_can_this_be_done.3F">decommission
-                        the datanode</link> or, less disruptive in that only the bad disks data will be
-                    rereplicated, can stop the datanode, unmount the bad volume (You can't umount a volume
-                    while the datanode is using it), and then restart the datanode (presuming you have set
-                    dfs.datanode.failed.volumes.tolerated > 0). The regionserver will throw some errors in its
-                    logs as it recalibrates where to get its data from -- it will likely roll its WAL log too
-                    -- but in general but for some latency spikes, it should keep on chugging. </para>
+                        the datanode</link>，或重新复制坏磁盘的数据，停止该datanode，卸载坏卷（你不能卸载一个datanode正在使用的卷），
+                    然后重启datanode（你必须先设置dfs.datanode.failed.volumes.tolerated > 0）。
+                    Regionserver在重新调整从何获取数据时，会在它的日志里抛出一些错误-- 它可能会回滚WAL日志 --
+                    但是通常来说，在一些延迟高峰情况下,它仍会“嘎吱嘎吱”地继续运转。 </para>
                 <note>
-                    <title>Short Circuit Reads</title>
-                    <para>If you are doing short-circuit reads, you will have to move the regions off the
-                        regionserver before you stop the datanode; when short-circuiting reading, though chmod'd
-                        so regionserver cannot have access, because it already has the files open, it will be
-                        able to keep reading the file blocks from the bad disk even though the datanode is down.
-                        Move the regions back after you restart the datanode.</para>
+                    <title>Short Circuit读取</title>
+                    <para>如果你正在做short-circuit读取，在你停止datanode前，你必须先将regions移出regionserver。
+                        当short-circuiting 读时, 尽管chmod'd， regionserver无法访问，因为文件已经打开了，就算datanode已经停止，
+                        它仍会继续从坏磁盘中读取文件块。重启datanode后，重新将regions移回去。
+                       </para>
                 </note>
             </section>
         </section>
