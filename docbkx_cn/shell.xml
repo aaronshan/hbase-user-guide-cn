@@ -30,61 +30,55 @@
 -->
     <title>The Apache HBase Shell</title>
 
-    <para> The Apache HBase Shell is <link
-            xlink:href="http://jruby.org">(J)Ruby</link>'s IRB with some HBase particular commands
-        added. Anything you can do in IRB, you should be able to do in the HBase Shell.</para>
-    <para>To run the HBase shell, do as follows:</para>
+    <para>
+        The Apache HBase Shell是基于<link
+            xlink:href="http://jruby.org">(J)Ruby</link>（译者注：JRuby是基于Ruby实现的Java虚拟机），HBase在JRuby的IRB（译者注：IRB是一个互动的Ruby环境，是Interactive Ruby Shell-交互式Ruby Shell的简称）中添加了自己的命令。你可以像使用IRB一样来使用HBase Shell。
+        </para>
+    <para>为了运行HBase shell，你需要执行如下操作：</para>
     <programlisting>$ ./bin/hbase shell</programlisting>
-    <para>Type <command>help</command> and then <command>&lt;RETURN&gt;</command> to see a listing
-        of shell commands and options. Browse at least the paragraphs at the end of the help
-        emission for the gist of how variables and command arguments are entered into the HBase
-        shell; in particular note how table names, rows, and columns, etc., must be quoted.</para>
-    <para>See <xref
-            linkend="shell_exercises" /> for example basic shell operation. </para>
-    <para>Here is a nicely formatted listing of <link
+    <para>输入 <command>help</command> 命令然后回车，紧接着会 <command>&lt;返回&gt;</command> 一个shell命令和选项的列表。
+        浏览一下Help文档尾部的关于如何输入变量和选项的段落。尤其要注意的是表名、行、列名等必须要加引号。
+        </para>
+    <para>查阅 <xref
+            linkend="shell_exercises" /> 可以看到更多shell操作的基本示例。 </para>
+    <para>Rajeshbabu Chintaguntla在 <link
             xlink:href="http://learnhbase.wordpress.com/2013/03/02/hbase-shell-commands/">all shell
-            commands</link> by Rajeshbabu Chintaguntla. </para>
+            commands</link> 提供了关于所有shell命令的使用示例。 </para>
 
     <section
         xml:id="scripting">
-        <title>Scripting with Ruby</title>
-        <para>For examples scripting Apache HBase, look in the HBase <filename>bin</filename>
-            directory. Look at the files that end in <filename>*.rb</filename>. To run one of these
-            files, do as follows:</para>
+        <title>Ruby脚本使用</title>
+        <para>HBase的脚本示例，可以在HBase <filename>bin</filename> 目录中查看。寻找以
+             <filename>*.rb</filename>结尾的那些文件。 为了运行这些文件中的某一个，需要执行：</para>
         <programlisting>$ ./bin/hbase org.jruby.Main PATH_TO_SCRIPT</programlisting>
     </section>
 
     <section>
-        <title>Running the Shell in Non-Interactive Mode</title>
-        <para>A new non-interactive mode has been added to the HBase Shell (<link
-                xlink:href="https://issues.apache.org/jira/browse/HBASE-11658">HBASE-11658)</link>.
-            Non-interactive mode captures the exit status (success or failure) of HBase Shell
-            commands and passes that status back to the command interpreter. If you use the normal
-            interactive mode, the HBase Shell will only ever return its own exit status, which will
-            nearly always be <literal>0</literal> for success.</para>
-        <para>To invoke non-interactive mode, pass the <option>-n</option> or
-                <option>--non-interactive</option> option to HBase Shell.</para>
+        <title>在非交互式模式下运行Shell</title>
+        <para>
+            HBase Shell中添加了一个新的非交互式模式(<link
+                xlink:href="https://issues.apache.org/jira/browse/HBASE-11658">HBASE-11658)</link>。
+            非交互式模式捕捉HBase Shell命令的退出状态（成功或失败）然后将这个状态返回给命令解释器。如果你使用非交互式模式，HBase Shell将仅仅返回它自己的退出状态。
+            返回值<literal>0</literal>表示成功。</para>
+        <para>为了调用非交互式模式，需要在HBase Shell中加上 <option>-n</option>或者
+                <option>--non-interactive</option> 选项。</para>
     </section>
     
     <section xml:id="hbase.shell.noninteractive">
-        <title>HBase Shell in OS Scripts</title>
-        <para>You can use the HBase shell from within operating system script interpreters like the
-            Bash shell which is the default command interpreter for most Linux and UNIX
-            distributions. The following guidelines use Bash syntax, but could be adjusted to work
-            with C-style shells such as csh or tcsh, and could probably be modified to work with the
-            Microsoft Windows script interpreter as well. Submissions are welcome.</para>
+        <title>OS系统上的HBase Shell脚本</title>
+        <para>
+            你可以在操作系统的脚本解释器比如对于大多数Linux和Unix发行版中默认的Bash shell环境中来使用HBase Shell。
+            下面的指南使用Bash语法，但是也能转换成C-风格(C-style)的shell，比如csh或tcsh。也可以进行修改，然后在微软的Windows脚本解释器上运行，欢迎提交你的修改。</para>
         <note>
-            <para>Spawning HBase Shell commands in this way is slow, so keep that in mind when you
-                are deciding when combining HBase operations with the operating system command line
-                is appropriate.</para>
+            <para>HBase Shell命令数很多的时候，使用该方式运行很慢。因此，你需要自己决定何时使用操作系统命令行来完成HBase操作。
+                </para>
         </note>
         <example>
-            <title>Passing Commands to the HBase Shell</title>
-            <para>You can pass commands to the HBase Shell in non-interactive mode (see <xref
-                    linkend="hbasee.shell.noninteractive"/>) using the <command>echo</command>
-                command and the <literal>|</literal> (pipe) operator. Be sure to escape characters
-                in the HBase commands which would otherwise be interpreted by the shell. Some
-                debug-level output has been truncated from the example below.</para>
+            <title>给HBase Shell传递命令</title>
+            <para>
+                你可以在非交互式模式下使用<command>echo</command>命令和<literal>|</literal>管道操作传递命令给HBase Shell（查看<xref
+                    linkend="hbasee.shell.noninteractive"/>）。 HBase命令可能需要使用转义字符。一些调试级别的输出在下面的例子已经被移除。
+                </para>
             <screen>$ <userinput>echo "describe 'test1'" | ./hbase shell -n</userinput>
                 <computeroutput>
 Version 0.98.3-hadoop2, rd5e65a9144e315bb0a964e7730871af32f5018d5, Sat May 31 19:56:09 PDT 2014
@@ -101,20 +95,19 @@ DESCRIPTION                                          ENABLED
 1 row(s) in 3.2410 seconds    
                 </computeroutput>            
             </screen>
-            <para>To suppress all output, echo it to <filename>/dev/null:</filename></para>
+            <para>为了消除所有输出，将输出重定向到 <filename>/dev/null:</filename></para>
             <screen>$ <userinput>echo "describe 'test'" | ./hbase shell -n > /dev/null 2>&amp;1</userinput></screen>
         </example>
         <example>
-            <title>Checking the Result of a Scripted Command</title>
-            <para>Since scripts are not designed to be run interactively, you need a way to check
-                whether your command failed or succeeded. The HBase shell uses the standard
-                convention of returning a value of <literal>0</literal> for successful commands, and
-                some non-zero value for failed commands. Bash stores a command's return value in a
-                special environment variable called <varname>$?</varname>. Because that variable is
-                overwritten each time the shell runs any command, you should store the result in a
-                different, script-defined variable.</para>
-            <para>This is a naive script that shows one way to store the return value and make a
-                decision based upon it.</para>
+            <title>检查脚本命令的结果</title>
+            <para>
+                因为脚本没有被交互运行，你需要一种方式来检查你的命令执行是成功还是失败。HBase shell使用标准约定来表示返回结果，即
+                <literal>0</literal>代表成功，非0代表失败。Bash存储命令的返回值到一个被称为<varname>$?</varname>的特殊环境变量中。
+                因为该变量在shell运行任何命令之后都会被重新赋值，所以你需要将返回值存储在一个在脚本中定义的其他变量中。
+                </para>
+            <para>
+                 下面的脚本展示了存储返回值的一种方式并且基于它做出判定。
+                </para>
             <programlisting language="bourne">
 #!/bin/bash
 
@@ -130,24 +123,20 @@ return $status
             </programlisting>
         </example>
         <section>
-            <title>Checking for Success or Failure In Scripts</title>
-            <para>Getting an exit code of 0 means that the command you scripted definitely
-                succeeded. However, getting a non-zero exit code does not necessarily mean the
-                command failed. The command could have succeeded, but the client lost connectivity,
-                or some other event obscured its success. This is because RPC commands are
-                stateless. The only way to be sure of the status of an operation is to check. For
-                instance, if your script creates a table, but returns a non-zero exit value, you
-                should check whether the table was actually created before trying again to create
-                it.</para>
+            <title>检查脚本是成功还是失败</title>
+            <para>
+                获取一个退出值0代表着脚本执行成功。然而，获得一个非0的退出值不一定意味着命令失败。命令可能已经成功，但是客户端失去连接，
+                或者一些其他事件掩盖了它的成功。这是因为RPC命令是无状态的。仅有的能确定操作状态的方式是去检查。例如，如果你的脚本创建了一个表，
+                但是返回了一个非0的退出值，你应该在试图再次创建表之前先检查表是否创建成功。
+                </para>
         </section>
     </section>
     
     <section>
-        <title>Read HBase Shell Commands from a Command File</title>
-        <para>You can enter HBase Shell commands into a text file, one command per line, and pass
-            that file to the HBase Shell.</para>
+        <title>从一个命令文件中读取HBase Shell命令</title>
+        <para>你可以将HBase Shell命令输入到一个文本文件，每行输入一个命令，并且将该文件传给HBase shell。</para>
         <example>
-            <title>Example Command File</title>
+            <title>命令文件的示例</title>
             <screen>
 create 'test', 'cf'
 list 'test'
@@ -162,14 +151,11 @@ enable 'test'
             </screen>
         </example>
         <example>
-            <title>Directing HBase Shell to Execute the Commands</title>
-            <para>Pass the path to the command file as the only argument to the <command>hbase
-                    shell</command> command. Each command is executed and its output is shown. If
-                you do not include the <command>exit</command> command in your script, you are
-                returned to the HBase shell prompt. There is no way to programmatically check each
-                individual command for success or failure. Also, though you see the output for each
-                command, the commands themselves are not echoed to the screen so it can be difficult
-                to line up the command with its output.</para>
+            <title>直接使用HBase Shell来执行这些命令</title>
+            <para>
+                将命令文件路径作为仅有的参数传递给<command>hbase
+                shell</command>命令。每一个命令被执行后将会显示它的输出。如果在你的所有命令中没有包含<command>exit</command>命令，你就会进入HBase shell的命令提示符中。
+                没有办法以编程的方式来检查每个命令的单独执行的结果是成功还是失败。此外，尽管你看到了每个命令的输出，但是这些命令本身不会被输出，所以你很难在所有命令输出中定位处具体命令的输出。</para>
             <screen>
 $ <userinput>./hbase shell ./sample_commands.txt</userinput>
 <computeroutput>0 row(s) in 3.4170 seconds
@@ -204,14 +190,12 @@ COLUMN                CELL
         </example>
     </section>
     <section>
-        <title>Passing VM Options to the Shell</title>
-        <para>You can pass VM options to the HBase Shell using the <code>HBASE_SHELL_OPTS</code>
-            environment variable. You can set this in your environment, for instance by editing
-                <filename>~/.bashrc</filename>, or set it as part of the command to launch HBase
-            Shell. The following example sets several garbage-collection-related variables, just for
-            the lifetime of the VM running the HBase Shell. The command should be run all on a
-            single line, but is broken by the <literal>\</literal> character, for
-            readability.</para>
+        <title>传递VM选项给Shell</title>
+        <para>
+            你可以通过使用<code>HBASE_SHELL_OPTS</code>环境变量传递VM选项给HBase Shell。你可以通过编辑 <filename>~/.bashrc</filename>在你的环境中设置它，
+            或者将它作为启动HBase Shell命令的一部分进行设置。下面的例子设置了一些垃圾搜集相关的变量，仅适用于运行HBase Shell的VM的生命周期。 命令应该运行在单行，命令太长时，
+            为了方便阅读，可以使用<literal>\</literal>字符来进行连接。
+            </para>
         <screen language="bourne">
 $ <userinput>HBASE_SHELL_OPTS="-verbose:gc -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCDateStamps \ 
   -XX:+PrintGCDetails -Xloggc:$HBASE_HOME/logs/gc-hbase.log" ./bin/hbase shell</userinput>            
@@ -219,19 +203,17 @@ $ <userinput>HBASE_SHELL_OPTS="-verbose:gc -XX:+PrintGCApplicationStoppedTime -X
     </section>
     <section
         xml:id="shell_tricks">
-        <title>Shell Tricks</title>
+        <title>Shell技巧</title>
         <section
             xml:id="table_variables">
-            <title>Table variables</title>
+            <title>表变量</title>
 
-            <para> HBase 0.95 adds shell commands that provide a jruby-style object-oriented
-                references for tables. Previously all of the shell commands that act upon a table
-                have a procedural style that always took the name of the table as an argument. HBase
-                0.95 introduces the ability to assign a table to a jruby variable. The table
-                reference can be used to perform data read write operations such as puts, scans, and
-                gets well as admin functionality such as disabling, dropping, describing tables. </para>
+            <para>
+                HBase 0.95增加了一个shell命令，该命令提供了对于表的jruby风格的面向对象的引用。之前所有的shell命令中，你必须指定表名作为一个参数。
+                HBase 0.95中可以给一个表分配一个jruby变量。表的引用可以用来完成数据读写操作例如插入(puts)、遍历(scans)和读取(gets)，也可以实现管理功能，比如
+                禁用(disable)、移除(drop)和描述(describing)一个表。 </para>
 
-            <para> For example, previously you would always specify a table name:</para>
+            <para> 例如，之前你需要指定一个表名：</para>
             <screen>
 hbase(main):000:0> create ‘t’, ‘f’
 0 row(s) in 1.0970 seconds
@@ -260,8 +242,7 @@ hbase(main):005:0> drop 't'
 hbase(main):006:0> 
 	  </screen>
 
-            <para> Now you can assign the table to a variable and use the results in jruby shell
-                code.</para>
+            <para> 现在你可以将表赋给一个变量，然后在jruby shell中直接调用它。</para>
             <screen>
 hbase(main):007 > t = create 't', 'f'
 0 row(s) in 1.0970 seconds
@@ -286,8 +267,7 @@ hbase(main):039:0> t.drop
 0 row(s) in 0.2340 seconds
 	  </screen>
 
-            <para> If the table has already been created, you can assign a Table to a variable by
-                using the get_table method:</para>
+            <para> 如果表已经被创建，你可以通过使用get_table方法来获取一个表的变量：</para>
             <screen>
 hbase(main):011 > create 't','f'
 0 row(s) in 1.2500 seconds
@@ -306,9 +286,9 @@ ROW                                COLUMN+CELL
 hbase(main):015:0> 
 	  </screen>
 
-            <para> The list functionality has also been extended so that it returns a list of table
-                names as strings. You can then use jruby to script table operations based on these
-                names. The list_snapshots command also acts similarly.</para>
+            <para> 还加入了列出所有表，将结果作为一个字符串返回的功能。
+                你可以基于这些名字使用jruby命令来操作这些表。list_snapshots命令的功能也类似。
+                </para>
             <screen>
 hbase(main):016 > tables = list(‘t.*’)
 TABLE                                                                                                                               
@@ -326,59 +306,58 @@ hbase(main):018:0>
 
         <section>
             <title><filename>irbrc</filename></title>
-            <para>Create an <filename>.irbrc</filename> file for yourself in your home directory.
-                Add customizations. A useful one is command history so commands are save across
-                Shell invocations:</para>
+            <para>在你自己的home目录中创建你自己的 <filename>.irbrc</filename> 文件。然后加入自定义的命令。
+                一个有用的功能就是记录命令历史，这样可以保存所有的shell调用历史：
+               </para>
             <screen>
 $ more .irbrc
 require 'irb/ext/save-history'
 IRB.conf[:SAVE_HISTORY] = 100
 IRB.conf[:HISTORY_FILE] = "#{ENV['HOME']}/.irb-save-history"</screen>
-            <para>See the <application>ruby</application> documentation of
-                    <filename>.irbrc</filename> to learn about other possible configurations.
+            <para>可以查看 <application>ruby</application> 关于
+                    <filename>.irbrc</filename> 的文档来学习其他更多的配置。
             </para>
         </section>
         <section>
-            <title>LOG data to timestamp</title>
-            <para> To convert the date '08/08/16 20:56:29' from an hbase log into a timestamp,
-                do:</para>
+            <title>日志数据的时间戳</title>
+            <para> 为了将hbase日志中的日期'08/08/16 20:56:29'转换为时间戳，操作如下：</para>
             <screen>
 hbase(main):021:0> import java.text.SimpleDateFormat
 hbase(main):022:0> import java.text.ParsePosition
 hbase(main):023:0> SimpleDateFormat.new("yy/MM/dd HH:mm:ss").parse("08/08/16 20:56:29", ParsePosition.new(0)).getTime() => 1218920189000</screen>
-            <para> To go the other direction:</para>
+            <para> 也可以反过来操作：</para>
             <screen>
 hbase(main):021:0> import java.util.Date
 hbase(main):022:0> Date.new(1218920189000).toString() => "Sat Aug 16 20:56:29 UTC 2008"</screen>
-            <para> To output in a format that is exactly like that of the HBase log format will take
-                a little messing with <link
-                    xlink:href="http://download.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</link>.
+            <para> 为了将日志格式输出为与HBase日志格式完全相同的格式，可以参考 <link
+                    xlink:href="http://download.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat</link>。
             </para>
         </section>
         <section>
-            <title>Debug</title>
+            <title>调试</title>
             <section>
-                <title>Shell debug switch</title>
-                <para>You can set a debug switch in the shell to see more output -- e.g. more of the
-                    stack trace on exception -- when you run a command:</para>
+                <title>Shell切换到调试模式</title>
+                <para>
+                    你可以将shell切换到调试模式以便查看到更多输出 -- 例如，更多的异常堆栈的信息 -- 只需要使用命令：
+                   </para>
                 <programlisting>hbase> debug &lt;RETURN&gt;</programlisting>
             </section>
             <section>
-                <title>DEBUG log level</title>
-                <para>To enable DEBUG level logging in the shell, launch it with the
-                        <command>-d</command> option.</para>
+                <title>调试日志级别</title>
+                <para>为了在shell中启用调试级别的日志，需要在启动时加上
+                        <command>-d</command> 选项。</para>
                 <programlisting>$ ./bin/hbase shell -d</programlisting>
             </section>
         </section>
         <section>
-            <title>Commands</title>
+            <title>命令</title>
             <section>
-                <title>count</title>
-                <para>Count command returns the number of rows in a table. It's quite fast when
-                    configured with the right CACHE
+                <title>统计</title>
+                <para>
+                    统计命令返回一个表中行的数目。当你配置了合适的缓存时，该操作会很快。
                     <programlisting>hbase> count '&lt;tablename&gt;', CACHE => 1000</programlisting>
-                    The above count fetches 1000 rows at a time. Set CACHE lower if your rows are
-                    big. Default is to fetch one row at a time. </para>
+                    上面的统计操作一次取100行数据。如果你的行很大，需要将缓存调低。默认一次取一行。
+                    </para>
             </section>
         </section>
 
