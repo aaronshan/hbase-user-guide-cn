@@ -163,14 +163,13 @@
 		</para>
           <caution>
             <para>
-		直接操作时间戳是HBase的高级特性，只有在特定情况下才被使用，一般情况下不鼓励这样做。
-		Direct manipulation of timestamps is an advanced feature which is only exposed for
-              special cases that are deeply integrated with HBase, and is discouraged in general.
-              Encoding a timestamp at the application level is the preferred pattern.</para>
+		直接操作时间戳是HBase的高级特性，只有在需要和HBase深度集成的特定情况下才被使用，一般情况下不鼓励这样做。
+                在应用层直接编码一个时间戳应该成为首选。
+		</para>
           </caution>
-          <para>You can specify the maximum number of versions of a value that HBase retains, per column
-            family. When the maximum number of versions is reached, the oldest versions are 
-            eventually deleted. By default, only the newest version is kept.</para>
+          <para>
+              你可以对HBase保留的每一个列族的某一个值指定一个最大的版本数。当版本数目达到了该最大版本数目，最早的那些版本最终将会被删除。默认情况下，只保留最新的一个版本。
+              </para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -178,43 +177,32 @@
     <section
       xml:id="conceptual.view">
       <title>概念视图</title>
-      <para>You can read a very understandable explanation of the HBase data model in the blog post <link
+      <para>Jim R. Wilson的文章 <link
           xlink:href="http://jimbojw.com/wiki/index.php?title=Understanding_Hbase_and_BigTable">Understanding
-          HBase and BigTable</link> by Jim R. Wilson. Another good explanation is available in the
-        PDF <link
-          xlink:href="http://0b4af6cdc2f0c5998459-c0245c5c937c5dedcca3f1764ecc9b2f.r43.cf2.rackcdn.com/9353-login1210_khurana.pdf">Introduction
-          to Basic Schema Design</link> by Amandeep Khurana. It may help to read different
-        perspectives to get a solid understanding of HBase schema design. The linked articles cover
-        the same ground as the information in this section.</para>
-      <para> The following example is a slightly modified form of the one on page 2 of the <link
-          xlink:href="http://research.google.com/archive/bigtable.html">BigTable</link> paper. There
-        is a table called <varname>webtable</varname> that contains two rows
-        (<literal>com.cnn.www</literal>
-          and <literal>com.example.www</literal>), three column families named
-          <varname>contents</varname>, <varname>anchor</varname>, and <varname>people</varname>. In
-          this example, for the first row (<literal>com.cnn.www</literal>), 
-          <varname>anchor</varname> contains two columns (<varname>anchor:cssnsi.com</varname>,
-          <varname>anchor:my.look.ca</varname>) and <varname>contents</varname> contains one column
-          (<varname>contents:html</varname>). This example contains 5 versions of the row with the
-        row key <literal>com.cnn.www</literal>, and one version of the row with the row key
-        <literal>com.example.www</literal>. The <varname>contents:html</varname> column qualifier contains the entire
-        HTML of a given website. Qualifiers of the <varname>anchor</varname> column family each
-        contain the external site which links to the site represented by the row, along with the
-        text it used in the anchor of its link. The <varname>people</varname> column family represents
-        people associated with the site.
+          HBase and BigTable</link> 中对HBase数据模型做出了一个非常容易理解的一个解释。 Amandeep Khurana也写了一个pdf <link
+              xlink:href="http://0b4af6cdc2f0c5998459-c0245c5c937c5dedcca3f1764ecc9b2f.r43.cf2.rackcdn.com/9353-login1210_khurana.pdf">Introduction
+          to Basic Schema Design</link>，对HBase数据模型做出了很好的解释。它可以帮助你从不同的观点来获取一个对HBase模式设计的扎实的理解。
+          链接里的文章包含了在本节中讲到的内容。
+          </para>
+      <para>
+          下面的例子对<link
+              xlink:href="http://research.google.com/archive/bigtable.html">BigTable</link>论文第二页的例子做了一个简单的修改。
+          表<varname>webtable</varname>包含了两行(<literal>com.cnn.www</literal>
+          和<literal>com.example.www</literal>)，三个列族(<varname>contents</varname>、<varname>anchor</varname>和 <varname>people</varname>)。
+          在这个例子中，第一行(<literal>com.cnn.www</literal>)的列族<varname>anchor</varname>包含了两列(<varname>anchor:cssnsi.com</varname>和
+          <varname>anchor:my.look.ca</varname>)，列族<varname>contents</varname>包含了一列(<varname>contents:html</varname>)。
+          这个例子中行键为<literal>com.cnn.www</literal>的行包含了5个版本，行键为<literal>com.example.www</literal>的行包含1个版本。列限定符<varname>contents:html</varname>包含了一个给定web站点的所有html内容。列簇<varname>anchor</varname>的每一个列限定符
+          包含了行键指定的网站指向的其他站点的相关信息。 列族<varname>people</varname>表示与该网站有关的一些人。
       </para>
         <note>
-          <title>Column Names</title>
-        <para> By convention, a column name is made of its column family prefix and a
-            <emphasis>qualifier</emphasis>. For example, the column
-            <emphasis>contents:html</emphasis> is made up of the column family
-            <varname>contents</varname> and the <varname>html</varname> qualifier. The colon
-          character (<literal>:</literal>) delimits the column family from the column family
-            <emphasis>qualifier</emphasis>. </para>
+          <title>列名</title>
+        <para> 按照惯例，列名由列族和一个<emphasis>列限定符</emphasis>组成。例如，列<emphasis>contents:html</emphasis>由列族<varname>contents</varname>
+            和列限定符<varname>html</varname>组成。冒号(<literal>:</literal>)用来分隔列族和<emphasis>列限定符</emphasis>。
+            </para>
         </note>
         <table
           frame="all">
-          <title>Table <varname>webtable</varname></title>
+          <title>表<varname>webtable</varname></title>
           <tgroup
             cols="5"
             align="left"
@@ -285,11 +273,10 @@
             </tbody>
           </tgroup>
         </table>
-      <para>Cells in this table that appear to be empty do not take space, or in fact exist, in
-        HBase. This is what makes HBase "sparse." A tabular view is not the only possible way to
-        look at data in HBase, or even the most accurate. The following represents the same
-        information as a multi-dimensional map. This is only a mock-up for illustrative
-        purposes and may not be strictly accurate.</para>
+      <para>表中为空的单元格不会在HBase中占用空间或者实际存在。
+          这就是HBase中“疏”的含义。表格视图并不是在HBase查看数据的唯一方式，或者说最精确的方式。下面使用多维映射(map)展示了相同的信息。
+          这仅仅用于解释说明，可能并不是严格准确。
+          </para>
       <programlisting><![CDATA[
 {
 	"com.cnn.www": {
@@ -320,12 +307,12 @@
     <section
       xml:id="physical.view">
       <title>物理视图</title>
-      <para> Although at a conceptual level tables may be viewed as a sparse set of rows, they are
-        physically stored by column family. A new column qualifier (column_family:column_qualifier)
-        can be added to an existing column family at any time.</para>
+      <para>
+          虽然概念视图中表被看做是一个稀疏行的集合，它们在物理上是被按列族存储的。一个新的列限定符（column_family：column_qualifier）可以在任何时候被添加到一个存在的列族中。
+          </para>
       <table
         frame="all">
-        <title>ColumnFamily <varname>anchor</varname></title>
+        <title>列族<varname>anchor</varname></title>
         <tgroup
           cols="3"
           align="left"
@@ -360,7 +347,7 @@
       </table>
       <table
         frame="all">
-        <title>ColumnFamily <varname>contents</varname></title>
+        <title>列族<varname>contents</varname></title>
         <tgroup
           cols="3"
           align="left"
@@ -398,54 +385,43 @@
           </tbody>
         </tgroup>
       </table>
-      <para>The empty cells shown in the
-        conceptual view are not stored at all.
-        Thus a request for the value of the <varname>contents:html</varname> column at time stamp
-          <literal>t8</literal> would return no value. Similarly, a request for an
-          <varname>anchor:my.look.ca</varname> value at time stamp <literal>t9</literal> would
-        return no value. However, if no timestamp is supplied, the most recent value for a
-        particular column would be returned. Given multiple versions, the most recent is also the
-        first one found,  since timestamps
-        are stored in descending order. Thus a request for the values of all columns in the row
-          <varname>com.cnn.www</varname> if no timestamp is specified would be: the value of
-          <varname>contents:html</varname> from timestamp <literal>t6</literal>, the value of
-          <varname>anchor:cnnsi.com</varname> from timestamp <literal>t9</literal>, the value of
-          <varname>anchor:my.look.ca</varname> from timestamp <literal>t8</literal>. </para>
-      <para>For more information about the internals of how Apache HBase stores data, see <xref
-          linkend="regions.arch" />. </para>
+      <para>
+          在概念视图中展示的空单元格是不会被存储的。因此对于列<varname>contents:html</varname>在时间戳<literal>t8</literal>的值的请求将不会返回任何值。
+          同样的，对于列<varname>anchor:my.look.ca</varname>在时间戳<literal>t9</literal>的值的请求也不会返回任何值。然而，如果没有对应的时间戳，特定咧的最新版本的值将会被返回。给定的多个版本，最新的版本会最先被找到，因为数据是按照时间戳降序存储的。因此一个对行<varname>com.cnn.www</varname>的所有列的值的请求，如果不指定时间戳，那么列<varname>contents:html</varname>将会返回时间戳<literal>t6</literal>对应的值，列<varname>anchor:cnnsi.com</varname>将会返回时间戳<literal>t9</literal>对应的值，列<varname>anchor:my.look.ca</varname>将会返回时间戳<literal>t8</literal>对应的值。
+           </para>
+      <para>更多关于HBase内部如何存储数据的信息，请参考 <xref
+          linkend="regions.arch" />。 </para>
     </section>
 
     <section
       xml:id="namespace">
       <title>命名空间</title>
-      <para> A namespace is a logical grouping of tables analogous to a database in relation
-        database systems. This abstraction lays the groundwork for upcoming multi-tenancy related
-        features: <itemizedlist>
+      <para>
+          在关系数据库系统中，命名空间(namespace)指的是一个表的逻辑分组，同一组中的表有类似的用途。这种抽象是即将到来的多用户相关的特性的基础：
+           <itemizedlist>
           <listitem>
-            <para>Quota Management (HBASE-8410) - Restrict the amount of resources (ie regions,
-              tables) a namespace can consume.</para>
+            <para>配额(Quota)管理 (HBASE-8410) - 限定命名空间可以使用的资源 (例如 regions、table等
+              ) 量。</para>
           </listitem>
           <listitem>
-            <para>Namespace Security Administration (HBASE-9206) - provide another level of security
-              administration for tenants.</para>
+            <para>命名空间安全管理 (HBASE-9206) - 提供对于另一个层面的多用户的安全管理。</para>
           </listitem>
           <listitem>
-            <para>Region server groups (HBASE-6721) - A namespace/table can be pinned onto a subset
-              of regionservers thus guaranteeing a course level of isolation.</para>
+            <para>Region server组 (HBASE-6721) - 一个命名空间/表可以被固定到一组regionserver上，从而保证了数据隔离性。</para>
           </listitem>
         </itemizedlist>
       </para>
       <section
         xml:id="namespace_creation">
-        <title>Namespace management</title>
-        <para> A namespace can be created, removed or altered. Namespace membership is determined
-          during table creation by specifying a fully-qualified table name of the form:</para>
+        <title>命名空间管理</title>
+        <para> 命名空间可以被创建、移除或更改。表和命名空间的隶属关系在在创建表时决定，通过以下格式指定：
+            </para>
 
         <programlisting language="xml"><![CDATA[<table namespace>:<table qualifier>]]></programlisting>
 
 
         <example>
-          <title>Examples</title>
+          <title>示例</title>
 
           <programlisting language="bourne">
 #Create a namespace
@@ -467,19 +443,18 @@ alter_namespace 'my_ns', {METHOD => 'set', 'PROPERTY_NAME' => 'PROPERTY_VALUE'}
       </section>
       <section
         xml:id="namespace_special">
-        <title>Predefined namespaces</title>
-        <para> There are two predefined special namespaces: </para>
+        <title>预定义的命名空间</title>
+        <para> 有两个系统内置的预定义的特殊命名空间： </para>
         <itemizedlist>
           <listitem>
-            <para>hbase - system namespace, used to contain hbase internal tables</para>
+            <para>hbase - 系统命名空间，用于包含hbase的内部表</para>
           </listitem>
           <listitem>
-            <para>default - tables with no explicit specified namespace will automatically fall into
-              this namespace.</para>
+            <para>default - 所有未指定命名空间的表都自动进入该命名空间</para>
           </listitem>
         </itemizedlist>
         <example>
-          <title>Examples</title>
+          <title>示例</title>
 
           <programlisting language="bourne">
 #namespace=foo and table qualifier=bar
@@ -495,81 +470,70 @@ create 'bar', 'fam'
     <section
       xml:id="table">
       <title>表</title>
-      <para> Tables are declared up front at schema definition time. </para>
+      <para> 表是在schema声明的时候定义的。 </para>
     </section>
 
     <section
       xml:id="row">
       <title>行</title>
-      <para>Row keys are uninterrpreted bytes. Rows are lexicographically sorted with the lowest
-        order appearing first in a table. The empty byte array is used to denote both the start and
-        end of a tables' namespace.</para>
+      <para>
+          行键是不可分割的字节数组。行按字典排序，由低到高存储在表中。一个空的字节数组被用来表示某张表命名空间的起始和结束。
+          </para>
     </section>
 
     <section
       xml:id="columnfamily">
-      <title>列族<indexterm><primary>Column Family</primary></indexterm></title>
-      <para> Columns in Apache HBase are grouped into <emphasis>column families</emphasis>. All
-        column members of a column family have the same prefix. For example, the columns
-          <emphasis>courses:history</emphasis> and <emphasis>courses:math</emphasis> are both
-        members of the <emphasis>courses</emphasis> column family. The colon character
-          (<literal>:</literal>) delimits the column family from the <indexterm><primary>column
-            family qualifier</primary><secondary>Column Family Qualifier</secondary></indexterm>.
-        The column family prefix must be composed of <emphasis>printable</emphasis> characters. The
-        qualifying tail, the column family <emphasis>qualifier</emphasis>, can be made of any
-        arbitrary bytes. Column families must be declared up front at schema definition time whereas
-        columns do not need to be defined at schema time but can be conjured on the fly while the
-        table is up an running.</para>
-      <para>Physically, all column family members are stored together on the filesystem. Because
-        tunings and storage specifications are done at the column family level, it is advised that
-        all column family members have the same general access pattern and size
-        characteristics.</para>
+      <title>列族<indexterm><primary>列族</primary></indexterm></title>
+      <para>
+         Apache HBase按照<emphasis>列族</emphasis>来组织列。 同一个列族的所有列有相同的前缀。例如，列<emphasis>courses:history</emphasis>和 <emphasis>courses:math</emphasis>都是列族<emphasis>courses</emphasis>的成员。冒号(<literal>:</literal>)用来分隔列族和列限定符。列的前缀（列族）必须由可打印的字符组成。
+          剩下的部分（列限定符）可以由任意的字节数组组成。列族必须在创建表的时候声明，列限定符就不用了，随时可以进行添加。
+          </para>
+      <para>在物理上，一个列族的所有成员在文件系统上被存储在一起。因为所有针对存储的优化都是列族级别的，所有的列族成员有相同的访问模式和规模特性。
+          </para>
 
     </section>
     <section
       xml:id="cells">
       <title>单元格<indexterm><primary>Cells</primary></indexterm></title>
-      <para>A <emphasis>{row, column, version} </emphasis>tuple exactly specifies a
-          <literal>cell</literal> in HBase. Cell content is uninterrpreted bytes</para>
+      <para>一个 <emphasis>{row, column, version} </emphasis>元组指定了HBase中的一个
+          <literal>cell</literal>。 单元格内容是一个不可分割的字节数组。</para>
     </section>
     <section
       xml:id="data_model_operations">
       <title>数据模型操作</title>
-      <para>The four primary data model operations are Get, Put, Scan, and Delete. Operations are
-        applied via <link
+      <para>有四个主要的数据模式：Get、Put、Scan和Delete. 通过 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html">HTable</link>
-        instances. </para>
+        实例来进行操作。 </para>
       <section
         xml:id="get">
         <title>Get</title>
         <para><link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html">Get</link>
-          returns attributes for a specified row. Gets are executed via <link
+          返回特定行的属性。 Get通过 <link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#get%28org.apache.hadoop.hbase.client.Get%29">
-            HTable.get</link>. </para>
+            HTable.get</link>来执行。 </para>
       </section>
       <section
         xml:id="put">
         <title>Put</title>
         <para><link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Put.html">Put</link>
-          either adds new rows to a table (if the key is new) or can update existing rows (if the
-          key already exists). Puts are executed via <link
+          要么给表添加新的行(如果是新的行键)，要么更新一个存在的行(如果行键已经存在)。 Put通过 <link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#put%28org.apache.hadoop.hbase.client.Put%29">
-            HTable.put</link> (writeBuffer) or <link
+            HTable.put</link> (写缓冲区)或者 <link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#batch%28java.util.List%29">
-            HTable.batch</link> (non-writeBuffer). </para>
+            HTable.batch</link> (不写缓冲区)来执行。 </para>
       </section>
       <section
         xml:id="scan">
         <title>Scans</title>
         <para><link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html">Scan</link>
-          allow iteration over multiple rows for specified attributes. </para>
-        <para>The following is an example of a on an HTable table instance. Assume that a table is
-          populated with rows with keys "row1", "row2", "row3", and then another set of rows with
-          the keys "abc1", "abc2", and "abc3". The following example shows how startRow and stopRow
-          can be applied to a Scan instance to return the rows beginning with "row".</para>
+          允许遍历多行指定的属性。 </para>
+        <para>
+            下面是一个表的HTable的例子。假设一个表有几个使用行键"row1"、"row2"和"row3"的行，还有其他一些使用行键"abc1"、"abc2"和"abc3"的行。下面的例子展示了
+            如何在Scan中应用起始行键和结束行键来返回行键以"row"开始的那些行。
+            </para>
         <programlisting language="java">
 public static final byte[] CF = "cf".getBytes();
 public static final byte[] ATTR = "attr".getBytes();
@@ -589,26 +553,31 @@ try {
   rs.close();  // always close the ResultScanner!
 }
 </programlisting>
-        <para>Note that generally the easiest way to specify a specific stop point for a scan is by
-          using the <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/filter/InclusiveStopFilter.html">InclusiveStopFilter</link>
-          class. </para>
+        <para>
+            注意：通过最容易的方式是使用<link
+                xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/filter/InclusiveStopFilter.html">InclusiveStopFilter</link>类对scan指定一个特殊的结束点。 </para>
       </section>
       <section
         xml:id="delete">
         <title>Delete</title>
+
+          Delete 从表中删除一行. 删除通过HTable.delete 执行。
+
+          HBase 没有修改数据的合适方法。所以通过创建名为墓碑(tombstones)的新标志进行处理。这些墓碑和死去的值，在主紧缩时清除。
+
+          参考 Section 5.8.1.5, “Delete” 获取删除列版本的更多信息。参考Section 9.7.5.5, “Compaction” 获取更多有关紧缩的信息。
+
+
         <para><link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Delete.html">Delete</link>
-          removes a row from a table. Deletes are executed via <link
+          从一个表中删除一行。 Delete通过 <link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#delete%28org.apache.hadoop.hbase.client.Delete%29">
-            HTable.delete</link>. </para>
-        <para>HBase does not modify data in place, and so deletes are handled by creating new
-          markers called <emphasis>tombstones</emphasis>. These tombstones, along with the dead
-          values, are cleaned up on major compactions. </para>
-        <para>See <xref
-            linkend="version.delete" /> for more information on deleting versions of columns, and
-          see <xref
-            linkend="compaction" /> for more information on compactions. </para>
+            HTable.delete</link>来执行。 </para>
+        <para>HBase不会直接在数据保存的地方修改数据，因此它通过创建一个被称为<emphasis>墓碑(tombstones)</emphasis>的标记来标识数据的删除。
+            这些墓碑和那些被删除的值，会在major压缩的时候进行彻底清除。 </para>
+        <para>查看 <xref
+            linkend="version.delete" /> 以便获取更多关于删除列的某一版本的信息，查看<xref
+            linkend="compaction" /> 可以获取更多关于压缩的信息。 </para>
 
       </section>
 
@@ -617,35 +586,30 @@ try {
 
     <section
       xml:id="versions">
-      <title>Versions<indexterm><primary>Versions</primary></indexterm></title>
+      <title>版本<indexterm><primary>版本</primary></indexterm></title>
 
-      <para>A <emphasis>{row, column, version} </emphasis>tuple exactly specifies a
-          <literal>cell</literal> in HBase. It's possible to have an unbounded number of cells where
-        the row and column are the same but the cell address differs only in its version
-        dimension.</para>
+      <para>一个 <emphasis>{row, column, version} </emphasis>元组指定了一个HBase
+          <literal>cell</literal> 。 可能会有一些单元格的行和列都是相同的，它们仅有的不同就是它们的版本。</para>
 
-      <para>While rows and column keys are expressed as bytes, the version is specified using a long
-        integer. Typically this long contains time instances such as those returned by
-          <code>java.util.Date.getTime()</code> or <code>System.currentTimeMillis()</code>, that is:
-          <quote>the difference, measured in milliseconds, between the current time and midnight,
-          January 1, 1970 UTC</quote>.</para>
+      <para>
+          行和列用字节数组表示，版本号用长整型表示。这个长整型使用<code>java.util.Date.getTime()</code>或者<code>System.currentTimeMillis()</code>来获取。
+          也就是说，<quote>是当前时间和
+          January 1, 1970 UTC 的时间差，单位是毫秒</quote>。
+          </para>
 
-      <para>The HBase version dimension is stored in decreasing order, so that when reading from a
-        store file, the most recent values are found first.</para>
+      <para>HBase版本按照降序存储。因此当读取一个store file文件，最新的值将最先被找到。</para>
 
-      <para>There is a lot of confusion over the semantics of <literal>cell</literal> versions, in
-        HBase. In particular, a couple questions that often come up are:</para>
+      <para>有些人可能会对HBase中 <literal>cell</literal> 版本的含义有疑惑。一些常见的问题如下：</para>
       <itemizedlist>
         <listitem>
-          <para>If multiple writes to a cell have the same version, are all versions maintained or
-            just the last?<footnote>
-              <para>Currently, only the last written is fetchable.</para>
+          <para>如果对一个单元格有相同版本的多次写入，是所有的版本都被保留还是只保留最后的那个？<footnote>
+              <para>目前，仅仅最后的写入可以被获取。</para>
             </footnote></para>
         </listitem>
 
         <listitem>
-          <para>Is it OK to write cells in a non-increasing version order?<footnote>
-              <para>Yes</para>
+          <para>可以以非递增的版本顺序对单元格写入数据吗？<footnote>
+              <para>可以</para>
             </footnote></para>
         </listitem>
       </itemizedlist>
