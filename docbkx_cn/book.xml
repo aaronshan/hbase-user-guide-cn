@@ -560,14 +560,6 @@ try {
       <section
         xml:id="delete">
         <title>Delete</title>
-
-          Delete 从表中删除一行. 删除通过HTable.delete 执行。
-
-          HBase 没有修改数据的合适方法。所以通过创建名为墓碑(tombstones)的新标志进行处理。这些墓碑和死去的值，在主紧缩时清除。
-
-          参考 Section 5.8.1.5, “Delete” 获取删除列版本的更多信息。参考Section 9.7.5.5, “Compaction” 获取更多有关紧缩的信息。
-
-
         <para><link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Delete.html">Delete</link>
           从一个表中删除一行。 Delete通过 <link
@@ -614,59 +606,51 @@ try {
         </listitem>
       </itemizedlist>
 
-      <para>Below we describe how the version dimension in HBase currently works<footnote>
-          <para>See <link
-              xlink:href="https://issues.apache.org/jira/browse/HBASE-2406">HBASE-2406</link> for
-            discussion of HBase versions. <link
+      <para>下面我们将描述HBase当前的版本是如何工作的。<footnote>
+          <para>参考 <link
+              xlink:href="https://issues.apache.org/jira/browse/HBASE-2406">HBASE-2406</link> 对HBase版本的讨论。 <link
               xlink:href="http://outerthought.org/blog/417-ot.html">Bending time in HBase</link>
-            makes for a good read on the version, or time, dimension in HBase. It has more detail on
-            versioning than is provided here. As of this writing, the limiitation
-              <emphasis>Overwriting values at existing timestamps</emphasis> mentioned in the
-            article no longer holds in HBase. This section is basically a synopsis of this article
-            by Bruno Dumon.</para>
+            也对HBase中的版本或者时间戳做了一个很好的论述。它提供了比这里更多的有关版本的细节信息。截止本文撰写时，文章中提及的关于HBase的 <emphasis>覆盖已经存在版本的值</emphasis> 的问题已经不存在了。本节是Bruno Dumon文章的一个基本概要。 </para>
         </footnote>.</para>
 
       <section
         xml:id="versions.ops">
-        <title>Versions and HBase Operations</title>
+        <title>版本和HBase操作</title>
 
-        <para>In this section we look at the behavior of the version dimension for each of the core
-          HBase operations.</para>
+        <para>在本节中我们看一下每一个HBase核心操作中有关版本的行为。</para>
 
         <section>
           <title>Get/Scan</title>
 
-          <para>Gets are implemented on top of Scans. The below discussion of <link
+          <para>Get在Scan的基础上实现。下面关于 <link
               xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html">Get</link>
-            applies equally to <link
-              xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html">Scans</link>.</para>
+            的讨论同样适用于 <link
+              xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html">Scans</link>。</para>
 
-          <para>By default, i.e. if you specify no explicit version, when doing a
-              <literal>get</literal>, the cell whose version has the largest value is returned
-            (which may or may not be the latest one written, see later). The default behavior can be
-            modified in the following ways:</para>
+          <para>默认情况下，例如，如果你没有显示的指定版本，当你执行一个
+              <literal>get</literal>操作， 那个最近的版本的值将会被返回（是不是最后被写入的，请看后面）。默认的行为可以按如下方式修改：</para>
 
           <itemizedlist>
             <listitem>
-              <para>to return more than one version, see <link
+              <para>为了返回不止一个版本，请参考 <link
                   xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html#setMaxVersions()">Get.setMaxVersions()</link></para>
             </listitem>
 
             <listitem>
-              <para>to return versions other than the latest, see <link
-                  xlink:href="???">Get.setTimeRange()</link></para>
+              <para>为了返回非最近的版本，请参考 <link
+                  xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html#setTimeRange(long, long)">Get.setTimeRange()</link></para>
 
-              <para>To retrieve the latest version that is less than or equal to a given value, thus
-                giving the 'latest' state of the record at a certain point in time, just use a range
-                from 0 to the desired version and set the max versions to 1.</para>
+              <para>
+                  为了查询小于或等于给定的值的最新版本，需要给定一个确定的时间点的记录的“最新”的状态​​，只需要将范围设置成0～你期望版本，并将最大版本设置为1。在，只是使用范围从0到期望的版本，并设置最大版本为1。
+                  </para>
             </listitem>
           </itemizedlist>
 
         </section>
         <section
           xml:id="default_get_example">
-          <title>Default Get Example</title>
-          <para>The following Get will only retrieve the current version of the row</para>
+          <title>默认的Get示例</title>
+          <para>下面的Get操作将仅仅检索某一行的当前版本。</para>
           <programlisting language="java">
 public static final byte[] CF = "cf".getBytes();
 public static final byte[] ATTR = "attr".getBytes();
@@ -678,8 +662,8 @@ byte[] b = r.getValue(CF, ATTR);  // returns current version of value
         </section>
         <section
           xml:id="versioned_get_example">
-          <title>Versioned Get Example</title>
-          <para>The following Get will return the last 3 versions of the row.</para>
+          <title>有版本的Get示例</title>
+          <para>西面的Get操作将返回某一行的最近的3个版本。</para>
           <programlisting language="java">
 public static final byte[] CF = "cf".getBytes();
 public static final byte[] ATTR = "attr".getBytes();
@@ -695,19 +679,14 @@ List&lt;KeyValue&gt; kv = r.getColumn(CF, ATTR);  // returns all versions of thi
         <section>
           <title>Put</title>
 
-          <para>Doing a put always creates a new version of a <literal>cell</literal>, at a certain
-            timestamp. By default the system uses the server's <literal>currentTimeMillis</literal>,
-            but you can specify the version (= the long integer) yourself, on a per-column level.
-            This means you could assign a time in the past or the future, or use the long value for
-            non-time purposes.</para>
+          <para>执行Put操作总是会在一个确定的时间戳创建一个<literal>cell</literal>的新版本。系统默认使用服务器的<literal>currentTimeMillis</literal>，
+              但是你可以在每一个列级别指定你自己的版本（=长整型）。这意味着你可以分配一个过去或未来的时间，或者使用一个长整型数值。</para>
 
-          <para>To overwrite an existing value, do a put at exactly the same row, column, and
-            version as that of the cell you would overshadow.</para>
+          <para>为了覆盖一个已经存在的值，你只需要在put操作时将你想覆盖的单元格的行键和列，以及版本号保持和原来相同即可。</para>
           <section
             xml:id="implicit_version_example">
-            <title>Implicit Version Example</title>
-            <para>The following Put will be implicitly versioned by HBase with the current
-              time.</para>
+            <title>不指明版本的例子</title>
+            <para>下面的Put操作将不指明版本号，而是使用系统的当前时间。</para>
             <programlisting language="java">
 public static final byte[] CF = "cf".getBytes();
 public static final byte[] ATTR = "attr".getBytes();
@@ -719,8 +698,8 @@ htable.put(put);
           </section>
           <section
             xml:id="explicit_version_example">
-            <title>Explicit Version Example</title>
-            <para>The following Put has the version timestamp explicitly set.</para>
+            <title>指明版本号的例子</title>
+            <para>下面的Put操作将指明版本号。</para>
             <programlisting language="java">
 public static final byte[] CF = "cf".getBytes();
 public static final byte[] ATTR = "attr".getBytes();
@@ -730,10 +709,9 @@ long explicitTimeInMs = 555;  // just an example
 put.add(CF, ATTR, explicitTimeInMs, Bytes.toBytes(data));
 htable.put(put);
 </programlisting>
-            <para>Caution: the version timestamp is internally by HBase for things like time-to-live
-              calculations. It's usually best to avoid setting this timestamp yourself. Prefer using
-              a separate timestamp attribute of the row, or have the timestamp a part of the rowkey,
-              or both. </para>
+            <para>
+                注意：HBase内部使用的版本时间戳是实时计算的。最好避免自己设置时间戳。请选择使用该行的独立的时间戳属性，或者将时间戳作为行键的一部分，或者都两个一起选择。
+                </para>
           </section>
 
         </section>
@@ -742,136 +720,118 @@ htable.put(put);
           xml:id="version.delete">
           <title>Delete</title>
 
-          <para>There are three different types of internal delete markers <footnote>
-              <para>See Lars Hofhansl's blog for discussion of his attempt adding another, <link
+          <para>
+              有三种不同类型的内部删除标记<footnote>参考Lars Hofhansl博客中关于它尝试添加另一个的讨论<link
                   xlink:href="http://hadoop-hbase.blogspot.com/2012/01/scanning-in-hbase.html">Scanning
-                  in HBase: Prefix Delete Marker</link></para>
-            </footnote>: </para>
+              in HBase: Prefix Delete Marker</link>。</footnote>： </para>
+
+              当删除一行，HBase将内部对每个列族创建墓碑(非每个单独列)。
+
+              删除操作的实现是创建一个墓碑标记。例如，我们想要删除一个版本，或者默认是currentTimeMillis。就意味着“删除比这个版本更早的所有版本”.HBase不会去改那些数据，数据不会立即从文件中删除。他使用删除标记来屏蔽掉这些值。[20]若你知道的版本比数据中的版本晚，就意味着这一行中的所有数据都会被删除。
+
+              参考 Section 9.7.5.4, “KeyValue” 获取内部 KeyValue 格式更多信息。
+
           <itemizedlist>
             <listitem>
-              <para>Delete: for a specific version of a column.</para>
+              <para>Delete: 删除列的指定版本。</para>
             </listitem>
             <listitem>
-              <para>Delete column: for all versions of a column.</para>
+              <para>Delete column: 删除列的所有版本。</para>
             </listitem>
             <listitem>
-              <para>Delete family: for all columns of a particular ColumnFamily</para>
+              <para>Delete family: 删除特定列族的所有列。</para>
             </listitem>
           </itemizedlist>
-          <para>When deleting an entire row, HBase will internally create a tombstone for each
-            ColumnFamily (i.e., not each individual column). </para>
-          <para>Deletes work by creating <emphasis>tombstone</emphasis> markers. For example, let's
-            suppose we want to delete a row. For this you can specify a version, or else by default
-            the <literal>currentTimeMillis</literal> is used. What this means is <quote>delete all
-              cells where the version is less than or equal to this version</quote>. HBase never
-            modifies data in place, so for example a delete will not immediately delete (or mark as
-            deleted) the entries in the storage file that correspond to the delete condition.
-            Rather, a so-called <emphasis>tombstone</emphasis> is written, which will mask the
-            deleted values<footnote>
-              <para>When HBase does a major compaction, the tombstones are processed to actually
-                remove the dead values, together with the tombstones themselves.</para>
-            </footnote>. If the version you specified when deleting a row is larger than the version
-            of any value in the row, then you can consider the complete row to be deleted.</para>
-          <para>For an informative discussion on how deletes and versioning interact, see the thread <link
+          <para>
+              当删除整行时，HBase将会在内部创建一个所有列族（不是每一个单独的列）的墓碑标记。
+               </para>
+          <para>
+              删除操作通过创建一个<emphasis>tombstone</emphasis>标记来实现。例如，假设我们想要删除某一行，你可以指定一个版本，
+              或者使用默认的<literal>currentTimeMillis</literal>。这就意味着<quote>删除所有单元格的小于或等于该版本的所有版本的数据</quote>。
+              HBase不会直接在数据保存的地方修改数据，因此一个删除操作不会立刻删除文件中那些需要删除（或者标记为删除）的数据。它会写入一个被称为<emphasis>墓碑</emphasis>
+              的标记，以此来屏蔽掉那些被删除的值
+              <footnote>
+              <para>当HBase执行major压缩时，那些有墓碑标记的死亡的值和墓碑标记一起被真正删除。</para>
+            </footnote>。
+              如果你指定的版本比当前行中所有的版本值都大，那么该行的所有数据都会被删除。</para>
+          <para>
+              关于如何删除和版本化交互的讨论，可以参考用户邮件列表中的内容 <link
               xlink:href="http://comments.gmane.org/gmane.comp.java.hadoop.hbase.user/28421">Put w/
-              timestamp -> Deleteall -> Put w/ timestamp fails</link> up on the user mailing
-            list.</para>
-          <para>Also see <xref
-              linkend="keyvalue" /> for more information on the internal KeyValue format. </para>
-          <para>Delete markers are purged during the next major compaction of the store, unless the
-              <option>KEEP_DELETED_CELLS</option> option is set in the column family. To keep the
-            deletes for a configurable amount of time, you can set the delete TTL via the
-              <option>hbase.hstore.time.to.purge.deletes</option> property in
-              <filename>hbase-site.xml</filename>. If
-              <option>hbase.hstore.time.to.purge.deletes</option> is not set, or set to 0, all
-            delete markers, including those with timestamps in the future, are purged during the
-            next major compaction. Otherwise, a delete marker with a timestamp in the future is kept
-            until the major compaction which occurs after the time represented by the marker's
-            timestamp plus the value of <option>hbase.hstore.time.to.purge.deletes</option>, in
-            milliseconds. </para>
+              timestamp -> Deleteall -> Put w/ timestamp fails</link> 。</para>
+          <para>也可以查看 <xref
+              linkend="keyvalue" /> 了解更多的关于内部KeyValue格式的信息。 </para>
+          <para>
+              删除标记在下一次store file文件的major压缩过程中会被完全移除，除非<option>KEEP_DELETED_CELLS</option>选项在列族中被设置。
+              为了保证在一个可配置的时间删除数据，你可以通过设置<filename>hbase-site.xml</filename>文件中的<option>hbase.hstore.time.to.purge.deletes</option>属性来设置删除的TTL。该属性如果不设置或者设置为0，那么在major合并期间，含有删除标记的记录将会被完全删除。否则，在major合并期间，那些含有删除标记的记录会在时间（删除标记的时间戳加上<option>hbase.hstore.time.to.purge.deletes</option>值）才会被完全删除。
+         </para>
           <note>
-            <para>This behavior represents a fix for an unexpected change that was introduced in
-              HBase 0.94, and was fixed in <link
-                xlink:href="https://issues.apache.org/jira/browse/HBASE-10118">HBASE-10118</link>.
-              The change has been backported to HBase 0.94 and newer branches.</para>
+            <para>这种行为在HBase 0.94中被引入，之后修复了一些Bug，修复在 <link
+                xlink:href="https://issues.apache.org/jira/browse/HBASE-10118">HBASE-10118</link>可以看到。
+                这个改变已经在包括在HBase 0.94之后的版本以及它新的分支中。
+              </para>
           </note>
         </section>
       </section>
 
       <section>
-        <title>Current Limitations</title>
+        <title>现在的限制</title>
 
         <section>
-          <title>Deletes mask Puts</title>
+          <title>错误的进行了标记删除的操作</title>
 
-          <para>Deletes mask puts, even puts that happened after the delete
-          was entered<footnote>
+          <para>
+              标记删除的操作可能会将之后插入(put)的数据也标记上
+              <footnote>
               <para><link
               xlink:href="https://issues.apache.org/jira/browse/HBASE-2256">HBASE-2256</link></para>
-            </footnote>. Remember that a delete writes a tombstone, which only
-          disappears after then next major compaction has run. Suppose you do
-          a delete of everything &lt;= T. After this you do a new put with a
-          timestamp &lt;= T. This put, even if it happened after the delete,
-          will be masked by the delete tombstone. Performing the put will not
-          fail, but when you do a get you will notice the put did have no
-          effect. It will start working again after the major compaction has
-          run. These issues should not be a problem if you use
-          always-increasing versions for new puts to a row. But they can occur
-          even if you do not care about time: just do delete and put
-          immediately after each other, and there is some chance they happen
-          within the same millisecond.</para>
+            </footnote>。当写下一个墓碑标记后，之后在下一个major压缩操作执行期间才会将墓碑标记删除。假设你做了一个删除&lt;= T的时间的数据的操作。然后，你又执行了一个新的Put操作。
+              该操作指定的时间戳&lt;= T。那么，即使这个Put发生在之前的删除操作之后，那么它也会被打上墓碑标记。put操作将不会执行失败，但是当你做Get操作的时候，会发现你的Put操作没造成任何影响（即你获取不到你之后Put的那个数据）。只有在major压缩之后，它才会正常。因此，如果你使用一个增加的版本号，那么这个问题不会对你有任何影响。但是即使你不关心时间，该情况也可以会出现。只需要你在删除之后立刻进行了插入操作，那么它们可能在同一毫秒中完成，也就有可能出现这种情况。
+              </para>
         </section>
 
         <section
           xml:id="major.compactions.change.query.results">
-          <title>Major compactions change query results</title>
+          <title>主压缩改变了查询的结果</title>
           
-          <para><quote>...create three cell versions at t1, t2 and t3, with a maximum-versions
-            setting of 2. So when getting all versions, only the values at t2 and t3 will be
-            returned. But if you delete the version at t2 or t3, the one at t1 will appear again.
-            Obviously, once a major compaction has run, such behavior will not be the case anymore...<footnote>
-              <para>See <emphasis>Garbage Collection</emphasis> in <link
+          <para><quote>使用最大的版本数2创建三个单元格的版本t1、t2和t3.因此，当你获取所有的版本时，只有t2和t3的数据能被返回。但是如果你删除了版本t2和t3，t1的数据将会再次出现。显然，
+              一旦major压缩被执行，这种行为将不会再次出现。
+              <footnote>
+              <para>参考文章 <link
                 xlink:href="http://outerthought.org/blog/417-ot.html">Bending time in
-                HBase</link>
+                HBase</link> 中提到的<emphasis>垃圾收集</emphasis>。
               </para>
             </footnote></quote></para>
         </section>
       </section>
     </section>
     <section xml:id="dm.sort">
-      <title>Sort Order</title>
-      <para>All data model operations HBase return data in sorted order.  First by row,
-      then by ColumnFamily, followed by column qualifier, and finally timestamp (sorted
-      in reverse, so newest records are returned first).
+      <title>排序</title>
+      <para>
+          所有HBase的数据模型操作会返回排好序的数据。先是按行，再是按列族，然后是按列限定符(column qualifier), 最后是按时间戳(反向排序,所以最新的记录在最前面被返回)。
       </para>
     </section>
     <section xml:id="dm.column.metadata">
-      <title>Column Metadata</title>
-      <para>There is no store of column metadata outside of the internal KeyValue instances for a ColumnFamily.
-      Thus, while HBase can support not only a wide number of columns per row, but a heterogenous set of columns
-      between rows as well, it is your responsibility to keep track of the column names.
+      <title>列的元数据</title>
+      <para>
+          列族没有保存内部的KeyValue之外的元数据。因此，HBase不仅在一行中支持很多列，而且支持行之间不同的列。跟踪列名由你自己负责。
       </para>
-      <para>The only way to get a complete set of columns that exist for a ColumnFamily is to process all the rows.
-      For more information about how HBase stores data internally, see <xref linkend="keyvalue" />.
+      <para>唯一获取列族的完整列名的方法是处理所有行。关于HBase存储数据的更多信息，请参考 <xref linkend="keyvalue" />。
 	  </para>
     </section>
     <section xml:id="joins"><title>Joins</title>
-      <para>Whether HBase supports joins is a common question on the dist-list, and there is a simple answer:  it doesn't,
-      at not least in the way that RDBMS' support them (e.g., with equi-joins or outer-joins in SQL).  As has been illustrated
-      in this chapter, the read data model operations in HBase are Get and Scan.
+      <para>
+          HBase是否支持联合(join)操作是一个常问问题。简单来说 : 不支持。至少不像传统RDBMS那样支持(如SQL中包含equi-join或outer-join)。
+          正如本章描述的那样，HBase中通过Get和Scan操作读取数据。
       </para>
-      <para>However, that doesn't mean that equivalent join functionality can't be supported in your application, but
-      you have to do it yourself.  The two primary strategies are either denormalizing the data upon writing to HBase,
-      or to have lookup tables and do the join between HBase tables in your application or MapReduce code (and as RDBMS'
-      demonstrate, there are several strategies for this depending on the size of the tables, e.g., nested loops vs.
-      hash-joins).  So which is the best approach?  It depends on what you are trying to do, and as such there isn't a single
-      answer that works for every use case.
+      <para>
+          但并不表示等价联合(join)不能在你的应用程序中被支持，只是你必须自己实现。 有两种方法，要么指示要写到HBase的数据，
+          要么查询表并在你的应用或MapReduce代码(如RDBMS所展示的那样,有几种策略来实现，如嵌套循环(nested loops)和哈希联合(hash-joins)，这依赖于表的大小)做联合操作。 那哪个更好呢？这依赖于你准备做什么，所以没有一个适合所有实例的答案。
       </para>
     </section>
     <section xml:id="acid"><title>ACID</title>
-        <para>See <link xlink:href="http://hbase.apache.org/acid-semantics.html">ACID Semantics</link>.
-            Lars Hofhansl has also written a note on
-            <link xlink:href="http://hadoop-hbase.blogspot.com/2012/03/acid-in-hbase.html">ACID in HBase</link>.</para>
+        <para>参考 <link xlink:href="http://hbase.apache.org/acid-semantics.html">ACID Semantics</link>。
+            Lars Hofhansl也写了一篇相关的文章
+            <link xlink:href="http://hadoop-hbase.blogspot.com/2012/03/acid-in-hbase.html">ACID in HBase</link>。</para>
     </section>
   </chapter>  <!-- data model -->
 
