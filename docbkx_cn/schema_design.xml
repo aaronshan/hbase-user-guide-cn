@@ -29,21 +29,21 @@
  * limitations under the License.
  */
 -->
-  <title>HBase和模式设计</title>
-  <para>A good general introduction on the strength and weaknesses modelling on the various
-    non-rdbms datastores is Ian Varley's Master thesis, <link
-      xlink:href="http://ianvarley.com/UT/MR/Varley_MastersReport_Full_2009-08-07.pdf">No Relation:
-      The Mixed Blessings of Non-Relational Databases</link>. Recommended. Also, read <xref
-      linkend="keyvalue" /> for how HBase stores data internally, and the section on <xref
-      linkend="schema.casestudies" />. </para>
+  <title>HBase和模式(Schema)设计</title>
+  <para>
+      Ian Varley的硕士论文<link
+          xlink:href="http://ianvarley.com/UT/MR/Varley_MastersReport_Full_2009-08-07.pdf">No Relation:
+      The Mixed Blessings of Non-Relational Databases</link> 中对各种非关系型数据库的优缺点从总体上做了很好的介绍。推荐阅读该论文。
+      另外，可以阅读<xref
+          linkend="keyvalue" /> 和<xref
+          linkend="schema.casestudies" /> 章节以了解HBase内部如何存储数据。
+       </para>
   <section
     xml:id="schema.creation">
-    <title> Schema Creation </title>
-    <para>HBase schemas can be created or updated with <xref
-        linkend="shell" /> or by using <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HBaseAdmin.html">HBaseAdmin</link>
-      in the Java API. </para>
-    <para>Tables must be disabled when making ColumnFamily modifications, for example:</para>
+    <title> 模式创建 </title>
+    <para> 我们可以使用Java API <link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HBaseAdmin.html">HBaseAdmin</link> 来对HBase的模式(schema)进行创建和更新。 </para>
+    <para>当对表的列族进行修改时，必须先将表禁用。例如：</para>
     <programlisting language="java">
 Configuration config = HBaseConfiguration.create();
 HBaseAdmin admin = new HBaseAdmin(conf);
@@ -58,78 +58,62 @@ admin.modifyColumn(table, cf2);    // modifying existing ColumnFamily
 
 admin.enableTable(table);
     </programlisting>
-    <para>See <xref
-        linkend="client_dependencies" /> for more information about configuring client
-      connections.</para>
-    <para>Note: online schema changes are supported in the 0.92.x codebase, but the 0.90.x codebase
-      requires the table to be disabled. </para>
+    <para>查阅 <xref
+        linkend="client_dependencies" /> 可以获取关于客户端连接配置的更多信息。</para>
+    <para>注意：在0.92.x版本的HBase才支持在线的模式变更，而0.90.x版本的HBase必须先对表进行禁用操作。 </para>
     <section
       xml:id="schema.updates">
-      <title>Schema Updates</title>
-      <para>When changes are made to either Tables or ColumnFamilies (e.g., region size, block
-        size), these changes take effect the next time there is a major compaction and the
-        StoreFiles get re-written. </para>
-      <para>See <xref
-          linkend="store" /> for more information on StoreFiles. </para>
+      <title>模式更新</title>
+      <para>
+          当改变了表或者列族（例如，分区(region)大小，块大小等），这些改变将在下一次的major压缩与StoreFile被重写时才会起作用。
+          </para>
+      <para>查看 <xref
+          linkend="store" /> 可以获得关于StoreFile的更多信息。 </para>
     </section>
   </section>
   <section
     xml:id="number.of.cfs">
-    <title> On the number of column families </title>
-    <para> HBase currently does not do well with anything above two or three column families so keep
-      the number of column families in your schema low. Currently, flushing and compactions are done
-      on a per Region basis so if one column family is carrying the bulk of the data bringing on
-      flushes, the adjacent families will also be flushed though the amount of data they carry is
-      small. When many column families the flushing and compaction interaction can make for a bunch
-      of needless i/o loading (To be addressed by changing flushing and compaction to work on a per
-      column family basis). For more information on compactions, see <xref
-        linkend="compaction" />. </para>
-    <para>Try to make do with one column family if you can in your schemas. Only introduce a second
-      and third column family in the case where data access is usually column scoped; i.e. you query
-      one column family or the other but usually not both at the one time. </para>
+    <title> 列族的数目 </title>
+    <para>
+        目前HBase在有两个或者三个以上的列族的情况下表现的不是很好，所以尽量让你的模式中的列族数少一些。目前，刷写和压缩操作是基于每一个分区(Region)进行的，所以如果一个列族正在进行数据量很大的刷写操作，那相邻的列族也将进行刷写操作，虽然它们刷写的数据量很少。当很多列族被刷写和压缩，那么将会造成很多本不需要的I/O负载
+        （解决该问题需要让刷写和压缩操作基于列族进行）。更多关于压缩的细节，请参考<xref
+            linkend="compaction" />。
+         </para>
+    <para>
+        尽量在你的模式中使用一个列族。只有你的所有数据读写操作只针对一个列族的时候，才可以引入第二个和第三个列族。例如，有两个列族,但你查询的时候总是只访问其中的一个，从来不会两个一起访问。
+ </para>
     <section
       xml:id="number.of.cfs.card">
-      <title>Cardinality of ColumnFamilies</title>
-      <para>Where multiple ColumnFamilies exist in a single table, be aware of the cardinality
-        (i.e., number of rows). If ColumnFamilyA has 1 million rows and ColumnFamilyB has 1 billion
-        rows, ColumnFamilyA's data will likely be spread across many, many regions (and
-        RegionServers). This makes mass scans for ColumnFamilyA less efficient. </para>
+      <title>列族的基数</title>
+      <para>
+          如果一个表有多个列族，那么注意数据的基数（例如，行数）。如果列族A有1百万行，列族B有10亿行，列族A的数据可能会被分散到集群很多很多区中（及RegionServer中）。那么对列族A的遍历操作将会很低效。
+          </para>
     </section>
   </section>
   <section
     xml:id="rowkey.design">
-    <title>Rowkey Design</title>
+    <title>行键(RowKey)设计</title>
     <section
       xml:id="timeseries">
-      <title> Monotonically Increasing Row Keys/Timeseries Data </title>
-      <para> In the HBase chapter of Tom White's book <link
-          xlink:href="http://oreilly.com/catalog/9780596521981">Hadoop: The Definitive Guide</link>
-        (O'Reilly) there is a an optimization note on watching out for a phenomenon where an import
-        process walks in lock-step with all clients in concert pounding one of the table's regions
-        (and thus, a single node), then moving onto the next region, etc. With monotonically
-        increasing row-keys (i.e., using a timestamp), this will happen. See this comic by IKai Lan
-        on why monotonically increasing row keys are problematic in BigTable-like datastores: <link
-          xlink:href="http://ikaisays.com/2011/01/25/app-engine-datastore-tip-monotonically-increasing-values-are-bad/">monotonically
-          increasing values are bad</link>. The pile-up on a single region brought on by
-        monotonically increasing keys can be mitigated by randomizing the input records to not be in
-        sorted order, but in general it's best to avoid using a timestamp or a sequence (e.g. 1, 2,
-        3) as the row-key. </para>
-      <para>If you do need to upload time series data into HBase, you should study <link
-          xlink:href="http://opentsdb.net/">OpenTSDB</link> as a successful example. It has a page
-        describing the <link
-          xlink:href=" http://opentsdb.net/schema.html">schema</link> it uses in HBase. The key
-        format in OpenTSDB is effectively [metric_type][event_timestamp], which would appear at
-        first glance to contradict the previous advice about not using a timestamp as the key.
-        However, the difference is that the timestamp is not in the <emphasis>lead</emphasis>
-        position of the key, and the design assumption is that there are dozens or hundreds (or
-        more) of different metric types. Thus, even with a continual stream of input data with a mix
-        of metric types, the Puts are distributed across various points of regions in the table. </para>
-      <para>See <xref
-          linkend="schema.casestudies" /> for some rowkey design examples. </para>
+      <title> 单调递增的行键/时间序列数据 </title>
+      <para>
+          在Tom White的 <link
+              xlink:href="http://oreilly.com/catalog/9780596521981">Hadoop权威指南(Hadoop: The Definitive Guide)</link> (O'Reilly出版社出版)一书中，有一个章节描述了一个值得注意的问题：在一个集群中，一个导入数据的进程一动不动，所有的客户端都在等待该表的某一个region(也可以说在等待一个单独的节点)，过了一会后，会等待下一个region，以此类推。如果使用了单调递增或者时序的行键就会导致这样的问题。详情可以参见IKai Lan关于为何类BigTable数据库中使用单调递增的行键会存在问题的漫画<link
+              xlink:href="http://ikaisays.com/2011/01/25/app-engine-datastore-tip-monotonically-increasing-values-are-bad/">monotonically
+          increasing values are bad</link>。使用了顺序的行键会将原本没有顺序的数据变得有顺序，从而会导致负载被压在一台机器上。所以要尽量避免时间戳或者(例如 1, 2, 3)这样的行键。
+ </para>
+      <para>
+          如果你需要导入有时间顺序的数据到HBase中，可以学习<link
+              xlink:href="http://opentsdb.net/">OpenTSDB</link>的成功经验。这里有一个描述它在HBase中使用的设计模式的页面<link
+              xlink:href=" http://opentsdb.net/schema.html">schema</link>。 它使用的行键的格式是[metric_type][event_timestamp]，
+          乍一看，这似乎违背了不将时间戳作为行键的建议。但是它并没有将时间戳放在行键的 <emphasis>起始</emphasis> 位置，并且该设计假设会有数十或者上百（或者更多）个不同的度量(metric)类型。 因此，持续的输入数据流会包含多种度量类型，插入(Puts)操作将会针对一个表的多个不同的region来进行，压力也就分散了。
+     </para>
+      <para>查看 <xref
+          linkend="schema.casestudies" /> 可以了解更多关于行键设计的例子。 </para>
     </section>
     <section
       xml:id="keysize">
-      <title>Try to minimize row and column sizes</title>
+      <title>尽量最小化行和列的大小</title>
       <subtitle>Or why are my StoreFile indices large?</subtitle>
       <para>In HBase, values are always freighted with their coordinates; as a cell value passes
         through the system, it'll be accompanied by its row, column name, and timestamp - always. If
