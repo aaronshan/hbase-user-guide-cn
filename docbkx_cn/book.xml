@@ -710,7 +710,7 @@ put.add(CF, ATTR, explicitTimeInMs, Bytes.toBytes(data));
 htable.put(put);
 </programlisting>
             <para>
-                注意：HBase内部使用的版本时间戳是实时计算的。最好避免自己设置时间戳。请选择使用该行的独立的时间戳属性，或者将时间戳作为行键的一部分，或者都两个一起选择。
+                注意：HBase内部使用的版本时间戳是实时计算的。最好避免自己设置时间戳。请选择使用该行的独立的时间戳属性，或者将时间戳作为行键的一部分，或者两个一起选择。
                 </para>
           </section>
 
@@ -724,13 +724,6 @@ htable.put(put);
               有三种不同类型的内部删除标记<footnote>参考Lars Hofhansl博客中关于它尝试添加另一个的讨论<link
                   xlink:href="http://hadoop-hbase.blogspot.com/2012/01/scanning-in-hbase.html">Scanning
               in HBase: Prefix Delete Marker</link>。</footnote>： </para>
-
-              当删除一行，HBase将内部对每个列族创建墓碑(非每个单独列)。
-
-              删除操作的实现是创建一个墓碑标记。例如，我们想要删除一个版本，或者默认是currentTimeMillis。就意味着“删除比这个版本更早的所有版本”.HBase不会去改那些数据，数据不会立即从文件中删除。他使用删除标记来屏蔽掉这些值。[20]若你知道的版本比数据中的版本晚，就意味着这一行中的所有数据都会被删除。
-
-              参考 Section 9.7.5.4, “KeyValue” 获取内部 KeyValue 格式更多信息。
-
           <itemizedlist>
             <listitem>
               <para>Delete: 删除列的指定版本。</para>
