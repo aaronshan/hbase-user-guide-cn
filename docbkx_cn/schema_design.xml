@@ -114,60 +114,53 @@ admin.enableTable(table);
     <section
       xml:id="keysize">
       <title>尽量最小化行和列的大小</title>
-      <subtitle>Or why are my StoreFile indices large?</subtitle>
-      <para>In HBase, values are always freighted with their coordinates; as a cell value passes
-        through the system, it'll be accompanied by its row, column name, and timestamp - always. If
-        your rows and column names are large, especially compared to the size of the cell value,
-        then you may run up against some interesting scenarios. One such is the case described by
-        Marc Limotte at the tail of <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE-3551?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel&amp;focusedCommentId=13005272#comment-13005272">HBASE-3551</link>
-        (recommended!). Therein, the indices that are kept on HBase storefiles (<xref
-          linkend="hfile" />) to facilitate random access may end up occupyng large chunks of the
-        HBase allotted RAM because the cell value coordinates are large. Mark in the above cited
-        comment suggests upping the block size so entries in the store file index happen at a larger
-        interval or modify the table schema so it makes for smaller rows and column names.
-        Compression will also make for larger indices. See the thread <link
-          xlink:href="http://search-hadoop.com/m/hemBv1LiN4Q1/a+question+storefileIndexSize&amp;subj=a+question+storefileIndexSize">a
-          question storefileIndexSize</link> up on the user mailing list. </para>
-      <para>Most of the time small inefficiencies don't matter all that much. Unfortunately, this is
-        a case where they do. Whatever patterns are selected for ColumnFamilies, attributes, and
-        rowkeys they could be repeated several billion times in your data. </para>
-      <para>See <xref
-          linkend="keyvalue" /> for more information on HBase stores data internally to see why this
-        is important.</para>
+      <subtitle>或者为何我的StoreFile文件的索引很大？</subtitle>
+      <para>
+            在HBase中，通过行、列名和时间戳来确定一个值，它以单元格的值为单位在系统中传递。如果你的行和列的名字很大，甚至比值的大小还要大，你可能会遇到一些有趣的情况。比如Marc Limotte在<link
+              xlink:href="https://issues.apache.org/jira/browse/HBASE-3551?page=com.atlassian.jira.plugin.system.issuetabpanels:comment-tabpanel&amp;focusedCommentId=13005272#comment-13005272">HBASE-3551</link>
+          （推荐！）末尾提到的情况。HBase的StoreFile (<xref
+              linkend="hfile" />) 文件中保存了一些方便访问的索引信息。但是如果访问一个单元格的坐标信息太大，就会占用很大的内存。Marc在上面的引用的评论中建议要么将块的大小调高以便有足够的空间存储这些索引项，要么就修改表的模式将行和列名变小。压缩也可以产生很大的索引。可以查看用户邮件列表中的讨论<link
+              xlink:href="http://search-hadoop.com/m/hemBv1LiN4Q1/a+question+storefileIndexSize&amp;subj=a+question+storefileIndexSize">a
+          question storefileIndexSize</link>。
+     </para>
+      <para>
+          大部分情况下小的低效率不会影响很大。不幸的是，在这里会是个问题。无论是列族，属性和行键都会在你的数据中重复几十亿次。
+          </para>
+      <para>查阅<xref
+              linkend="keyvalue" />可以获取更多关于HBase内部数据存储的信息，以便了解为什么这很重要。</para>
       <section
         xml:id="keysize.cf">
-        <title>Column Families</title>
-        <para>Try to keep the ColumnFamily names as small as possible, preferably one character
-          (e.g. "d" for data/default). </para>
-        <para>See <xref
-            linkend="keyvalue" /> for more information on HBase stores data internally to see why
-          this is important.</para>
+        <title>列族</title>
+        <para>
+            尽可能将列族名设置的足够小，最好只用一个字符（比如，"d"表示data/default）。
+             </para>
+        <para>
+            查阅<xref
+                linkend="keyvalue" />可以获取更多关于HBase内部数据存储的信息，以便了解为什么这很重要。</para>
       </section>
       <section
         xml:id="keysize.attributes">
-        <title>Attributes</title>
-        <para>Although verbose attribute names (e.g., "myVeryImportantAttribute") are easier to
-          read, prefer shorter attribute names (e.g., "via") to store in HBase. </para>
-        <para>See <xref
-            linkend="keyvalue" /> for more information on HBase stores data internally to see why
-          this is important.</para>
+        <title>属性</title>
+        <para>
+            尽管详细的属性名(例如，"myVeryImportantAttribute")更易阅读，但在HBase中最好选择一个较短的属性名（例如，"via"）。 </para>
+        <para>查阅<xref
+                linkend="keyvalue" />可以获取更多关于HBase内部数据存储的信息，以便了解为什么这很重要。</para>
       </section>
       <section
         xml:id="keysize.row">
-        <title>Rowkey Length</title>
-        <para>Keep them as short as is reasonable such that they can still be useful for required
-          data access (e.g., Get vs. Scan). A short key that is useless for data access is not
-          better than a longer key with better get/scan properties. Expect tradeoffs when designing
-          rowkeys. </para>
+        <title>行键长度</title>
+        <para>
+            将它们设置的尽可能短是合理的。这样不会影响它们在数据访问（例如，Get和Scan）中的有效性。但是一个短的行键并不意味着
+            在Get/Scan时比长的行键有更好的效果。在设计行键时需要进行权衡。
+             </para>
       </section>
       <section
         xml:id="keysize.patterns">
-        <title>Byte Patterns</title>
-        <para>A long is 8 bytes. You can store an unsigned number up to 18,446,744,073,709,551,615
-          in those eight bytes. If you stored this number as a String -- presuming a byte per
-          character -- you need nearly 3x the bytes. </para>
-        <para>Not convinced? Below is some sample code that you can run on your own.</para>
+        <title>字节模式</title>
+        <para>长整型用8个字节来表示。用8个字节你可以存储最大值为18,446,744,073,709,551,615的无符号数。如果你将
+            该数作为一个字符串存储 -- 那每一个字符都需要一个字节 -- 你需要的字节数接近用无符号数存储的3倍。
+             </para>
+        <para>不信？下面是一些示例代码，你可以自己运行一下。</para>
         <programlisting language="java">
 // long
 //
@@ -189,9 +182,9 @@ String sDigest = new String(digest);
 byte[] sbDigest = Bytes.toBytes(sDigest);
 System.out.println("md5 digest as string length: " + sbDigest.length);    // returns 26
         </programlisting>
-        <para>Unfortunately, using a binary representation of a type will make your data harder to
-          read outside of your code. For example, this is what you will see in the shell when you
-          increment a value:</para>
+        <para>
+            不幸的是，使用二进制类型来表示数据将会让你的数据在代码以外很难阅读。例如，当你增加一个值时，这就是你会在shell看到的：
+            </para>
         <programlisting>
 hbase(main):001:0> incr 't', 'r', 'f:q', 1
 COUNTER VALUE = 1
@@ -201,65 +194,57 @@ COLUMN                                        CELL
  f:q                                          timestamp=1369163040570, value=\x00\x00\x00\x00\x00\x00\x00\x01
 1 row(s) in 0.0310 seconds
         </programlisting>
-        <para>The shell makes a best effort to print a string, and it this case it decided to just
-          print the hex. The same will happen to your row keys inside the region names. It can be
-          okay if you know what's being stored, but it might also be unreadable if arbitrary data
-          can be put in the same cells. This is the main trade-off. </para>
+        <para>
+            shell在尽最大努力打印一个字符串，并且在这种情况下它只能以16进制打印。同样的情况会发生在你region名中的行键上。
+            如果你知道存储的是什么，那还好些。但是如果在同一个单元格里可以存放任意形式，那它也可能是不可读的。这就需要进行权衡。
+            </para>
       </section>
 
     </section>
     <section
       xml:id="reverse.timestamp">
-      <title>Reverse Timestamps</title>
+      <title>倒序时间戳</title>
       <note>
-        <title>Reverse Scan API</title>
+        <title>逆序Scan的API</title>
         <para>
-          <link
-            xlink:href="https://issues.apache.org/jira/browse/HBASE-4811">HBASE-4811</link>
-          implements an API to scan a table or a range within a table in reverse, reducing the need
-          to optimize your schema for forward or reverse scanning. This feature is available in
-          HBase 0.98 and later. See <link
-            xlink:href="https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html#setReversed%28boolean" />
-          for more information. </para>
+            <link
+                    xlink:href="https://issues.apache.org/jira/browse/HBASE-4811">HBASE-4811</link>实现了一个API，可以对一个表或一个表中的某一范围进行逆序遍历，而你不需要为了实现正向或反向遍历而优化你的设计模式。该特征在HBase
+            0.98和更高的版本中可用。查看<link
+                xlink:href="https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html#setReversed%28boolean" /> 以获取更多信息。
+           </para>
       </note>
 
-      <para>A common problem in database processing is quickly finding the most recent version of a
-        value. A technique using reverse timestamps as a part of the key can help greatly with a
-        special case of this problem. Also found in the HBase chapter of Tom White's book Hadoop:
-        The Definitive Guide (O'Reilly), the technique involves appending (<code>Long.MAX_VALUE -
-          timestamp</code>) to the end of any key, e.g., [key][reverse_timestamp]. </para>
-      <para>The most recent value for [key] in a table can be found by performing a Scan for [key]
-        and obtaining the first record. Since HBase keys are in sorted order, this key sorts before
-        any older row-keys for [key] and thus is first. </para>
-      <para>This technique would be used instead of using <xref
-          linkend="schema.versions" /> where the intent is to hold onto all versions "forever" (or a
-        very long time) and at the same time quickly obtain access to any other version by using the
-        same Scan technique. </para>
+      <para>
+          在数据处理过程中快速查找一个值的最近版本是一个通用的问题。 采用倒序的时间戳作为行键的一部分对某些特定情况的该问题会有所帮助。在Tom White的书Hadoop权威指南(Hadoop:The Definitive Guide)(O'Reilly出版社出版)的关于HBase的章节中可以找到这种例子，它采用了将(<code>Long.MAX_VALUE - timestamp</code>)添加到行键的最后，例如[key][reverse_timestamp]。
+     </para>
+      <para>
+          在执行一个[key]的Scan操作时，该[key]的在表中最近的值（即时间戳最大的值）将会被找到并且获取第一个记录。因为HBase的行键是有序的，该行键排在比它更老的行键的前面，所以它会是第一个。
+           </para>
+      <para>该技术将会被用来代替 <xref
+          linkend="schema.versions" /> 。其目的是“永远”(或一段很长时间)保存所有版本。同时，采用同样的Scan技术，可以很快获取到其他版本的数据。</para>
     </section>
     <section
       xml:id="rowkey.scope">
-      <title>Rowkeys and ColumnFamilies</title>
-      <para>Rowkeys are scoped to ColumnFamilies. Thus, the same rowkey could exist in each
-        ColumnFamily that exists in a table without collision. </para>
+      <title>行键和列族</title>
+      <para>
+          行键在列族范围内。所以同样的行键可以在同一个表的每个列族中存在而不会冲突。
+          </para>
     </section>
     <section
       xml:id="changing.rowkeys">
-      <title>Immutability of Rowkeys</title>
-      <para>Rowkeys cannot be changed. The only way they can be "changed" in a table is if the row
-        is deleted and then re-inserted. This is a fairly common question on the HBase dist-list so
-        it pays to get the rowkeys right the first time (and/or before you've inserted a lot of
-        data). </para>
+      <title>行键的不变性</title>
+      <para>
+          行键不能被改变。唯一可以“改变”行键的方式是先删除然后再插入。这是一个常见的问题，所以要注意最开始(和/或在插入很多数据之前)就保证行键是正确的。
+           </para>
     </section>
     <section
       xml:id="rowkey.regionsplits">
-      <title>Relationship Between RowKeys and Region Splits</title>
-      <para>If you pre-split your table, it is <emphasis>critical</emphasis> to understand how your
-        rowkey will be distributed across the region boundaries. As an example of why this is
-        important, consider the example of using displayable hex characters as the lead position of
-        the key (e.g., &quot;0000000000000000&quot; to &quot;ffffffffffffffff&quot;). Running those
-        key ranges through <code>Bytes.split</code> (which is the split strategy used when creating
-        regions in <code>HBaseAdmin.createTable(byte[] startKey, byte[] endKey, numRegions)</code>
-        for 10 regions will generate the following splits... </para>
+      <title>行键和分区(Region)切割的关系</title>
+      <para>
+          如果你的表执行了预切割，那理解行键是如何跨越界限进行分区对你就很 <emphasis>重要</emphasis> 。
+          作为解释这为什么很重要的一个例子，考虑在开头使用16进制字符的行键（例如&quot;0000000000000000&quot;到
+          &quot;ffffffffffffffff&quot;）的实例。对这些行键执行<code>Bytes.split</code> （它在使用<code>HBaseAdmin.createTable(byte[] startKey, byte[] endKey, numRegions)</code>创建分区的时候就会进行分割操作）操作，将它们分割成10个分区，如下：
+          </para>
       <screen>
 48 48 48 48 48 48 48 48 48 48 48 48 48 48 48 48                                // 0
 54 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10 -10                 // 6
@@ -271,26 +256,19 @@ COLUMN                                        CELL
 95 -97 -97 -97 -97 -97 -97 -97 -97 -97 -97 -97 -97 -97 -97 -102                // _
 102 102 102 102 102 102 102 102 102 102 102 102 102 102 102 102                // f
       </screen>
-      <para>... (note: the lead byte is listed to the right as a comment.) Given that the first
-        split is a '0' and the last split is an 'f', everything is great, right? Not so fast. </para>
-      <para>The problem is that all the data is going to pile up in the first 2 regions and the last
-        region thus creating a "lumpy" (and possibly "hot") region problem. To understand why, refer
-        to an <link
-          xlink:href="http://www.asciitable.com">ASCII Table</link>. '0' is byte 48, and 'f' is byte
-        102, but there is a huge gap in byte values (bytes 58 to 96) that will <emphasis>never
-          appear in this keyspace</emphasis> because the only values are [0-9] and [a-f]. Thus, the
-        middle regions regions will never be used. To make pre-spliting work with this example
-        keyspace, a custom definition of splits (i.e., and not relying on the built-in split method)
-        is required. </para>
-      <para>Lesson #1: Pre-splitting tables is generally a best practice, but you need to pre-split
-        them in such a way that all the regions are accessible in the keyspace. While this example
-        demonstrated the problem with a hex-key keyspace, the same problem can happen with
-          <emphasis>any</emphasis> keyspace. Know your data. </para>
-      <para>Lesson #2: While generally not advisable, using hex-keys (and more generally,
-        displayable data) can still work with pre-split tables as long as all the created regions
-        are accessible in the keyspace. </para>
-      <para>To conclude this example, the following is an example of how appropriate splits can be
-        pre-created for hex-keys:. </para>
+      <para>... (
+          注意：最开始的字节在右边的评论中列了出来
+          ) 鉴于第一次分割是'0'，最后一次分割是'f'，一切都很正常，是吗？还没这么快。 </para>
+      <para>
+          问题是所有的数据都会跑到最前面的两个分区和最后的分区中，因此会产生一个热点分区问题。为了理解为什么，参考
+          <link
+                  xlink:href="http://www.asciitable.com">ASCII表</link>。'0'是48的字节表示，'f'是102的字节表示，但是
+          这里存在一个字节值的巨大跨越（字节58到96），它们<emphasis>从来没有在行键中出现过</emphasis>，因为仅有的值是
+          [0-9]和[a-f]。因此，中间的分区将从不会被使用。为了对该例子中的行键执行预分区操作，需要自己定义分割（例如，不依赖内置的分割方法）。
+          </para>
+      <para>教训1: 预分割表通常是最好的做法，但是你需要保证预分割之后所有的分区可以访问所有的行键。在这个使用了16进制行键的例子中，就有一些问题。相同的问题也可以发生在<emphasis>任何</emphasis>行键中。你需要了解你的数据。 </para>
+      <para>教训2: 虽然通常不建议使用16进制的行键（和可显示的数据），但是它也可以对表进行预分区，只需要所有被创建的分区都能访问所有的行键即可。 </para>
+      <para>作为该示例的总结，下面展示了如何对16进制的行键进行预分割分区的一个例子： </para>
       <programlisting language="java"><![CDATA[public static boolean createTable(HBaseAdmin admin, HTableDescriptor table, byte[][] splits)
 throws IOException {
   try {
@@ -322,98 +300,87 @@ public static byte[][] getHexSplits(String startKey, String endKey, int numRegio
   <!--  rowkey design -->
   <section
     xml:id="schema.versions">
-    <title> Number of Versions </title>
+    <title> 版本数 </title>
     <section
       xml:id="schema.versions.max">
-      <title>Maximum Number of Versions</title>
-      <para>The maximum number of row versions to store is configured per column family via <link
-          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link>.
-        The default for max versions is 1. This is an important parameter because as described in <xref
-          linkend="datamodel" /> section HBase does <emphasis>not</emphasis> overwrite row values,
-        but rather stores different values per row by time (and qualifier). Excess versions are
-        removed during major compactions. The number of max versions may need to be increased or
-        decreased depending on application needs. </para>
-      <para>It is not recommended setting the number of max versions to an exceedingly high level
-        (e.g., hundreds or more) unless those old values are very dear to you because this will
-        greatly increase StoreFile size. </para>
+      <title>最大版本数</title>
+      <para>
+          行的最大版本数目是通过<link
+              xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link>对每一个列族单独配置的。默认的最大版本数是1.这个参数很重要，在<xref
+              linkend="datamodel" />中进行了描述。HBase<emphasis>不会</emphasis>覆盖行值，但是每行的不同时间（和不同列）存储的值不同。多余的版本会在major压缩时会移除。最大版本数可以根据应用的需要来增加或者减少。
+     </para>
+      <para>
+          不推荐将版本最大值设置的很大(例如, 成百或更多)，除非老数据对你很重要。因为这会大大增加StoreFile的大小。
+           </para>
     </section>
     <section
       xml:id="schema.minversions">
-      <title> Minimum Number of Versions </title>
-      <para>Like maximum number of row versions, the minimum number of row versions to keep is
-        configured per column family via <link
-          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link>.
-        The default for min versions is 0, which means the feature is disabled. The minimum number
-        of row versions parameter is used together with the time-to-live parameter and can be
-        combined with the number of row versions parameter to allow configurations such as "keep the
-        last T minutes worth of data, at most N versions, <emphasis>but keep at least M versions
-          around</emphasis>" (where M is the value for minimum number of row versions, M&lt;N). This
-        parameter should only be set when time-to-live is enabled for a column family and must be
-        less than the number of row versions. </para>
+      <title> 最小版本数 </title>
+      <para>
+          和行的最大版本数一样，最小版本数也是通过<link
+              xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link> 对每个列族中单独配置的。默认的最小版本数是0，表示该特性被禁用。 参数最小版本数和参数存活时间一起使用，允许配置如“保存最后T分钟的有价值的数据，最多N个版本，<emphasis>但最少大约M个版本</emphasis>”(M是最小版本数，M&lt;N)。 该参数仅在存活时间对列族启用，且必须小于行版本数。
+     </para>
     </section>
   </section>
   <section
     xml:id="supported.datatypes">
-    <title> Supported Datatypes </title>
-    <para>HBase supports a "bytes-in/bytes-out" interface via <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Put.html">Put</link>
-      and <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Result.html">Result</link>,
-      so anything that can be converted to an array of bytes can be stored as a value. Input could
-      be strings, numbers, complex objects, or even images as long as they can rendered as bytes. </para>
-    <para>There are practical limits to the size of values (e.g., storing 10-50MB objects in HBase
-      would probably be too much to ask); search the mailling list for conversations on this topic.
-      All rows in HBase conform to the <xref
-        linkend="datamodel" />, and that includes versioning. Take that into consideration when
-      making your design, as well as block size for the ColumnFamily. </para>
+    <title> 支持的数据类型 </title>
+    <para>
+        HBase通过<link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Put.html">Put</link>和 <link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Result.html">Result</link>支持"bytes-in/bytes-out"接口，所以任何可被转为字节数组的数据都可以作为值被存入。输入可以是字符串，数字，复杂对象，甚至是图像，只要他们能转化为字节。
+     </para>
+    <para>
+        值的实际长度存在限制(例如，保存10-50MB对象到HBase中对查询操作来说太长); 搜索邮件列表可以获取关于本话题的对话。 HBase的所有行都遵循<xref
+            linkend="datamodel" />, 包括版本。设计时需考虑到这些，也需要考虑列族的块大小。
+    </para>
 
     <section
       xml:id="counters">
-      <title>Counters</title>
-      <para> One supported datatype that deserves special mention are "counters" (i.e., the ability
-        to do atomic increments of numbers). See <link
-          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#increment%28org.apache.hadoop.hbase.client.Increment%29">Increment</link>
-        in HTable. </para>
-      <para>Synchronization on counters are done on the RegionServer, not in the client. </para>
+      <title>计数器</title>
+      <para>
+          HBase支持的数据类型“计数器”(例如, 具有原子递增数字的能力)值得一提。 参考HTable的<link
+              xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#increment%28org.apache.hadoop.hbase.client.Increment%29">Increment</link>。
+           </para>
+      <para>
+          计数器的同步在RegionServer中完成，而不是客户端。 </para>
     </section>
   </section>
   <section
     xml:id="schema.joins">
     <title>Joins</title>
-    <para>If you have multiple tables, don't forget to factor in the potential for <xref
-        linkend="joins" /> into the schema design. </para>
+    <para>
+        如果你有多个表格，在进行模式设计时，不要忘了潜在的<xref
+            linkend="joins" />因素。 </para>
   </section>
   <section
     xml:id="ttl">
-    <title>Time To Live (TTL)</title>
-    <para>ColumnFamilies can set a TTL length in seconds, and HBase will automatically delete rows
-      once the expiration time is reached. This applies to <emphasis>all</emphasis> versions of a
-      row - even the current one. The TTL time encoded in the HBase for the row is specified in UTC. </para>
-    <para>See <link
+    <title>存活时间 (TTL)</title>
+    <para>
+        列族可以设置TTL秒数，HBase在超时后将自动删除数据。影响一行的 <emphasis>全部</emphasis> 版本 - 甚至当前版本。HBase里面TTL时间是UTC时间.
+         </para>
+    <para>查看 <link
         xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link>
-      for more information. </para>
+      可以获得更多的信息。 </para>
   </section>
   <section
     xml:id="cf.keep.deleted">
-    <title> Keeping Deleted Cells </title>
-    <para>ColumnFamilies can optionally keep deleted cells. That means deleted cells can still be
-      retrieved with <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html">Get</link>
-      or <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html">Scan</link>
-      operations, as long these operations have a time range specified that ends before the
-      timestamp of any delete that would affect the cells. This allows for point in time queries
-      even in the presence of deletes. </para>
-    <para> Deleted cells are still subject to TTL and there will never be more than "maximum number
-      of versions" deleted cells. A new "raw" scan options returns all deleted rows and the delete
-      markers. </para>
-    <para>See <link
+    <title> 保留被删除的单元格 </title>
+    <para>
+        列族可以选择性的保留被删除的单元格。这就是说<link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Get.html">Get</link>或 <link
+            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html">Scan</link>操作仍可以获取被删除的单元格。只要这些操作都指定了时间范围，且在被删除的单元格生效的时间之前。
+         </para>
+    <para>
+        被删除的单元格依然受TTL的影响，并且永远不会超过“最大版本数”。一个新的“原始”遍历(scan)返回所有被删除的行和删除标记。
+         </para>
+    <para>查看 <link
         xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HColumnDescriptor.html">HColumnDescriptor</link>
-      for more information. </para>
+      可以获取到更多信息。 </para>
   </section>
   <section
     xml:id="secondary.indexes">
-    <title> Secondary Indexes and Alternate Query Paths </title>
+    <title> 二级索引和备用查询路径 </title>
     <para>This section could also be titled "what if my table rowkey looks like
         <emphasis>this</emphasis> but I also want to query my table like <emphasis>that</emphasis>."
       A common example on the dist-list is where a row-key is of the format "user-timestamp" but
