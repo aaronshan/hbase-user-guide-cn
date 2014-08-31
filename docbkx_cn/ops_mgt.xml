@@ -733,24 +733,18 @@
         </section>
         <section
                 xml:id="rolling">
-            <title>Rolling Restart</title>
+            <title>滚动重启</title>
 
-            <para>Some cluster configuration changes require either the entire cluster, or the
-                RegionServers, to be restarted in order to pick up the changes. In addition, rolling
-                restarts are supported for upgrading to a minor or maintenance release, and to a major
-                release if at all possible. See the release notes for release you want to upgrade to, to
-                find out about limitations to the ability to perform a rolling upgrade.</para>
-            <para>There are multiple ways to restart your cluster nodes, depending on your situation.
-                These methods are detailed below.</para>
+            <para>某些集群配置的改变，需要重启整个集群或Regionservers。另外，滚动重启可用来支持小的或维护发布升级,甚至是重要发布。
+                查看你想升级到的版本的发布注意项，找出执行滚动升级的限制。
+             </para>
+            <para>重启集群节点有很多种方式，这取决于你的自身情况。下面详细介绍这些方法。</para>
             <section>
-                <title>Using the <command>rolling-restart.sh</command> Script</title>
+                <title>使用<command>rolling-restart.sh</command> 脚本</title>
 
-                <para>HBase ships with a script, <filename>bin/rolling-restart.sh</filename>, that allows
-                    you to perform rolling restarts on the entire cluster, the master only, or the
-                    RegionServers only. The script is provided as a template for your own script, and is not
-                    explicitly tested. It requires password-less SSH login to be configured and assumes that
-                    you have deployed using a tarball. The script requires you to set some environment
-                    variables before running it. Examine the script and modify it to suit your needs.</para>
+                <para>HBase 推出了 <filename>bin/rolling-restart.sh</filename> 脚本, 可对整个集群、Master或RegionServers进行滚动重启。
+                    这个脚本可作为一个模板，它还没有经过明确的测试。要使用这个脚本，你必须配置SSH无密码登录，并用tarball工具部署，
+                    运行这个脚本前，你还需要设置一些环境变量。好好检查这个脚本，按你的需求修改它。</para>
                 <example>
                     <title><filename>rolling-restart.sh</filename> General Usage</title>
                     <screen language="bourne">
@@ -760,125 +754,110 @@ Usage: rolling-restart.sh [--config <hbase-confdir>] [--rs-only] [--master-only]
                 </example>
                 <variablelist>
                     <varlistentry>
-                        <term>Rolling Restart on RegionServers Only</term>
+                        <term>单独对 RegionServers 滚动重启</term>
                         <listitem>
-                            <para>To perform a rolling restart on the RegionServers only, use the
-                                <code>--rs-only</code> option. This might be necessary if you need to reboot the
-                                individual RegionServer or if you make a configuration change that only affects
-                                RegionServers and not the other HBase processes.</para>
-                            <para>If you need to restart only a single RegionServer, or if you need to do extra
-                                actions during the restart, use the <filename>bin/graceful_stop.sh</filename>
-                                command instead. See <xref linkend="rolling.restart.manual" />.</para>
+                            <para>使用  <code>--rs-only</code> 选项，可只滚动重启 RegionServers。如果你想重启单个RegionServer，
+                                或者你修改的配置项，只会影响到RegionServers，那这个选项就很有必要了。
+                               </para>
+                            <para>如果你想重启单个RegionServer, 或者是在重启期间需要做一些其它操作，
+                                可以使用<filename>bin/graceful_stop.sh</filename>命令。参考<xref linkend="rolling.restart.manual" />.</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term>Rolling Restart on Masters Only</term>
+                        <term>单独对 Masters 滚动重启</term>
                         <listitem>
-                            <para>To perform a rolling restart on the active and backup Masters, use the
-                                <code>--master-only</code> option. You might use this if you know that your
-                                configuration change only affects the Master and not the RegionServers, or if you
-                                need to restart the server where the active Master is running.</para>
-                            <para>If you are not running backup Masters, the Master is simply restarted. If you
-                                are running backup Masters, they are all stopped before any are restarted, to avoid
-                                a race condition in ZooKeeper to determine which is the new Master. First the main
-                                Master is restarted, then the backup Masters are restarted. Directly after restart,
-                                it checks for and cleans out any regions in transition before taking on its normal
-                                workload.</para>
+                            <para>使用 <code>--master-only</code> 选项，可滚动重启主备 Masters。
+                                如果你修改的配置项，只会影响到Master，或者你需要重启运行active Master的服务器时，你可以使用这个选项。
+                               </para>
+                            <para>如果你没有在运行backup Masters,  Master会简单重启。否则，为了避免因选择新的Master而出现竞争，
+                                在重启前，它们都会被停止。首先启动主Master，然后再启动backup Masters。重启后，在开始工作前，Master会
+                                立即检查并清除过渡期（ in transition ）的regions。
+                              </para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term>Graceful Restart</term>
+                        <term>平滑重启</term>
                         <listitem>
-                            <para>If you specify the <code>--graceful</code> option, RegionServers are restarted
-                                using the <filename>bin/graceful_stop.sh</filename> script, which moves regions off
-                                a RegionServer before restarting it. This is safer, but can delay the
-                                restart.</para>
+                            <para>如果你指定了 <code>--graceful</code> 选项, RegionServers 将使用 <filename>bin/graceful_stop.sh</filename>
+                                脚本来重启，在重启前该脚本会将RegionServer上的regions移走，这更加安全，但会延缓重启。</para>
                         </listitem>
                     </varlistentry>
                     <varlistentry>
-                        <term>Limiting the Number of Threads</term>
+                        <term>限制线程数</term>
                         <listitem>
-                            <para>To limit the rolling restart to using only a specific number of threads, use the
-                                <code>--maxthreads</code> option.</para>
+                            <para>使用 <code>--maxthreads</code>选项来指定线程数，可以限制滚动重启。
+                               </para>
                         </listitem>
                     </varlistentry>
                 </variablelist>
             </section>
             <section xml:id="rolling.restart.manual">
-                <title>Manual Rolling Restart</title>
-                <para>To retain more control over the process, you may wish to manually do a rolling restart
-                    across your cluster. This uses the <command>graceful-stop.sh</command> command <xref
-                            linkend="decommission" />. In this method, you can restart each RegionServer
-                    individually and then move its old regions back into place, retaining locality. If you
-                    also need to restart the Master, you need to do it separately, and restart the Master
-                    before restarting the RegionServers using this method. The following is an example of such
-                    a command. You may need to tailor it to your environment. This script does a rolling
-                    restart of RegionServers only. It disables the load balancer before moving the
-                    regions.</para>
+                <title>手动滚动重启</title>
+                <para>为了拥有更多的控制权，你可能想对你的集群，手动进行滚动重启。
+                     那么可以使用 <command>graceful-stop.sh</command> 命令 <xref
+                            linkend="decommission" />。
+                    在这个方法中，你可以单独重启每一个RegionServer，然后将它的原始regions移回之前保留的位置。
+                    如果你也想重启 Master, 你必须分开做，通过这个方法，先重启Master再重启RegionServers。
+                    下面有个使用示例，你可能需要按照你的环境调整它。该脚本只针对RegionServers做滚动重启，
+                    在移动regions前，先关闭load balancer。
+                    </para>
                 <screen><![CDATA[
 $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --reload --debug $i; done &> /tmp/log.txt &;     
         ]]></screen>
-                <para>Monitor the output of the <filename>/tmp/log.txt</filename> file to follow the
-                    progress of the script. </para>
+                <para>监控 <filename>/tmp/log.txt</filename>文件的输出，以查看脚本的运行过程。
+                     </para>
             </section>
 
             <section>
-                <title>Logic for Crafting Your Own Rolling Restart Script</title>
-                <para>Use the following guidelines if you want to create your own rolling restart script.</para>
+                <title>创建你自己的滚动重启脚本</title>
+                <para>如果你想创建自己的滚动重启脚本，可以使用以下指南：</para>
                 <orderedlist>
                     <listitem>
-                        <para>Extract the new release, verify its configuration, and synchronize it to all nodes
-                            of your cluster using <command>rsync</command>, <command>scp</command>, or another
-                            secure synchronization mechanism.</para></listitem>
-                    <listitem><para>Use the hbck utility to ensure that the cluster is consistent.</para>
+                        <para>解压缩新版本，验证它的配置，使用<command>rsync</command>, <command>scp</command>
+                            或其它安全同步机制将其同步到整个集群。
+
+                           </para></listitem>
+                    <listitem><para>使用hbck工具确保集群的一致性。</para>
                         <screen>
                             $ ./bin/hbck
                         </screen>
-                        <para>Perform repairs if required. See <xref linkend="hbck" /> for details.</para>
+                        <para>有需要的话就执行修复操作，参考<xref linkend="hbck" /> </para>
                     </listitem>
-                    <listitem><para>Restart the master first. You may need to modify these commands if your
-                        new HBase directory is different from the old one, such as for an upgrade.</para>
+                    <listitem><para>先重启master。如果你的新HBase目录和之前的不同（比如升级），你可能需要修改这些命令。</para>
                         <screen>
                             $ ./bin/hbase-daemon.sh stop master; ./bin/hbase-daemon.sh start master
                         </screen>
                     </listitem>
-                    <listitem><para>Gracefully restart each RegionServer, using a script such as the
-                        following, from the Master.</para>
+                    <listitem><para>使用如下脚本，从master开始平滑重启每一台RegionServer。</para>
                         <screen><![CDATA[
 $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --reload --debug $i; done &> /tmp/log.txt &            
           ]]></screen>
-                        <para>If you are running Thrift or REST servers, pass the --thrift or --rest options.
-                            For other available options, run the <command>bin/graceful-stop.sh --help</command>
-                            command.</para>
-                        <para>It is important to drain HBase regions slowly when restarting multiple
-                            RegionServers. Otherwise, multiple regions go offline simultaneously and must be
-                            reassigned to other nodes, which may also go offline soon. This can negatively affect
-                            performance. You can inject delays into the script above, for instance, by adding a
-                            Shell command such as <command>sleep</command>. To wait for 5 minutes between each
-                            RegionServer restart, modify the above script to the following:</para>
+                        <para>如果你正在运行Thrift 或 REST服务，还需使用 --thrift 或 --rest 选项。
+                            查看其它可用选项，请运行<command>bin/graceful-stop.sh --help</command>命令。</para>
+                        <para>在重启多台RegionServer的时候，慢慢drain HBase regions是很重要的。
+                            否则，多个regions同时下线并重新分配给其它节点，而这些节点也可能很快下线，这对性能会造成很负面的影响。
+                            你可以给上面的脚本加入延迟，例如，添加一个shell 命令<command>sleep</command>。让每台RegionServer重启后，等待5分钟，
+                            修改脚本如下：</para>
                         <screen><![CDATA[
 $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --reload --debug $i & sleep 5m; done &> /tmp/log.txt &            
           ]]></screen>
                     </listitem>
-                    <listitem><para>Restart the Master again, to clear out the dead servers list and re-enable
-                        the load balancer.</para></listitem>
-                    <listitem><para>Run the <command>hbck</command> utility again, to be sure the cluster is
-                        consistent.</para></listitem>
+                    <listitem><para>再次重启Master，这会清除dead servers列表，重新开启load balancer.</para></listitem>
+                    <listitem><para>再次运行 <command>hbck</command> 工具，以确保集群是一致的。</para></listitem>
                 </orderedlist>
             </section>
         </section>
         <section
                 xml:id="adding.new.node">
-            <title>Adding a New Node</title>
-            <para>Adding a new regionserver in HBase is essentially free, you simply start it like this:
-                <command>$ ./bin/hbase-daemon.sh start regionserver</command> and it will register itself
-                with the master. Ideally you also started a DataNode on the same machine so that the RS can
-                eventually start to have local files. If you rely on ssh to start your daemons, don't forget
-                to add the new hostname in <filename>conf/regionservers</filename> on the master. </para>
-            <para>At this point the region server isn't serving data because no regions have moved to it
-                yet. If the balancer is enabled, it will start moving regions to the new RS. On a
-                small/medium cluster this can have a very adverse effect on latency as a lot of regions will
-                be offline at the same time. It is thus recommended to disable the balancer the same way
+            <title>添加新节点</title>
+            <para>在HBase中添加一个新的regionserver基本是自由的，你只需简单地启动它：
+                <command>$ ./bin/hbase-daemon.sh start regionserver</command> ，它就会将自己注册到master。
+                理想情况下，在同一台机器上你也开启了一个DataNode，这样RS就可以开始获取本地文件了。
+                如果你是依靠ssh开启你的daemons, 不要忘记在master的<filename>conf/regionservers</filename>文件中添加新的主机名。
+              </para>
+            <para>此时，这个 region server 还无法提供数据，因为还没有regions移动到它这里。如果开启了balancer，
+                就会开始移动regions到新的RS。对于一个小的/中等集群，这对延迟会有不利的影响，因为在同一时间有很多regions会下线。
+                It is thus recommended to disable the balancer the same way
                 it's done when decommissioning a node and move the regions manually (or even better, using a
                 script that moves them one by one). </para>
             <para>The moved regions will all have 0% locality and won't have any blocks in cache so the
