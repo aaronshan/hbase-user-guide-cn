@@ -31,7 +31,7 @@
   <title>Apache HBase APIs</title>
   <para>
       本章提供有关使用HBase的原生API进行操作的信息。这些信息并不详尽，并提供了除了<link
-          xlink:href="http://hbase.apache.org/apidocs/index.html">User API Reference</link> 的快速参考。这里的实例是不全面或补完整的，并且仅仅用于说明目的。
+          xlink:href="http://hbase.apache.org/apidocs/index.html">User API Reference</link> 的快速参考。这里的实例是不全面或不完整的，并且仅仅用于说明目的。
   </para>
   <para>
       还可以使用多个其他的外部API来操作Apache HBase。请查看<xref linkend="external_apis" /> 了解更多信息。
