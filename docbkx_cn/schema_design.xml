@@ -266,8 +266,8 @@ COLUMN                                        CELL
           这里存在一个字节值的巨大跨越（字节58到96），它们<emphasis>从来没有在行键中出现过</emphasis>，因为仅有的值是
           [0-9]和[a-f]。因此，中间的分区将从不会被使用。为了对该例子中的行键执行预分区操作，需要自己定义分割（例如，不依赖内置的分割方法）。
           </para>
-      <para>教训1: 预分割表通常是最好的做法，但是你需要保证预分割之后所有的分区可以访问所有的行键。在这个使用了16进制行键的例子中，就有一些问题。相同的问题也可以发生在<emphasis>任何</emphasis>行键中。你需要了解你的数据。 </para>
-      <para>教训2: 虽然通常不建议使用16进制的行键（和可显示的数据），但是它也可以对表进行预分区，只需要所有被创建的分区都能访问所有的行键即可。 </para>
+      <para>经验1: 预分割表通常是最好的做法，但是你需要保证预分割之后所有的分区可以访问所有的行键。在这个使用了16进制行键的例子中，就有一些问题。相同的问题也可以发生在<emphasis>任何</emphasis>行键中。你需要了解你的数据。 </para>
+      <para>经验2: 虽然通常不建议使用16进制的行键（和可显示的数据），但是它也可以对表进行预分区，只需要所有被创建的分区都能访问所有的行键即可。 </para>
       <para>作为该示例的总结，下面展示了如何对16进制的行键进行预分割分区的一个例子： </para>
       <programlisting language="java"><![CDATA[public static boolean createTable(HBaseAdmin admin, HTableDescriptor table, byte[][] splits)
 throws IOException {
@@ -381,259 +381,237 @@ public static byte[][] getHexSplits(String startKey, String endKey, int numRegio
   <section
     xml:id="secondary.indexes">
     <title> 二级索引和备用查询路径 </title>
-    <para>This section could also be titled "what if my table rowkey looks like
-        <emphasis>this</emphasis> but I also want to query my table like <emphasis>that</emphasis>."
-      A common example on the dist-list is where a row-key is of the format "user-timestamp" but
-      there are reporting requirements on activity across users for certain time ranges. Thus,
-      selecting by user is easy because it is in the lead position of the key, but time is not. </para>
-    <para>There is no single answer on the best way to handle this because it depends on... </para>
+    <para>
+        本节也可以使用标题“如果我的表的行键看起来是<emphasis>这样</emphasis>但是我却想要像<emphasis>那样</emphasis>来查询表”。
+        一个常见的例子是行键的格式是"用户-时间戳"，但是也有查询一个给定的时间范围内都有哪些用户的需求。因此，通过用户进行查询很容易，因为行键的开头部分是用户，但通过时间查询就不容易了。
+         </para>
+    <para>在这点的处理上，没有一个最好的方式，因为它依赖于： </para>
     <itemizedlist>
       <listitem>
-        <para>Number of users</para>
+        <para>用户数</para>
       </listitem>
       <listitem>
-        <para>Data size and data arrival rate</para>
+        <para>数据大小和数据到达率</para>
       </listitem>
       <listitem>
-        <para>Flexibility of reporting requirements (e.g., completely ad-hoc date selection vs.
-          pre-configured ranges) </para>
+        <para>需求的灵活性（例如，完成一个临时的日期查询或预先指定范围的日期查询） </para>
       </listitem>
       <listitem>
-        <para>Desired execution speed of query (e.g., 90 seconds may be reasonable to some for an
-          ad-hoc report, whereas it may be too long for others) </para>
+        <para>期望的查询执行速度（例如，对于一些临时性的需求，90秒可能是合理的，但对于其他一些需求就可能显得太长） </para>
       </listitem>
     </itemizedlist>
-    <para>... and solutions are also influenced by the size of the cluster and how much processing
-      power you have to throw at the solution. Common techniques are in sub-sections below. This is
-      a comprehensive, but not exhaustive, list of approaches. </para>
-    <para>It should not be a surprise that secondary indexes require additional cluster space and
-      processing. This is precisely what happens in an RDBMS because the act of creating an
-      alternate index requires both space and processing cycles to update. RDBMS products are more
-      advanced in this regard to handle alternative index management out of the box. However, HBase
-      scales better at larger data volumes, so this is a feature trade-off. </para>
-    <para>Pay attention to <xref
-        linkend="performance" /> when implementing any of these approaches.</para>
-    <para>Additionally, see the David Butler response in this dist-list thread <link
+    <para>... 并且，解决方案也可能会受到集群大小和处理能力等的影响。下面的小节有一些常用的技术。这是一个综合的，但不详尽的方法列表。 </para>
+    <para>
+        它不应该是一个惊喜，二级索引需要额外的集群空间和额外的处理。这些事情在关系型数据库管理系统中也同样会发生。因为创建一个可替代的索引需要空间和处理周期更新。关系型数据库管理系统在这方面更先进一些，因为对可替代索引的管理工作开箱即用。然而，HBase在数据规模很大的情况下表现更好，这是一个功能上的权衡。
+     </para>
+    <para>当实现这些方法中的任意一个的时候，请注意 <xref
+        linkend="performance" /> 。</para>
+    <para>此外，可以参考David Butler在回应用户邮件列表中的 <link
         xlink:href="http://search-hadoop.com/m/nvbiBp2TDP/Stargate%252Bhbase&amp;subj=Stargate+hbase">HBase,
-        mail # user - Stargate+hbase</link>
+        mail # user - Stargate+hbase</link>的跟帖。
     </para>
     <section
       xml:id="secondary.indexes.filter">
-      <title> Filter Query </title>
-      <para>Depending on the case, it may be appropriate to use <xref
-          linkend="client.filter" />. In this case, no secondary index is created. However, don't
-        try a full-scan on a large table like this from an application (i.e., single-threaded
-        client). </para>
+      <title> 过滤查询 </title>
+      <para>
+          根据具体应用，可以适当的使用<xref  linkend="client.filter" />。在这种情况下，没有创建二级索引。然而，不要试图从一个应用（例如，单线程客户端）对一个大表进行全表遍历。
+           </para>
     </section>
     <section
       xml:id="secondary.indexes.periodic">
-      <title> Periodic-Update Secondary Index </title>
-      <para>A secondary index could be created in an other table which is periodically updated via a
-        MapReduce job. The job could be executed intra-day, but depending on load-strategy it could
-        still potentially be out of sync with the main data table.</para>
-      <para>See <xref
-          linkend="mapreduce.example.readwrite" /> for more information.</para>
+      <title> 定期更新二级索引 </title>
+      <para>
+          二级索引可以在另一个表中创建，可以通过MapReduce任务进行定期更新。这个任务可以在当天执行，但是依赖于加载策略，可能会与主表不同步。
+          </para>
+      <para>查看 <xref
+          linkend="mapreduce.example.readwrite" /> 可以了解更多相关信息。</para>
     </section>
     <section
       xml:id="secondary.indexes.dualwrite">
-      <title> Dual-Write Secondary Index </title>
-      <para>Another strategy is to build the secondary index while publishing data to the cluster
-        (e.g., write to data table, write to index table). If this is approach is taken after a data
-        table already exists, then bootstrapping will be needed for the secondary index with a
-        MapReduce job (see <xref
-          linkend="secondary.indexes.periodic" />).</para>
+      <title> 同时写入二级索引 </title>
+      <para>
+          另外一个策略是在给集群写入数据的时候同时写入二级索引（例如，既写入数据表也写入索引表）。如果这个方法在数据表已经存在之后才采用，就需要使用MapReduce任务(参考 <xref
+              linkend="secondary.indexes.periodic" />)来对已有的数据生成索引。
+          </para>
     </section>
     <section
       xml:id="secondary.indexes.summary">
-      <title> Summary Tables </title>
-      <para>Where time-ranges are very wide (e.g., year-long report) and where the data is
-        voluminous, summary tables are a common approach. These would be generated with MapReduce
-        jobs into another table.</para>
+      <title> 汇总表 </title>
+      <para>
+          对时间跨度长(例如,年报)和数据量巨大，通常使用汇总表。可通过MapReduce任务将结果生成到另一个表。
+          </para>
       <para>See <xref
           linkend="mapreduce.example.summary" /> for more information.</para>
     </section>
     <section
       xml:id="secondary.indexes.coproc">
-      <title> Coprocessor Secondary Index </title>
-      <para>Coprocessors act like RDBMS triggers. These were added in 0.92. For more information,
-        see <xref
-          linkend="coprocessors" />
+      <title> 协处理器二级索引 </title>
+      <para> 协处理器就像关系型数据库管理系统中的触发器。该功能在0.92版本中被加入。更多的有关信息，可以参考 <xref
+          linkend="coprocessors" /> 。
       </para>
     </section>
   </section>
   <section
     xml:id="constraints">
-    <title>Constraints</title>
-    <para>HBase currently supports 'constraints' in traditional (SQL) database parlance. The advised
-      usage for Constraints is in enforcing business rules for attributes in the table (eg. make
-      sure values are in the range 1-10). Constraints could also be used to enforce referential
-      integrity, but this is strongly discouraged as it will dramatically decrease the write
-      throughput of the tables where integrity checking is enabled. Extensive documentation on using
-      Constraints can be found at: <link
-        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/constraint">Constraint</link>
-      since version 0.94. </para>
+    <title>约束</title>
+    <para>
+        HBase的当前支持传统的（SQL）数据库中的说法“约束”。在表中的属性执行商业规则（例如，确保值在范围1-10以内）时建议使用约束。约束也可以用于强制引用的完整性，但是强烈反对这么做。
+        因为完整性检查一旦启用将极大的降低表的吞吐量。使用约束的丰富文档可以在这里找到： <link
+        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/constraint">Constraint</link>。
+      约束在0.94版本中被加入。 </para>
   </section>
   <section
     xml:id="schema.casestudies">
-    <title>Schema Design Case Studies</title>
-    <para>The following will describe some typical data ingestion use-cases with HBase, and how the
-      rowkey design and construction can be approached. Note: this is just an illustration of
-      potential approaches, not an exhaustive list. Know your data, and know your processing
-      requirements. </para>
-    <para>It is highly recommended that you read the rest of the <xref
-        linkend="schema" /> first, before reading these case studies. </para>
-    <para>The following case studies are described: </para>
+    <title>模式设计案例研究</title>
+    <para>
+        下面将描述一些典型的使用了HBase的数据获取的例子，以及如何进行行键的设计和构建。注：这只是潜在方法的举例说明，并非详尽无遗的方法列表。你需要了解你的数据和你的处理需求。
+     </para>
+    <para>强烈推荐你在阅读这些案例研究之前，先阅读 <xref
+            linkend="schema" />的其他部分。 </para>
+    <para>下面是有关这些案例研究的一些描述: </para>
     <itemizedlist>
       <listitem>
-        <para>Log Data / Timeseries Data</para>
+        <para>日志数据 / 时间序列数据</para>
       </listitem>
       <listitem>
-        <para>Log Data / Timeseries on Steroids</para>
+        <para>日志数据 / 疯狂增长的时间序列数据</para>
       </listitem>
       <listitem>
-        <para>Customer/Order</para>
+        <para>客户/订单</para>
       </listitem>
       <listitem>
-        <para>Tall/Wide/Middle Schema Design</para>
+        <para>高/宽/中 模式设计</para>
       </listitem>
       <listitem>
-        <para>List Data</para>
+        <para>列表数据</para>
       </listitem>
     </itemizedlist>
     <section
       xml:id="schema.casestudies.log-timeseries">
-      <title>Case Study - Log Data and Timeseries Data</title>
-      <para>Assume that the following data elements are being collected. </para>
+      <title>案例研究 - 日志数据和时间序列数据</title>
+      <para>假设收集了下面的数据元素。 </para>
       <itemizedlist>
         <listitem>
-          <para>Hostname</para>
+          <para>主机名（Hostname）</para>
         </listitem>
         <listitem>
-          <para>Timestamp</para>
+          <para>时间戳（Timestamp）</para>
         </listitem>
         <listitem>
-          <para>Log event</para>
+          <para>日志事件（Log event）</para>
         </listitem>
         <listitem>
-          <para>Value/message</para>
+          <para>值/消息（Value/message）</para>
         </listitem>
       </itemizedlist>
-      <para>We can store them in an HBase table called LOG_DATA, but what will the rowkey be? From
-        these attributes the rowkey will be some combination of hostname, timestamp, and log-event -
-        but what specifically? </para>
+      <para>
+          我们可以将这些数据存在HBase中一个叫做LOG_DATA的表中，但是行键应该是什么呢？从这些属性中我们知道行键将会是域名、时间戳以及日志事件的某种组合，但具体是什么呢？
+           </para>
       <section
         xml:id="schema.casestudies.log-timeseries.tslead">
-        <title>Timestamp In The Rowkey Lead Position</title>
-        <para>The rowkey <code>[timestamp][hostname][log-event]</code> suffers from the
-          monotonically increasing rowkey problem described in <xref
-            linkend="timeseries" />. </para>
-        <para>There is another pattern frequently mentioned in the dist-lists about “bucketing”
-          timestamps, by performing a mod operation on the timestamp. If time-oriented scans are
-          important, this could be a useful approach. Attention must be paid to the number of
-          buckets, because this will require the same number of scans to return results.</para>
+        <title>时间戳在行键的起始位置</title>
+        <para>行键 <code>[时间戳][主机名][日志事件]</code> 将会引起在<xref
+                linkend="timeseries" />中提到的单调递增的行键问题。 </para>
+        <para>
+            还有另外的一个设计，就是通过对时间戳进行一个取余操作，使用“成组(bucketing)”的时间戳。无否时间顺序的遍历操作很重要，这可能会是一个有用的方法。注意必须指定好组(bucket)的大小，因为在遍历返回值时，同样需要这个大小。
+            </para>
         <programlisting language="java">
 long bucket = timestamp % numBuckets;
         </programlisting>
-        <para>… to construct:</para>
+        <para>… 以构建：</para>
         <programlisting>
 [bucket][timestamp][hostname][log-event]
         </programlisting>
-        <para>As stated above, to select data for a particular timerange, a Scan will need to be
-          performed for each bucket. 100 buckets, for example, will provide a wide distribution in
-          the keyspace but it will require 100 Scans to obtain data for a single timestamp, so there
-          are trade-offs. </para>
+        <para>
+            如上所述，查询一个特定时间范围的数据，遍历（Scan）操作需要在每一个组中进行。例如，有100个组，将会把行键分布的很广泛（而不会造成热点现象），但是对于一个单独的时间戳，它将需要执行100次遍历操作，因此需要进行权衡。 </para>
       </section>
       <!-- ts lead -->
       <section
         xml:id="schema.casestudies.log-timeseries.hostlead">
-        <title>Host In The Rowkey Lead Position</title>
-        <para>The rowkey <code>[hostname][log-event][timestamp]</code> is a candidate if there is a
-          large-ish number of hosts to spread the writes and reads across the keyspace. This
-          approach would be useful if scanning by hostname was a priority. </para>
+        <title>主机名放在行键的起始位置</title>
+        <para>如果有很多的主机来将写和读分布到所有的行键上，那行键 <code>[主机名][日志事件][时间戳]</code> 是一个备选项。如果优先使用主机名来遍历数据，那这个方法会很有用。 </para>
       </section>
       <!--  host lead -->
       <section
         xml:id="schema.casestudies.log-timeseries.revts">
-        <title>Timestamp, or Reverse Timestamp?</title>
-        <para>If the most important access path is to pull most recent events, then storing the
-          timestamps as reverse-timestamps (e.g., <code>timestamp = Long.MAX_VALUE –
-            timestamp</code>) will create the property of being able to do a Scan on
-            <code>[hostname][log-event]</code> to obtain the quickly obtain the most recently
-          captured events. </para>
-        <para>Neither approach is wrong, it just depends on what is most appropriate for the
-          situation. </para>
+        <title>时间戳，或逆序的时间戳？</title>
+        <para>
+            在大多数的访问操作中，可能需要访问最近的事件，那么应该将时间戳以逆序进行存储（例如，<code>timestamp = Long.MAX_VALUE –
+            timestamp</code>）。使用逆序的时间戳可以对<code>[hostname][log-event]</code> 执行遍历操作并快速获取最近捕获到的事件。
+             </para>
+        <para>没有方法是错误的，这仅仅依赖于什么情况下最适合。 </para>
         <note>
-          <title>Reverse Scan API</title>
+          <title>逆序Scan API</title>
           <para>
-            <link
-              xlink:href="https://issues.apache.org/jira/browse/HBASE-4811">HBASE-4811</link>
-            implements an API to scan a table or a range within a table in reverse, reducing the
-            need to optimize your schema for forward or reverse scanning. This feature is available
-            in HBase 0.98 and later. See <link
-              xlink:href="https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html#setReversed%28boolean" />
-            for more information. </para>
+              <link
+                      xlink:href="https://issues.apache.org/jira/browse/HBASE-4811">HBASE-4811</link>实现了一个API，可以对一个表或一个表中的某一范围进行逆序遍历，而你不需要为了实现正向或反向遍历而优化你的设计模式。该特征在HBase 0.98和更高的版本中可用。查看<link
+                  xlink:href="https://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/Scan.html#setReversed%28boolean" /> 以获取更多信息。
+            </para>
         </note>
       </section>
       <!--  revts -->
       <section
         xml:id="schema.casestudies.log-timeseries.varkeys">
-        <title>Variangle Length or Fixed Length Rowkeys?</title>
-        <para>It is critical to remember that rowkeys are stamped on every column in HBase. If the
-          hostname is “a” and the event type is “e1” then the resulting rowkey would be quite small.
-          However, what if the ingested hostname is “myserver1.mycompany.com” and the event type is
-          “com.package1.subpackage2.subsubpackage3.ImportantService”? </para>
-        <para>It might make sense to use some substitution in the rowkey. There are at least two
-          approaches: hashed and numeric. In the Hostname In The Rowkey Lead Position example, it
-          might look like this: </para>
-        <para>Composite Rowkey With Hashes:</para>
+        <title>可变长度或固定长度的行键？</title>
+        <para>
+            HBase的行键的每一列都很重要。如果主机名是"a"并且事件类型是"e1"，那么组成的行键将会很小。但是，如果存储主机名是"myserver1.mycompany.com"，事件类型是
+            "com.package1.subpackage2.subsubpackage3.ImportantService"呢？
+             </para>
+        <para>
+            在行键中使用某些替代值是很有必要的。有至少两种方法：哈希和数字化。在主机名在行键的起始位置的例子中，它可能看起来是这个样子：
+             </para>
+        <para>使用哈希来组成行键：</para>
         <itemizedlist>
           <listitem>
-            <para>[MD5 hash of hostname] = 16 bytes</para>
+            <para>[主机名的MD5哈希值] = 16 bytes</para>
           </listitem>
           <listitem>
-            <para>[MD5 hash of event-type] = 16 bytes</para>
+            <para>[事件类型的MD5哈希值] = 16 bytes</para>
           </listitem>
           <listitem>
-            <para>[timestamp] = 8 bytes</para>
+            <para>[时间戳] = 8 bytes</para>
           </listitem>
         </itemizedlist>
-        <para>Composite Rowkey With Numeric Substitution: </para>
-        <para>For this approach another lookup table would be needed in addition to LOG_DATA, called
-          LOG_TYPES. The rowkey of LOG_TYPES would be: </para>
+        <para>使用替代数字来组成行键： </para>
+        <para>对于这种方法，LOG_DATA需要一个额外的查询表LOG_TYPES。LOG_TYPES的行键将是：
+             </para>
         <itemizedlist>
           <listitem>
-            <para>[type] (e.g., byte indicating hostname vs. event-type)</para>
+            <para>[type] (例如，, 表示主机名和事件类型的字节)</para>
           </listitem>
           <listitem>
-            <para>[bytes] variable length bytes for raw hostname or event-type.</para>
+            <para>[bytes] 原始主机名或事件类型的可变长度的字节</para>
           </listitem>
         </itemizedlist>
-        <para>A column for this rowkey could be a long with an assigned number, which could be
-          obtained by using an <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#incrementColumnValue%28byte[],%20byte[],%20byte[],%20long%29">HBase
-            counter</link>. </para>
-        <para>So the resulting composite rowkey would be: </para>
+        <para>
+            这个行键的列可能是一个分配的长整型的数字，它可以通过使用<link
+                xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html#incrementColumnValue%28byte[],%20byte[],%20byte[],%20long%29">HBase
+            计数器</link>获取。
+             </para>
+        <para>因此组成的行键将是： </para>
         <itemizedlist>
           <listitem>
-            <para>[substituted long for hostname] = 8 bytes</para>
+            <para>[替代主机名的长整型] = 8 bytes</para>
           </listitem>
           <listitem>
-            <para>[substituted long for event type] = 8 bytes</para>
+            <para>[替代事件类型的长整型] = 8 bytes</para>
           </listitem>
           <listitem>
-            <para>[timestamp] = 8 bytes</para>
+            <para>[时间戳] = 8 bytes</para>
           </listitem>
         </itemizedlist>
-        <para>In either the Hash or Numeric substitution approach, the raw values for hostname and
-          event-type can be stored as columns. </para>
+        <para>
+            在任一哈希或数字替换的方法中，主机名和事件类型的原始值都可以作为一列存储。
+            </para>
       </section>
       <!--  varkeys -->
     </section>
     <!--  log data and timeseries -->
     <section
       xml:id="schema.casestudies.log-steroids">
-      <title>Case Study - Log Data and Timeseries Data on Steroids</title>
-      <para>This effectively is the OpenTSDB approach. What OpenTSDB does is re-write data and pack
+      <title>案例研究 - 日志数据和疯狂增长的时间序列数据</title>
+      <para>
+          这实际上是OpenTSDB采用的方法。 What OpenTSDB does is re-write data and pack
         rows into columns for certain time-periods. For a detailed explanation, see: <link
           xlink:href="http://opentsdb.net/schema.html">http://opentsdb.net/schema.html</link>, and <link
           xlink:href="http://www.cloudera.com/content/cloudera/en/resources/library/hbasecon/video-hbasecon-2012-lessons-learned-from-opentsdb.html">Lessons
