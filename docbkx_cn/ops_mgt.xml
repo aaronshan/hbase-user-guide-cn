@@ -856,16 +856,14 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                 如果你是依靠ssh开启你的daemons, 不要忘记在master的<filename>conf/regionservers</filename>文件中添加新的主机名。
               </para>
             <para>此时，这个 region server 还无法提供数据，因为还没有regions移动到它这里。如果开启了balancer，
-                就会开始移动regions到新的RS。对于一个小的/中等集群，这对延迟会有不利的影响，因为在同一时间有很多regions会下线。
-                It is thus recommended to disable the balancer the same way
-                it's done when decommissioning a node and move the regions manually (or even better, using a
-                script that moves them one by one). </para>
-            <para>The moved regions will all have 0% locality and won't have any blocks in cache so the
-                region server will have to use the network to serve requests. Apart from resulting in higher
-                latency, it may also be able to use all of your network card's capacity. For practical
-                purposes, consider that a standard 1GigE NIC won't be able to read much more than
-                <emphasis>100MB/s</emphasis>. In this case, or if you are in a OLAP environment and
-                require having locality, then it is recommended to major compact the moved regions. </para>
+                就会开始移动regions到新的RS。对于一个小的/中等集群，这对延迟会有不利的影响，
+                因为在同一时间会有很多regions下线。因此，在下线节点时，建议禁用负载均衡器，并手动迁移regions（或者，
+                使用脚本一个个迁移它们，这样更好）。
+                </para>
+            <para>迁移完的regions都只有0%的位置，在缓存中也不会有任何块，因此 region server不得不通过网络来服务请求。
+                这除了会导致高延迟，还会占用你网卡的全部容量。在实际用途中，一个标准的1 GigE NIC 最多读取 <emphasis>100MB/s</emphasis>。
+                这种情况下，或者你是在OLAP环境中请求获取位置，建议compact迁移来的regions。
+               </para>
 
         </section>
     </section>
@@ -873,191 +871,174 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
 
     <section
             xml:id="hbase_metrics">
-        <title>HBase Metrics</title>
+        <title>HBase 指标</title>
         <section
                 xml:id="metric_setup">
-            <title>Metric Setup</title>
-            <para>See <link
-                    xlink:href="http://hbase.apache.org/metrics.html">Metrics</link> for an introduction and
-                how to enable Metrics emission. Still valid for HBase 0.94.x. </para>
-            <para>For HBase 0.95.x and up, see <link
+            <title>指标安装</title>
+            <para>参考 <link
+                    xlink:href="http://hbase.apache.org/metrics.html">Metrics</link> 中的介绍和启用Metrics emission的方法。
+                这对 HBase 0.94.x依然有效。 </para>
+            <para>对于 HBase 0.95.x 或以上版本, 参考 <link
                     xlink:href="http://hadoop.apache.org/docs/current/api/org/apache/hadoop/metrics2/package-summary.html" />
             </para>
         </section>
         <section
                 xml:id="rs_metrics_ganglia">
-            <title>Warning To Ganglia Users</title>
-            <para>Warning to Ganglia Users: by default, HBase will emit a LOT of metrics per RegionServer
-                which may swamp your installation. Options include either increasing Ganglia server
-                capacity, or configuring HBase to emit fewer metrics. </para>
+            <title>给Ganglia用户的警告</title>
+            <para>警告: 默认情况下，HBase会发出大量关于每台RegionServer的指标，这可能会使你的安装陷于困境。你可以选择
+                增加Ganglia 服务器容量，或配置HBase少发出指标。
+                 </para>
         </section>
         <section
                 xml:id="rs_metrics">
-            <title>Most Important RegionServer Metrics</title>
+            <title>RegionServer最重要的指标</title>
             <section
                     xml:id="hbase.regionserver.blockCacheHitCachingRatio">
                 <title><varname>blockCacheExpressCachingRatio (formerly
                     blockCacheHitCachingRatio)</varname></title>
-                <para>Block cache hit caching ratio (0 to 100). The cache-hit ratio for reads configured to
-                    look in the cache (i.e., cacheBlocks=true). </para>
+                <para>块缓存命中率(0 - 100)。配置缓存命中率用来查看缓存 (例如, cacheBlocks=true). </para>
             </section>
             <section
                     xml:id="hbase.regionserver.callQueueLength">
                 <title><varname>callQueueLength</varname></title>
-                <para>Point in time length of the RegionServer call queue. If requests arrive faster than
-                    the RegionServer handlers can process them they will back up in the callQueue.</para>
+                <para>当前时间RegionServer调用队列的长度。如果请求到达的速度比RegionServer的处理速度更快，那么它们会被放置在callQueue中。
+                    </para>
             </section>
             <section
                     xml:id="hbase.regionserver.compactionQueueSize">
                 <title><varname>compactionQueueLength (formerly compactionQueueSize)</varname></title>
-                <para>Point in time length of the compaction queue. This is the number of Stores in the
-                    RegionServer that have been targeted for compaction.</para>
+                <para>当前时间compaction队列的长度。这是RegionServer中已确定要做compaction的Stores的数量。
+                    </para>
             </section>
             <section
                     xml:id="hbase.regionserver.flushQueueSize">
                 <title><varname>flushQueueSize</varname></title>
-                <para>Point in time number of enqueued regions in the MemStore awaiting flush.</para>
+                <para>当前时间MemStore中等待flush的enqueued regions的数量。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.hdfsBlocksLocalityIndex">
                 <title><varname>hdfsBlocksLocalityIndex</varname></title>
-                <para>Point in time percentage of HDFS blocks that are local to this RegionServer. The
-                    higher the better. </para>
+                <para>当前时间这个RegionServer的本地HDFS块所占的百分比，越高越好。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.memstoreSizeMB">
                 <title><varname>memstoreSizeMB</varname></title>
-                <para>Point in time sum of all the memstore sizes in this RegionServer (MB). Watch for this
-                    nearing or exceeding the configured high-watermark for MemStore memory in the
-                    RegionServer. </para>
+                <para>当前时间这个RegionServer的所有memstore大小的总和（MB）。
+                    看着点，当心它接近或超过RegionServer中为MemStore内存配置的high-watermark。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.regions">
                 <title><varname>numberOfOnlineRegions</varname></title>
-                <para>Point in time number of regions served by the RegionServer. This is an important
-                    metric to track for RegionServer-Region density. </para>
+                <para>当前时间RegionServer提供服务的Regions数。这是个重要指标，用来追踪RegionServer-Region的密度。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.readRequestsCount">
                 <title><varname>readRequestsCount</varname></title>
-                <para>Number of read requests for this RegionServer since startup. Note: this is a 32-bit
-                    integer and can roll. </para>
+                <para>这个RegionServer在启动之后的读请求数。注意：这是个32位整数且能回滚。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.slowHLogAppendCount">
                 <title><varname>slowHLogAppendCount</varname></title>
-                <para>Number of slow HLog append writes for this RegionServer since startup, where "slow" is
-                    > 1 second. This is a good "canary" metric for HDFS. </para>
+                <para>这个RegionServer在启动之后的写HLog过慢的次数, "过慢"指的是大于1秒。这个指标可用来判断HDFS状态的好坏。
+                   </para>
             </section>
             <section
                     xml:id="hbase.regionserver.usedHeapMB">
                 <title><varname>usedHeapMB</varname></title>
-                <para>Point in time amount of memory used by the RegionServer (MB).</para>
+                <para>当前时间RegionServer使用的内存大小(MB).</para>
             </section>
             <section
                     xml:id="hbase.regionserver.writeRequestsCount">
                 <title><varname>writeRequestsCount</varname></title>
-                <para>Number of write requests for this RegionServer since startup. Note: this is a 32-bit
-                    integer and can roll. </para>
+                <para>这个RegionServer在启动之后的写请求数。 注意：这是个32位整数且能回滚。</para>
             </section>
 
         </section>
         <section
                 xml:id="rs_metrics_other">
-            <title>Other RegionServer Metrics</title>
+            <title>其它 RegionServer 指标</title>
             <section
                     xml:id="hbase.regionserver.blockCacheCount">
                 <title><varname>blockCacheCount</varname></title>
-                <para>Point in time block cache item count in memory. This is the number of blocks of
-                    StoreFiles (HFiles) in the cache.</para>
+                <para>当前时间内存中的缓存块数量，也是缓存中StoreFiles (HFiles)块的数量。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheEvictedCount">
                 <title><varname>blockCacheEvictedCount</varname></title>
-                <para>Number of blocks that had to be evicted from the block cache due to heap size
-                    constraints by RegionServer since startup.</para>
+                <para>RegionServer启动之后，由于堆大小限制，不得不从 block缓存中清除的块数目。
+                   </para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheFree">
                 <title><varname>blockCacheFreeMB</varname></title>
-                <para>Point in time block cache memory available (MB).</para>
+                <para>当前时间block cache的可用内存(MB)。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheHitCount">
                 <title><varname>blockCacheHitCount</varname></title>
-                <para>Number of blocks of StoreFiles (HFiles) read from the cache by RegionServer since
-                    startup.</para>
+                <para>RegionServer在启动之后的从cache中读取StoreFiles (HFiles)的块数目。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheHitRatio">
                 <title><varname>blockCacheHitRatio</varname></title>
-                <para>Block cache hit ratio (0 to 100) from RegionServer startup. Includes all read
-                    requests, although those with cacheBlocks=false will always read from disk and be counted
-                    as a "cache miss", which means that full-scan MapReduce jobs can affect this metric
-                    significantly.</para>
+                <para>RegionServer在启动之后的Block cache命中率(0 to 100)。包括所有的读请求，
+                    尽管那些cacheBlocks=false的请求，会经常从磁盘读取，并被统计为"cache miss", 这意味着
+                    full-scan MapReduce任务会大大的影响这个指标。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheMissCount">
                 <title><varname>blockCacheMissCount</varname></title>
-                <para>Number of blocks of StoreFiles (HFiles) requested but not read from the cache from
-                    RegionServer startup.</para>
+                <para>RegionServer在启动之后不是从缓存中读取到的 StoreFiles (HFiles)块数目。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.blockCacheSize">
                 <title><varname>blockCacheSizeMB</varname></title>
-                <para>Point in time block cache size in memory (MB). i.e., memory in use by the
-                    BlockCache</para>
+                <para>当前时间内存中的缓存块大小(MB)，比如，BlockCache使用的内存。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.fsPreadLatency">
                 <title><varname>fsPreadLatency*</varname></title>
-                <para>There are several filesystem positional read latency (ms) metrics, all measured from
-                    RegionServer startup.</para>
+                <para>RegionServer在启动之后统计的几种文件系统positional读取延迟（ms）指标。
+                    </para>
             </section>
             <section
                     xml:id="hbase.regionserver.fsReadLatency">
                 <title><varname>fsReadLatency*</varname></title>
-                <para>There are several filesystem read latency (ms) metrics, all measured from RegionServer
-                    startup. The issue with interpretation is that ALL reads go into this metric (e.g.,
-                    single-record Gets, full table Scans), including reads required for compactions. This
-                    metric is only interesting "over time" when comparing major releases of HBase or your own
-                    code.</para>
+                <para>RegionServer在启动之后统计的几种文件系统读取延迟（ms）指标。这个指标统计的所有读取（例如单条记录的Get操作，全部扫描操作），
+                    包括compactions需要的读取。在与HBase的主要发布版本或你自己的代码比较时，这个指标才有意思。
+                  </para>
             </section>
             <section
                     xml:id="hbase.regionserver.fsWriteLatency">
                 <title><varname>fsWriteLatency*</varname></title>
-                <para>There are several filesystem write latency (ms) metrics, all measured from
-                    RegionServer startup. The issue with interpretation is that ALL writes go into this metric
-                    (e.g., single-record Puts, full table re-writes due to compaction). This metric is only
-                    interesting "over time" when comparing major releases of HBase or your own code.</para>
+                <para>RegionServer在启动之后统计的几种文件系统写延迟（ms）指标。 这个指标统计的所有写，
+                    包括单条记录的Put操作，compaction导致的全部重写操作等。
+                    在与HBase的主要发布版本或你自己的代码比较时，这个指标才有意思。
+                  </para>
             </section>
             <section
                     xml:id="hbase.regionserver.stores">
                 <title><varname>NumberOfStores</varname></title>
-                <para>Point in time number of Stores open on the RegionServer. A Store corresponds to a
-                    ColumnFamily. For example, if a table (which contains the column family) has 3 regions on
-                    a RegionServer, there will be 3 stores open for that column family. </para>
+                <para>当前时间，RegionServer上打开的Store数。一个Store对应一个列族。例如，
+                    如果一个表(包含列族)在一个RegionServer上有3个region，该列族就会打开3个store。 </para>
             </section>
             <section
                     xml:id="hbase.regionserver.storeFiles">
                 <title><varname>NumberOfStorefiles</varname></title>
-                <para>Point in time number of StoreFiles open on the RegionServer. A store may have more
-                    than one StoreFile (HFile).</para>
+                <para>当前时间RegionServer上打开的Storefile数。一个store的StoreFile (HFile)可能不止一个。</para>
             </section>
             <section
                     xml:id="hbase.regionserver.requests">
                 <title><varname>requestsPerSecond</varname></title>
-                <para>Point in time number of read and write requests. Requests correspond to RegionServer
-                    RPC calls, thus a single Get will result in 1 request, but a Scan with caching set to 1000
-                    will result in 1 request for each 'next' call (i.e., not each row). A bulk-load request
-                    will constitute 1 request per HFile. This metric is less interesting than
-                    readRequestsCount and writeRequestsCount in terms of measuring activity due to this metric
-                    being periodic. </para>
+                <para>当前时间读写请求数。请求与RegionServer的RPC调用相对应，因此一个单独的Get操作会产生一个请求，
+                    但是一个Scan操作（caching设置为1000）的每一个‘next’调用（例如，非每一行）都会产生一个请求。
+                    一个 bulk-load 请求的每个HFile会产生一个请求。由于这个指标的周期性，在衡量活跃性时， readRequestsCount和writeRequestsCount指标会更有意思。
+                    </para>
             </section>
             <section
                     xml:id="hbase.regionserver.storeFileIndexSizeMB">
                 <title><varname>storeFileIndexSizeMB</varname></title>
-                <para>Point in time sum of all the StoreFile index sizes in this RegionServer (MB)</para>
+                <para>当前时间，这个RegionServer中所有StoreFile的索引大小的总和(MB)</para>
             </section>
         </section>
     </section>
