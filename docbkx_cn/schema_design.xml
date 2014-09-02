@@ -611,194 +611,200 @@ long bucket = timestamp % numBuckets;
       xml:id="schema.casestudies.log-steroids">
       <title>案例研究 - 日志数据和疯狂增长的时间序列数据</title>
       <para>
-          这实际上是OpenTSDB采用的方法。 What OpenTSDB does is re-write data and pack
-        rows into columns for certain time-periods. For a detailed explanation, see: <link
-          xlink:href="http://opentsdb.net/schema.html">http://opentsdb.net/schema.html</link>, and <link
-          xlink:href="http://www.cloudera.com/content/cloudera/en/resources/library/hbasecon/video-hbasecon-2012-lessons-learned-from-opentsdb.html">Lessons
-          Learned from OpenTSDB</link> from HBaseCon2012. </para>
-      <para>But this is how the general concept works: data is ingested, for example, in this
-        manner…</para>
+          这实际上是OpenTSDB采用的方法。 OpenTSDB将数据重写并且将一行数据按照给定的时间区间写入列中。 详细的解释请参考：<link
+              xlink:href="http://opentsdb.net/schema.html">http://opentsdb.net/schema.html</link> 和 HBase 2012年度会议(HBaseCon2012)上的<link
+              xlink:href="http://www.cloudera.com/content/cloudera/en/resources/library/hbasecon/video-hbasecon-2012-lessons-learned-from-opentsdb.html">Lessons
+          Learned from OpenTSDB</link>。
+           </para>
+      <para>
+          但是，数据获取是如何进行的，例如，以这种方式...
+          </para>
       <screen>
 [hostname][log-event][timestamp1]
 [hostname][log-event][timestamp2]
 [hostname][log-event][timestamp3]
         </screen>
-      <para>… with separate rowkeys for each detailed event, but is re-written like this… </para>
+      <para>
+          ......为每个具体事件使用不同的行键，但是，又被重新写成这样...
+           </para>
       <screen>[hostname][log-event][timerange]</screen>
-      <para>… and each of the above events are converted into columns stored with a time-offset
-        relative to the beginning timerange (e.g., every 5 minutes). This is obviously a very
-        advanced processing technique, but HBase makes this possible. </para>
+      <para>
+          ...并且上面的每一个事件都会转换成一个相对于起始时间范围（例如，每5分钟）的一个时间偏移量存储在列中。这显然是一个非常先进的加工技术，但HBase的使这成为可能。
+           </para>
     </section>
     <!--  log data timeseries steroids -->
 
     <section
       xml:id="schema.casestudies.custorder">
-      <title>Case Study - Customer/Order</title>
-      <para>Assume that HBase is used to store customer and order information. There are two core
-        record-types being ingested: a Customer record type, and Order record type. </para>
-      <para>The Customer record type would include all the things that you’d typically expect: </para>
+      <title>案例研究 - 客户/订单</title>
+      <para>假设HBase被用来存储客户和订单信息。这里获取了两个主要类型的记录：客户类型的记录和订单类型的记录。
+           </para>
+      <para>客户类型的记录将包括你一般期望的所有数据： </para>
       <itemizedlist>
         <listitem>
-          <para>Customer number</para>
+          <para>客户编号</para>
         </listitem>
         <listitem>
-          <para>Customer name</para>
+          <para>客户名</para>
         </listitem>
         <listitem>
-          <para>Address (e.g., city, state, zip)</para>
+          <para>地址 (例如，城市、省、邮编)</para>
         </listitem>
         <listitem>
-          <para>Phone numbers, etc.</para>
+          <para>手机号码等</para>
         </listitem>
       </itemizedlist>
-      <para>The Order record type would include things like: </para>
+      <para>订单类型的记录将包括下面数据： </para>
       <itemizedlist>
         <listitem>
-          <para>Customer number</para>
+          <para>客户编号</para>
         </listitem>
         <listitem>
-          <para>Order number</para>
+          <para>订单编号</para>
         </listitem>
         <listitem>
-          <para>Sales date</para>
+          <para>销售状态</para>
         </listitem>
         <listitem>
-          <para>A series of nested objects for shipping locations and line-items (see <xref
-              linkend="schema.casestudies.custorder.obj" /> for details)</para>
+          <para>
+              一系列的船舶位置和航线的嵌套对象(参考 <xref
+                  linkend="schema.casestudies.custorder.obj" /> 了解更多细节)。
+              </para>
         </listitem>
       </itemizedlist>
-      <para>Assuming that the combination of customer number and sales order uniquely identify an
-        order, these two attributes will compose the rowkey, and specifically a composite key such
-        as: </para>
-      <screen>[customer number][order number]</screen>
-      <para>… for a ORDER table. However, there are more design decisions to make: are the
-          <emphasis>raw</emphasis> values the best choices for rowkeys? </para>
-      <para>The same design questions in the Log Data use-case confront us here. What is the
-        keyspace of the customer number, and what is the format (e.g., numeric? alphanumeric?) As it
-        is advantageous to use fixed-length keys in HBase, as well as keys that can support a
-        reasonable spread in the keyspace, similar options appear: </para>
-      <para>Composite Rowkey With Hashes: </para>
+      <para>
+          假设客户编号和销售订单的组合唯一地标识一个订单，这两个属性会组成行键，特别是组成这样的行键：
+           </para>
+      <screen>[客户编号][订单编号]</screen>
+      <para>... 对于订单表。但是，还需要做出一个决定： 使用<emphasis>原始值</emphasis>作为行键是最好的选择吗？ </para>
+      <para>
+          我们面临和日志数据使用案例中相同的问题。在行键中应该如何表示客户编号，格式是什么样子（例如，是数字？还是字母？）。因为在HBase中使用固定长度的行键有优势，
+          所以我们为了将行键分散在各个region上，做除了下面的选择：</para>
+        <para>将哈希值组合成行键： </para>
       <itemizedlist>
         <listitem>
-          <para>[MD5 of customer number] = 16 bytes</para>
+          <para>[客户编号的MD5值] = 16 字节</para>
         </listitem>
         <listitem>
-          <para>[MD5 of order number] = 16 bytes</para>
+          <para>[订单编号的MD5值] = 16 字节</para>
         </listitem>
       </itemizedlist>
-      <para>Composite Numeric/Hash Combo Rowkey: </para>
+      <para>将数值/哈希值组成的行键： </para>
       <itemizedlist>
         <listitem>
-          <para>[substituted long for customer number] = 8 bytes</para>
+          <para>[替代客户编号的长整型(long)] = 8 字节</para>
         </listitem>
         <listitem>
-          <para>[MD5 of order number] = 16 bytes</para>
+          <para>[订单编号的MD5值] = 16 字节</para>
         </listitem>
       </itemizedlist>
       <section
         xml:id="schema.casestudies.custorder.tables">
-        <title>Single Table? Multiple Tables?</title>
-        <para>A traditional design approach would have separate tables for CUSTOMER and SALES.
-          Another option is to pack multiple record types into a single table (e.g., CUSTOMER++). </para>
-        <para>Customer Record Type Rowkey: </para>
+        <title>单表? 多表?</title>
+        <para>传统的设计方法是设计两个独立的表CUSTOMER和SALES。另一种选择是将多个类型的记录放在同一个表里（例如， CUSTOMER++）。
+             </para>
+        <para>客户类型记录的行键： </para>
         <itemizedlist>
           <listitem>
             <para>[customer-id]</para>
           </listitem>
           <listitem>
-            <para>[type] = type indicating ‘1’ for customer record type</para>
+            <para>[type] = type 如果为‘1’ 表示客户类型的记录</para>
           </listitem>
         </itemizedlist>
-        <para>Order Record Type Rowkey: </para>
+        <para>订单类型记录的行键： </para>
         <itemizedlist>
           <listitem>
             <para>[customer-id]</para>
           </listitem>
           <listitem>
-            <para>[type] = type indicating ‘2’ for order record type</para>
+            <para>[type] = type 如果为‘2’ 表示订单类型的记录</para>
           </listitem>
           <listitem>
             <para>[order]</para>
           </listitem>
         </itemizedlist>
-        <para>The advantage of this particular CUSTOMER++ approach is that organizes many different
-          record-types by customer-id (e.g., a single scan could get you everything about that
-          customer). The disadvantage is that it’s not as easy to scan for a particular record-type.
+        <para>
+            使用后面一种方法的优点是将不同类型的记录按照客户id组织到了一起（例如，一次遍历就可以获取到客户的所有信息）。缺点不容易遍历特定类型的记录。
         </para>
       </section>
       <section
         xml:id="schema.casestudies.custorder.obj">
-        <title>Order Object Design</title>
-        <para>Now we need to address how to model the Order object. Assume that the class structure
-          is as follows:</para>
+        <title>订单对象设计</title>
+        <para>
+            现在我们需要了解如何给订单对象建模。假设类结构如下：
+            </para>
         <variablelist>
           <varlistentry>
-            <term>Order</term>
+            <term>订单(Order)</term>
             <listitem>
-              <para>(an Order can have multiple ShippingLocations</para>
+              <para>(一个订单可以有多个ShippingLocations</para>
             </listitem>
           </varlistentry>
           <varlistentry>
             <term>LineItem</term>
             <listitem>
-              <para>(a ShippingLocation can have multiple LineItems</para>
+              <para>(一个ShippingLocation可以有多个LineItems</para>
             </listitem>
           </varlistentry>
         </variablelist>
-        <para>... there are multiple options on storing this data. </para>
+        <para>... 存储了该数据的多个选项。 </para>
         <section
           xml:id="schema.casestudies.custorder.obj.norm">
-          <title>Completely Normalized</title>
-          <para>With this approach, there would be separate tables for ORDER, SHIPPING_LOCATION, and
-            LINE_ITEM. </para>
-          <para>The ORDER table's rowkey was described above: <xref
-              linkend="schema.casestudies.custorder" />
+          <title>完全规范化</title>
+          <para>
+              使用该方法，将会有三个独立的表：ORDER、SHIPPING_LOCATION和LINE_ITEM。
+               </para>
+          <para>ORDER表的行键在 <xref
+              linkend="schema.casestudies.custorder" />已经描述过了。
           </para>
-          <para>The SHIPPING_LOCATION's composite rowkey would be something like this: </para>
+          <para>TSHIPPING_LOCATION表使用组合行键，看起来像这样： </para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
             </listitem>
             <listitem>
-              <para>[shipping location number] (e.g., 1st location, 2nd, etc.)</para>
+              <para>[shipping location 编号] (例如，位置1，位置2，等等。)</para>
             </listitem>
           </itemizedlist>
-          <para>The LINE_ITEM table's composite rowkey would be something like this: </para>
+          <para>LINE_ITEM表使用组合行键，看起来像这样： </para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
             </listitem>
             <listitem>
-              <para>[shipping location number] (e.g., 1st location, 2nd, etc.)</para>
+              <para>[shipping location 编号] (例如，位置1，位置2，等等。)</para>
             </listitem>
             <listitem>
-              <para>[line item number] (e.g., 1st lineitem, 2nd, etc.)</para>
+              <para>[line item 编号] (例如，第1个lineitem，第二个，等等。)</para>
             </listitem>
           </itemizedlist>
-          <para>Such a normalized model is likely to be the approach with an RDBMS, but that's not
-            your only option with HBase. The cons of such an approach is that to retrieve
-            information about any Order, you will need: </para>
+          <para>
+              这种标准化模式和关系型数据库管理系统中的方法很像，但是这不是你用HBase的唯一选择。这种方法的缺点是，查询任何订单的信息，你需要：
+               </para>
           <itemizedlist>
             <listitem>
-              <para>Get on the ORDER table for the Order</para>
+              <para>从ORDER表获取订单</para>
             </listitem>
             <listitem>
-              <para>Scan on the SHIPPING_LOCATION table for that order to get the ShippingLocation
-                instances</para>
+              <para>遍历the SHIPPING_LOCATION表找到一个给定的ShippingLocation的实例
+                </para>
             </listitem>
             <listitem>
-              <para>Scan on the LINE_ITEM for each ShippingLocation</para>
+              <para>对于每一个ShippingLocation，遍历LINE_ITEM表</para>
             </listitem>
           </itemizedlist>
-          <para>... granted, this is what an RDBMS would do under the covers anyway, but since there
-            are no joins in HBase you're just more aware of this fact. </para>
+          <para>
+              当然，关系型数据库管理系统会在后台做这些工作，但是HBase没有join操作，所以不会自动做这些，你需要了解这个事实。 </para>
         </section>
         <section
           xml:id="schema.casestudies.custorder.obj.rectype">
-          <title>Single Table With Record Types</title>
-          <para>With this approach, there would exist a single table ORDER that would contain </para>
-          <para>The Order rowkey was described above: <xref
-              linkend="schema.casestudies.custorder" /></para>
+          <title>对所有类型的记录使用一张表</title>
+          <para>
+              使用这种方法，将会在ORDER表中包含
+               </para>
+          <para>在 <xref
+              linkend="schema.casestudies.custorder" />中提到的订单行键。</para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
@@ -807,7 +813,7 @@ long bucket = timestamp % numBuckets;
               <para>[ORDER record type]</para>
             </listitem>
           </itemizedlist>
-          <para>The ShippingLocation composite rowkey would be something like this: </para>
+          <para>ShippingLocation组合行键看起来会像这个样子： </para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
@@ -816,10 +822,10 @@ long bucket = timestamp % numBuckets;
               <para>[SHIPPING record type]</para>
             </listitem>
             <listitem>
-              <para>[shipping location number] (e.g., 1st location, 2nd, etc.)</para>
+              <para>[shipping location 编号] (例如，位置1，位置2，等等。)</para>
             </listitem>
           </itemizedlist>
-          <para>The LineItem composite rowkey would be something like this: </para>
+          <para>LineItem组合行键看起来会像这个样子： </para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
@@ -828,20 +834,20 @@ long bucket = timestamp % numBuckets;
               <para>[LINE record type]</para>
             </listitem>
             <listitem>
-              <para>[shipping location number] (e.g., 1st location, 2nd, etc.)</para>
+              <para>[shipping location 编号] (例如，位置1，位置2，等等。)</para>
             </listitem>
             <listitem>
-              <para>[line item number] (e.g., 1st lineitem, 2nd, etc.)</para>
+              <para>[line item 编号] (例如，第1个lineitem，第二个，等等。)</para>
             </listitem>
           </itemizedlist>
         </section>
         <section
           xml:id="schema.casestudies.custorder.obj.denorm">
-          <title>Denormalized</title>
-          <para>A variant of the Single Table With Record Types approach is to denormalize and
-            flatten some of the object hierarchy, such as collapsing the ShippingLocation attributes
-            onto each LineItem instance. </para>
-          <para>The LineItem composite rowkey would be something like this: </para>
+          <title>非规范化</title>
+          <para>
+              用单表保存所有类型的记录的方法是非规范化的并且将一些对象层次扁平化，例如将ShippingLocation分配给了每一个LineItem实例。
+               </para>
+          <para>LineItem组合行键看起来会像这个样子： </para>
           <itemizedlist>
             <listitem>
               <para>[order-rowkey]</para>
@@ -850,11 +856,10 @@ long bucket = timestamp % numBuckets;
               <para>[LINE record type]</para>
             </listitem>
             <listitem>
-              <para>[line item number] (e.g., 1st lineitem, 2nd, etc. - care must be taken that
-                there are unique across the entire order)</para>
+              <para>[line item number] (例如，位置1，位置2，等等。 - 注意必须对订单都是唯一的)</para>
             </listitem>
           </itemizedlist>
-          <para>... and the LineItem columns would be something like this: </para>
+          <para>... LineItem的列看起来像这个样子： </para>
           <itemizedlist>
             <listitem>
               <para>itemNumber</para>
@@ -866,44 +871,37 @@ long bucket = timestamp % numBuckets;
               <para>price</para>
             </listitem>
             <listitem>
-              <para>shipToLine1 (denormalized from ShippingLocation)</para>
+              <para>shipToLine1 (ShippingLocation的非标准化)</para>
             </listitem>
             <listitem>
-              <para>shipToLine2 (denormalized from ShippingLocation)</para>
+              <para>shipToLine2 (ShippingLocation的非标准化)</para>
             </listitem>
             <listitem>
-              <para>shipToCity (denormalized from ShippingLocation)</para>
+              <para>shipToCity (ShippingLocation的非标准化)</para>
             </listitem>
             <listitem>
-              <para>shipToState (denormalized from ShippingLocation)</para>
+              <para>shipToState (ShippingLocation的非标准化)</para>
             </listitem>
             <listitem>
-              <para>shipToZip (denormalized from ShippingLocation)</para>
+              <para>shipToZip (ShippingLocation的非标准化)</para>
             </listitem>
           </itemizedlist>
-          <para>The pros of this approach include a less complex object heirarchy, but one of the
-            cons is that updating gets more complicated in case any of this information changes.
+          <para>
+              这种方法的优点是对象层次结构不太复杂，但缺点之一是任何信息的变化，将会让更新变得更为复杂。
           </para>
         </section>
         <section
           xml:id="schema.casestudies.custorder.obj.singleobj">
-          <title>Object BLOB</title>
-          <para>With this approach, the entire Order object graph is treated, in one way or another,
-            as a BLOB. For example, the ORDER table's rowkey was described above: <xref
-              linkend="schema.casestudies.custorder" />, and a single column called "order" would
-            contain an object that could be deserialized that contained a container Order,
-            ShippingLocations, and LineItems. </para>
-          <para>There are many options here: JSON, XML, Java Serialization, Avro, Hadoop Writables,
-            etc. All of them are variants of the same approach: encode the object graph to a
-            byte-array. Care should be taken with this approach to ensure backward compatibilty in
-            case the object model changes such that older persisted structures can still be read
-            back out of HBase. </para>
-          <para>Pros are being able to manage complex object graphs with minimal I/O (e.g., a single
-            HBase Get per Order in this example), but the cons include the aforementioned warning
-            about backward compatiblity of serialization, language dependencies of serialization
-            (e.g., Java Serialization only works with Java clients), the fact that you have to
-            deserialize the entire object to get any piece of information inside the BLOB, and the
-            difficulty in getting frameworks like Hive to work with custom objects like this.
+          <title>BLOB对象</title>
+          <para>
+              使用该方法，整个订单对象图将会被当做一个BLOB对象。例如，使用<xref
+                  linkend="schema.casestudies.custorder" /> 中的描述来表示ORDER表的行键，并且"order"列将包含一个Order、ShippingLocations和LineItems的容器的反序列化对象。
+            </para>
+          <para>
+              有很多选择：JSON，XML，Java序列化，Avro，Hadoop Writables等。他们全部都是同一种方法的变体：将对象编码成一个字节数组。注意，这种方法保证了对象模型变化情况下的向后兼容性，使得较旧的持久化结构仍然可以被HBase读出。
+         </para>
+          <para>
+              优点是能够以最小的I/O（例如，本例中对每个Order的一次单独的HBase的Get操作）管理复杂的对象图，但缺点包括序列化的向后兼容性，系列化对语言的依赖（例如，Java序列仅适用于Java客户端），你必须反序列化整个对象以获取任何一块BLOB中的信息的事实，还有在类似于Hive这样的框架下获取客户对象的难度。
           </para>
         </section>
       </section>
@@ -1050,10 +1048,9 @@ get 'FixedWidthUserName\x00\x00\x00\x00'
   <!--  schema design cases -->
   <section
     xml:id="schema.ops">
-    <title>Operational and Performance Configuration Options</title>
-    <para>See the Performance section <xref
-        linkend="perf.schema" /> for more information operational and performance schema design
-      options, such as Bloom Filters, Table-configured regionsizes, compression, and blocksizes.
+    <title>操作和性能配置选项</title>
+    <para>请参考有关性能的章节 <xref
+        linkend="perf.schema" /> ，了解更多和设计模式的操作和性能有关的选项，例如布隆过滤器、配置表的region（分区）大小，压缩以及块大小。
     </para>
   </section>
 
