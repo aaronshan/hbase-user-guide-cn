@@ -1045,18 +1045,17 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
 
     <section
             xml:id="ops.monitoring">
-        <title>HBase Monitoring</title>
+        <title>HBase 监控</title>
         <section
                 xml:id="ops.monitoring.overview">
             <title>Overview</title>
-            <para>The following metrics are arguably the most important to monitor for each RegionServer
-                for "macro monitoring", preferably with a system like <link
-                        xlink:href="http://opentsdb.net/">OpenTSDB</link>. If your cluster is having performance
-                issues it's likely that you'll see something unusual with this group. </para>
+            <para>对于每台RegionServer的宏观监控来说，下面的指标大概是最重要的，最好是与一个监控系统联系起来，比如<link
+                    xlink:href="http://opentsdb.net/">OpenTSDB</link>。
+              如果你的集群存在性能问题，你可能借此看出一些不寻常的东西。 </para>
             <itemizedlist>
                 <title>HBase:</title>
                 <listitem>
-                    <para>See <xref
+                    <para>参考 <xref
                             linkend="rs_metrics" /></para>
                 </listitem>
             </itemizedlist>
@@ -1076,125 +1075,110 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                     <para>GC</para>
                 </listitem>
             </itemizedlist>
-            <para> For more information on HBase metrics, see <xref
+            <para>HBase指标的更多信息，参考<xref
                     linkend="hbase_metrics" />. </para>
         </section>
 
         <section
                 xml:id="ops.slow.query">
-            <title>Slow Query Log</title>
-            <para>The HBase slow query log consists of parseable JSON structures describing the properties
-                of those client operations (Gets, Puts, Deletes, etc.) that either took too long to run, or
-                produced too much output. The thresholds for "too long to run" and "too much output" are
-                configurable, as described below. The output is produced inline in the main region server
-                logs so that it is easy to discover further details from context with other logged events.
-                It is also prepended with identifying tags <constant>(responseTooSlow)</constant>,
-                <constant>(responseTooLarge)</constant>, <constant>(operationTooSlow)</constant>, and
-                <constant>(operationTooLarge)</constant> in order to enable easy filtering with grep, in
-                case the user desires to see only slow queries. </para>
+            <title>慢查询日志</title>
+            <para>HBase慢查询日志由可解析的JSON数据组成，描述了客户端操作(Gets, Puts, Deletes等)的属性，
+                这些操作要么是运行时间过长，要么是输出太多。 "too long to run"和"too much output"的
+                阈值可以配置，下面会有描述。输出产生在主region server日志中，
+                因此通过内容及其它日志事件，很容易发现更多的细节。它也预先设置了区分标签 <constant>(responseTooSlow)</constant>,
+                <constant>(responseTooLarge)</constant>, <constant>(operationTooSlow)</constant>和
+                <constant>(operationTooLarge)</constant>，以便用户只想看到慢查询时，可以用grep过滤。
+              </para>
 
             <section>
-                <title>Configuration</title>
-                <para>There are two configuration knobs that can be used to adjust the thresholds for when
-                    queries are logged. </para>
+                <title>配置</title>
+                <para>有两个配置开关可用于调整慢查询日志的阈值。
+                    </para>
 
                 <itemizedlist>
                     <listitem>
-                        <para><varname>hbase.ipc.warn.response.time</varname> Maximum number of milliseconds
-                            that a query can be run without being logged. Defaults to 10000, or 10 seconds. Can be
-                            set to -1 to disable logging by time. </para>
+                        <para><varname>hbase.ipc.warn.response.time</varname>查询不被记录到日志的最大执行毫秒数。
+                             缺省为10000，即10秒。可以设为-1，以禁止通过时间长短来记日志。</para>
                     </listitem>
                     <listitem>
-                        <para><varname>hbase.ipc.warn.response.size</varname> Maximum byte size of response that
-                            a query can return without being logged. Defaults to 100 megabytes. Can be set to -1
-                            to disable logging by size. </para>
+                        <para><varname>hbase.ipc.warn.response.size</varname> 查询不被记录到日志的最大返回字节数。
+                            缺省为100Mb，可以设为-1，以禁止通过大小来记日志。 </para>
                     </listitem>
                 </itemizedlist>
             </section>
 
             <section>
-                <title>Metrics</title>
-                <para>The slow query log exposes to metrics to JMX.</para>
+                <title>指标</title>
+                <para>慢查询日志暴露给JMX的指标</para>
                 <itemizedlist>
                     <listitem>
-                        <para><varname>hadoop.regionserver_rpc_slowResponse</varname> a global metric reflecting
-                            the durations of all responses that triggered logging.</para>
+                        <para><varname>hadoop.regionserver_rpc_slowResponse</varname> 是一个全局指标，反映所有超时记入日志的响应。
+                         </para>
                     </listitem>
                     <listitem>
-                        <para><varname>hadoop.regionserver_rpc_methodName.aboveOneSec</varname> A metric
-                            reflecting the durations of all responses that lasted for more than one second.</para>
+                        <para><varname>hadoop.regionserver_rpc_methodName.aboveOneSec</varname> 指标反映所有超过1秒的响应。</para>
                     </listitem>
                 </itemizedlist>
 
             </section>
 
             <section>
-                <title>Output</title>
-                <para>The output is tagged with operation e.g. <constant>(operationTooSlow)</constant> if
-                    the call was a client operation, such as a Put, Get, or Delete, which we expose detailed
-                    fingerprint information for. If not, it is tagged <constant>(responseTooSlow)</constant>
-                    and still produces parseable JSON output, but with less verbose information solely
-                    regarding its duration and size in the RPC itself. <constant>TooLarge</constant> is
-                    substituted for <constant>TooSlow</constant> if the response size triggered the logging,
-                    with <constant>TooLarge</constant> appearing even in the case that both size and duration
-                    triggered logging. </para>
+                <title>输出</title>
+                <para>输出用操作做标签，如<constant>(operationTooSlow)</constant>。如果调用是客户端操作，如Put, Get或Delete，
+                    会暴露详细的指纹信息。否则，标签为<constant>(responseTooSlow)</constant>，也同样提供可分析的JSON输出，
+                    但具有较少的细节信息，这完全依赖于RPC自身的超时和超量设置。如果响应大小触发了日志记录，就用<constant>TooLarge</constant>
+                    代替<constant>TooSlow</constant>。 在大小和时间都触发了日志记录时，也是<constant>TooLarge</constant>出现。 </para>
             </section>
             <section>
-                <title>Example</title>
+                <title>示例</title>
                 <para>
                     <programlisting>2011-09-08 10:01:25,824 WARN org.apache.hadoop.ipc.HBaseServer: (operationTooSlow): {"tables":{"riley2":{"puts":[{"totalColumns":11,"families":{"actions":[{"timestamp":1315501284459,"qualifier":"0","vlen":9667580},{"timestamp":1315501284459,"qualifier":"1","vlen":10122412},{"timestamp":1315501284459,"qualifier":"2","vlen":11104617},{"timestamp":1315501284459,"qualifier":"3","vlen":13430635}]},"row":"cfcd208495d565ef66e7dff9f98764da:0"}],"families":["actions"]}},"processingtimems":956,"client":"10.47.34.63:33623","starttimems":1315501284456,"queuetimems":0,"totalPuts":1,"class":"HRegionServer","responsesize":0,"method":"multiPut"}</programlisting>
                 </para>
 
-                <para>Note that everything inside the "tables" structure is output produced by MultiPut's
-                    fingerprint, while the rest of the information is RPC-specific, such as processing time
-                    and client IP/port. Other client operations follow the same pattern and the same general
-                    structure, with necessary differences due to the nature of the individual operations. In
-                    the case that the call is not a client operation, that detailed fingerprint information
-                    will be completely absent. </para>
+                <para>注意， 在"tables"结构里的所有东西，是MultiPut的fingerprint的输出，其余的信息是RPC相关的，比如处理时间和客户端IP/port。
+                    客户端的其他操作的模式和通用结构与此相同，但由于单个操作的性质会有一定的不同。 如果调用不是客户端操作，则fingerprint细节信息将完全没有。
+                    </para>
 
-                <para>This particular example, for example, would indicate that the likely cause of slowness
-                    is simply a very large (on the order of 100MB) multiput, as we can tell by the "vlen," or
-                    value length, fields of each put in the multiPut. </para>
+                <para>对本示例而言，慢操作的原因可能仅仅是一个超大的(100MB) multiput，通过"vlen" 即value length得知， multiPut的每个Put的字段中有该信息。 </para>
             </section>
         </section>
         <section>
-            <title>Block Cache Monitoring</title>
-            <para>Starting with HBase 0.98, the HBase Web UI includes the ability to monitor and report on
-                the performance of the block cache. To view the block cache reports, click <menuchoice>
+            <title>块缓存监控</title>
+            <para>从HBase 0.98开始, HBase Web UI具有监控和报告块缓存性能的功能。点击<menuchoice>
                     <guimenu>Tasks</guimenu>
                     <guisubmenu>Show Non-RPC Tasks</guisubmenu>
                     <guimenuitem>Block Cache</guimenuitem>
-                </menuchoice>. Following are a few examples of the reporting capabilities.</para>
+                </menuchoice>，可以查看块缓存报表。 下面是报表功能的几个例子：</para>
             <figure>
-                <title>Basic Info</title>
+                <title>基本信息</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="bc_basic.png" width="100%"/>
                     </imageobject>
                     <textobject>
-                        <para>Shows the cache implementation</para>
+                        <para>显示缓存的实现。</para>
                     </textobject>
                 </mediaobject>
             </figure>
             <figure>
-                <title>Config</title>
+                <title>配置</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="bc_config.png" width="100%"/>
                     </imageobject>
                     <textobject>
-                        <para>Shows all cache configuration options.</para>
+                        <para>显示所有的缓存配置项。</para>
                     </textobject>
                 </mediaobject>
             </figure>
             <figure>
-                <title>Stats</title>
+                <title>统计</title>
                 <mediaobject>
                     <imageobject>
                         <imagedata fileref="bc_stats.png" width="100%"/>
                     </imageobject>
                     <textobject>
-                        <para>Shows statistics about the performance of the cache.</para>
+                        <para>显示缓存性能的统计信息。</para>
                     </textobject>
                 </mediaobject>
             </figure>
@@ -1208,12 +1192,11 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                         <imagedata fileref="bc_l2_buckets.png" width="100%"/>
                     </imageobject>
                     <textobject>
-                        <para>Shows information about the L1 and L2 caches.</para>
+                        <para>显示L1和L2缓存的信息。</para>
                     </textobject>
                 </mediaobject>
             </figure>
-            <para>This is not an exhaustive list of all the screens and reports available. Have a look in
-                the Web UI.</para>
+            <para>这里没有展示全部的信息，到Web UI上去看一看吧。</para>
         </section>
 
 
@@ -1222,192 +1205,163 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
 
     <section
             xml:id="cluster_replication">
-        <title>Cluster Replication</title>
+        <title>集群复制</title>
         <note>
-            <para>This information was previously available at <link
+            <para>参考 <link
                     xlink:href="http://hbase.apache.org/replication.html">Cluster Replication</link>. </para>
         </note>
-        <para>HBase provides a replication mechanism to copy data between HBase
-            clusters. Replication can be used as a disaster recovery solution and as a mechanism for high
-            availability. You can also use replication to separate web-facing operations from back-end
-            jobs such as MapReduce.</para>
+        <para>HBase提供了在集群间拷贝数据的复制机制。集群复制可作为一种灾难恢复解决方案，也是一种高可用性机制。
+            你也可用用它来分离web-facing操作和back-end任务，如MapReduce。</para>
 
-        <para>In terms of architecture, HBase replication is master-push. This takes advantage of the
-            fact that each region server has its own write-ahead log (WAL). One master cluster can
-            replicate to any number of slave clusters, and each region server replicates its own stream of
-            edits. For more information on the different properties of master/slave replication and other
-            types of replication, see the article <link
+        <para>HBase复制的架构模式是“主推送”(master-push)，因为每个region server都有自己的write-ahead log (WAL)。
+            一个主集群可以复制到任意数量的从集群，每一个region server都复制自己的修改流。
+            关于主/从复制的不同特性和其它类型的复制，更多信息请参考文章<link
                     xlink:href="http://highscalability.com/blog/2009/8/24/how-google-serves-data-from-multiple-datacenters.html">How
                 Google Serves Data From Multiple Datacenters</link>.</para>
 
-        <para>Replication is asynchronous, allowing clusters to be geographically distant or to have
-            some gaps in availability. This also means that data between master and slave clusters will
-            not be instantly consistent. Rows inserted on the master are not immediately available or
-            consistent with rows on the slave clusters. rows inserted on the master cluster won’t be
-            available at the same time on the slave clusters. The goal is eventual consistency. </para>
+        <para>复制是异步进行的，允许集群在地理位置上相距甚远，或是存在可用性上的差异。这也意味着
+            主从集群上的数据无法保证实时一致性。 插入到主集群的行，在从集群上不会立即可用或强一致。我们的最终目标是一致性。
+             </para>
 
-        <para>The replication format used in this design is conceptually the same as the <firstterm><link
+        <para>这个设计使用的复制格式，在理念上与MySQL使用的<firstterm><link
                 xlink:href="http://dev.mysql.com/doc/refman/5.1/en/replication-formats.html">statement-based
-            replication</link></firstterm> design used by MySQL. Instead of SQL statements, entire
-            WALEdits (consisting of multiple cell inserts coming from Put and Delete operations on the
-            clients) are replicated in order to maintain atomicity. </para>
+            replication</link></firstterm>设计相同。 只不过复制的是整个
+            WALEdits (由Put的多个单元格插入操作和客户端上的Delete操作组成)，而不是SQL语句，以保持原子性。</para>
 
-        <para>The WALs for each region server must be kept in HDFS as long as they are needed to
-            replicate data to any slave cluster. Each region server reads from the oldest log it needs to
-            replicate and keeps track of the current position inside ZooKeeper to simplify failure
-            recovery. That position, as well as the queue of WALs to process, may be different for every
-            slave cluster.</para>
+        <para>每个region server的WALs会一直保存在HDFS中，以供其它从集群复制数据。
+            每个region server从它需要复制的日志中读取数据，为了简单的故障恢复，会将当前位置保存在ZooKeeper中。
+            那个位置，以及要处理的WALs队列，每个从集群的可能不一样。</para>
 
-        <para>The clusters participating in replication can be of different sizes. The master
-            cluster relies on randomization to attempt to balance the stream of replication on the slave clusters</para>
+        <para>参与复制的集群大小可以不一样。主集群会通过随机分配以均衡从集群上的复制数据流。</para>
 
-        <para>HBase supports master/master and cyclic replication as well as replication to multiple
-            slaves.</para>
+        <para>HBase支持主/主、循环复制和多个从集群复制。</para>
 
         <figure>
-            <title>Replication Architecture Overview</title>
+            <title>复制体系结构概述</title>
             <mediaobject>
                 <imageobject>
                     <imagedata fileref="replication_overview.png" />
                 </imageobject>
                 <textobject>
-                    <para>Illustration of the replication architecture in HBase, as described in the prior
-                        text.</para>
+                    <para>如之前所述，插图为HBase的复制体系结构。</para>
                 </textobject>
             </mediaobject>
         </figure>
 
         <formalpara>
-            <title>Enabling and Configuring Replication</title>
-            <para>See the <link
+            <title>启用和配置复制</title>
+            <para>参考 <link
                     xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/replication/package-summary.html#requirements">
-                API documentation for replication</link> for information on enabling and configuring
-                replication.</para>
+                API documentation for replication</link> 中启用和配置复制的信息。</para>
         </formalpara>
 
         <section>
-            <title>Life of a WAL Edit</title>
-            <para>A single WAL edit goes through several steps in order to be replicated to a slave
-                cluster.</para>
+            <title>WAL的修改过程</title>
+            <para>单个WAL的修改会经历几个步骤，以将其复制到从集群。</para>
 
             <orderedlist>
-                <title>When the slave responds correctly:</title>
+                <title>当从集群正确响应时：</title>
                 <listitem>
-                    <para>A HBase client uses a Put or Delete operation to manipulate data in HBase.</para>
+                    <para>一个HBase客户端通过Put或Delete操作来修改HBase中的数据。</para>
                 </listitem>
                 <listitem>
-                    <para>The region server writes the request to the WAL in a way that would allow it to be
-                        replayed if it were not written successfully.</para>
+                    <para>Region server以一种方式将请求写入WAL，如果写入失败，会进行replay。</para>
                 </listitem>
                 <listitem>
-                    <para>If the changed cell corresponds to a column family that is scoped for replication,
-                        the edit is added to the queue for replication.</para>
+                    <para>如果列族中已变化的单元格在复制范围内，就将变更加入复制队列中。
+                        </para>
                 </listitem>
                 <listitem>
-                    <para>In a separate thread, the edit is read from the log, as part of a batch process.
-                        Only the KeyValues that are eligible for replication are kept. Replicable KeyValues are
-                        part of a column family whose schema is scoped GLOBAL, are not part of a catalog such as
-                        <code>hbase:meta</code>, and did not originate from the target slave cluster, in the
-                        case of cyclic replication.</para>
+                    <para>有一个单独的线程，会从日志中读取变更，作为批处理过程的一部分。只有那些符合复制的KeyValues会被保留。
+                        在循环复制的情况下，可复制的KeyValues是一个模式为GLOBAL范围的列族的一部分，而不是catalog比如<code>hbase:meta</code>的一部分,
+                         也不会来源于目标从集群。
+                       </para>
                 </listitem>
                 <listitem>
-                    <para>The edit is tagged with the master's UUID and added to a buffer. When the buffer is
-                        filled, or the reader reaches the end of the file, the buffer is sent to a random region
-                        server on the slave cluster.</para>
+                    <para>变更会标记上master的UUID，并添加到缓冲区。 当缓冲区满或者读取到文件的末尾时，该缓冲区会被发送到从集群的一个随机region server。
+                        </para>
                 </listitem>
                 <listitem>
-                    <para>The region server reads the edits sequentially and separates them into buffers, one
-                        buffer per table. After all edits are read, each buffer is flushed using <link
+                    <para>Region server会顺序读取变更，并将它们分别放至不同的缓冲区中，每个表一个缓冲区。
+                          读取完所有的变更后，使用 <link
                                 xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/client/HTable.html"
-                                >HTable</link>, HBase's normal client. The master's UUID is preserved in the edits
-                        they are applied, in order to allow for cyclic replication.</para>
+                                >HTable</link>flush每个缓冲区, HBase的标准客户端。Master的UUID保存在这些变更中，是为了允许循环复制。
+                        </para>
                 </listitem>
                 <listitem>
-                    <para>In the master, the offset for the WAL that is currently being replicated is
-                        registered in ZooKeeper.</para>
+                    <para>在Master中，当前正在复制的WAL的偏移量，注册在ZooKeeper中。</para>
                 </listitem>
             </orderedlist>
             <orderedlist>
-                <title>When the slave does not respond:</title>
+                <title>当从集群无响应时：</title>
                 <listitem>
-                    <para>The first three steps, where the edit is inserted, are identical.</para>
+                    <para>关于插入变更的前三个步骤，完全一样。</para>
                 </listitem>
                 <listitem>
-                    <para>Again in a separate thread, the region server reads, filters, and edits the log
-                        edits in the same way as above. The slave region server does not answer the RPC
-                        call.</para>
+                    <para>同样是在一个单独的线程中，region server读取、过滤、修改日志变更的方式和上面的一样。
+                          slave region server不会响应RPC调用。</para>
                 </listitem>
                 <listitem>
-                    <para>The master sleeps and tries again a configurable number of times.</para>
+                    <para>master睡眠并重试多次（可配置）。</para>
                 </listitem>
                 <listitem>
-                    <para>If the slave region server is still not available, the master selects a new subset
-                        of region server to replicate to, and tries again to send the buffer of edits.</para>
+                    <para>如果slave region server仍然不可用，master会选择一个新的region server子集进行复制，并重新发送变更缓冲区。</para>
                 </listitem>
                 <listitem>
-                    <para>Meanwhile, the WALs are rolled and stored in a queue in ZooKeeper. Logs that are
-                        <firstterm>archived</firstterm> by their region server, by moving them from the region
-                        server's log directory to a central log directory, will update their paths in the
-                        in-memory queue of the replicating thread.</para>
+                    <para>同时，WALs会回滚并存储到ZooKeeper中的一个队列里。region server <firstterm>归档</firstterm>的日志，
+                        从region server的日志目录移动到了一个集中的日志目录， 将在进行复制的线程的内存队列中更新它们的路径信息。
+                        </para>
                 </listitem>
                 <listitem>
-                    <para>When the slave cluster is finally available, the buffer is applied in the same way
-                        as during normal processing. The master region server will then replicate the backlog of
-                        logs that accumulated during the outage.</para>
+                    <para>当从集群最终又可用时，缓冲区将按正常的方式处理。master region server随后将复制此过程中堆积的日志。
+                        </para>
                 </listitem>
             </orderedlist>
 
 
             <note xml:id="cluster.replication.preserving.tags">
-                <title>Preserving Tags During Replication</title>
-                <para>By default, the codec used for replication between clusters strips tags, such as
-                    cell-level ACLs, from cells. To prevent the tags from being stripped, you can use a
-                    different codec which does not strip them. Configure
-                    <code>hbase.replication.rpc.codec</code> to use
-                    <literal>org.apache.hadoop.hbase.codec.KeyValueCodecWithTags</literal>, on both the
-                    source and sink RegionServers involved in the replication. This option was introduced in
+                <title>在复制过程中保存标签</title>
+                <para>默认情况下， 用于集群间复制的编解码器会剥除单元格的标签，比如单元格级别的ACL。
+                    为了防止标签被剥除，你可以使用一个不同的codec。在进行复制的RegionServer的source和sink端，配置
+                    <code>hbase.replication.rpc.codec</code> 以使用
+                    <literal>org.apache.hadoop.hbase.codec.KeyValueCodecWithTags</literal>。 这个配置项在
                     <link xlink:href="https://issues.apache.org/jira/browse/HBASE-10322"
-                            >HBASE-10322</link>.</para>
+                            >HBASE-10322</link>中有介绍。</para>
             </note>
         </section>
 
         <section>
-            <title>Replication Internals</title>
+            <title>复制的内部要素</title>
             <variablelist>
                 <varlistentry>
-                    <term>Replication State in ZooKeeper</term>
+                    <term>ZooKeeper中的复制状态</term>
                     <listitem>
-                        <para>HBase replication maintains its state in ZooKeeper. By default, the state is
-                            contained in the base node <filename>/hbase/replication</filename>. This node contains
-                            two child nodes, the <code>Peers</code> znode and the <code>RS</code> znode.</para>
+                        <para>HBase在ZooKeeper中维护它的复制状态。 默认情况下，状态信息保存在<filename>/hbase/replication</filename>节点下。
+                            该节点有两个子节点，<code>Peers</code> 和 <code>RS</code> 。</para>
                         <warning>
-                            <para>Replication may be disrupted and data loss may occur if you delete the
-                                replication tree (<filename>/hbase/replication/</filename>) from ZooKeeper. This is
-                                despite the information about invariants at <xref
-                                        linkend="design.invariants.zk.data"/>. Follow progress on this issue at <link
+                            <para>如果你删除了ZooKeeper中的“复制树”(<filename>/hbase/replication/</filename>) ，复制可能会
+                                中断，数据可能会丢失。 这和 <xref
+                                        linkend="design.invariants.zk.data"/>中的约束性信息无关。<link
                                         xlink:href="https://issues.apache.org/jira/browse/HBASE-10295"
-                                        >HBASE-10295</link>.</para>
+                                        >HBASE-10295</link>中有关于这个问题的更多进展。</para>
                         </warning>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>The <code>Peers</code> Znode</term>
+                    <term> <code>Peers</code> 节点（znode）</term>
                     <listitem>
-                        <para>The <code>peers</code> znode is stored in
-                            <filename>/hbase/replication/peers</filename> by default. It consists of a list of
-                            all peer replication clusters, along with the status of each of them. The value of
-                            each peer is its cluster key, which is provided in the HBase Shell. The cluster key
-                            contains a list of ZooKeeper nodes in the cluster's quorum, the client port for the
-                            ZooKeeper quorum, and the base znode for HBase in HDFS on that cluster.</para>
+                        <para> <code>peers</code> 节点（znode）缺省存储在<filename>/hbase/replication/peers</filename> 。
+                            一个包含所有复制集群的列表，及每个集群的状态信息组成了该节点（znode）。每一个peer的Value是它的集群key，这在HBase Shell中有提供。
+                            集群key包含一个集群的quorum中的Zookeeper节点列表，  ZooKeeper quorum的客户端端口，该集群的HDFS中的HBase根节点（znode）。
+</para>
                         <screen>
                             /hbase/replication/peers
                             /1 [Value: zk1.host.com,zk2.host.com,zk3.host.com:2181:/hbase]
                             /2 [Value: zk5.host.com,zk6.host.com,zk7.host.com:2181:/hbase]
                         </screen>
-                        <para>Each peer has a child znode which indicates whether or not replication is enabled
-                            on that cluster. These peer-state znodes do not contain any child znodes, but only
-                            contain a Boolean value. This value is read and maintained by the
-                            R<code>eplicationPeer.PeerStateTracker</code> class.</para>
+                        <para>每个 peer的子节点（znode）表明了在那个集群上是否开启了复制。
+                            这些 peer-state节点不会包含任何子节点，只会包含一个布尔值。
+                            这个值由<code>ReplicationPeer.PeerStateTracker</code>类读取并维护。</para>
                         <screen>
                             /hbase/replication/peers
                             /1/peer-state [Value: ENABLED]
@@ -1416,31 +1370,31 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                     </listitem>
                 </varlistentry>
                 <varlistentry>
-                    <term>The <code>RS</code> Znode</term>
+                    <term> <code>RS</code> 节点（znode）</term>
                     <listitem>
-                        <para>The <code>rs</code> znode contains a list of WAL logs which need to be replicated.
-                            This list is divided into a set of queues organized by region server and the peer
-                            cluster the region server is shipping the logs to. The rs znode has one child znode
-                            for each region server in the cluster. The child znode name is the region server's
-                            hostname, client port, and start code. This list includes both live and dead region
-                            servers.</para>
+                        <para> <code>rs</code> 节点（znode）包含了一个需要复制的WAL日志列表。
+
+                            这个列表被分成一个由region server组织的队列集合，和日志正推往的一个同等集群。
+                            对于集群中的每一个region server，在rs节点中都有一个子节点。
+                            子节点名是region server的主机名，client端口和启动码（start code）。
+                            这个列表包含活着的和死去的region servers。</para>
                         <screen>
                             /hbase/replication/rs
                             /hostname.example.org,6020,1234
                             /hostname2.example.org,6020,2856
                         </screen>
-                        <para>Each <code>rs</code> znode contains a list of WAL replication queues, one queue
-                            for each peer cluster it replicates to. These queues are represented by child znodes
-                            named by the cluster ID of the peer cluster they represent.</para>
+                        <para>每一个 <code>rs</code> 节点包含一个WAL复制队列的列表，
+                            每个要复制的同等集群对应一个队列。这些队列由子节点代表，节点名就是相应的集群ID。
+                            </para>
                         <screen>
                             /hbase/replication/rs
                             /hostname.example.org,6020,1234
                             /1
                             /2
                         </screen>
-                        <para>Each queue has one child znode for each WAL log that still needs to be replicated.
-                            the value of these child znodes is the last position that was replicated. This
-                            position is updated each time a WAL log is replicated.</para>
+                        <para>每个队列有一个子节点，为每一份仍然需要复制的WAL日志。
+                            这些子节点的值为复制的最后位置，该位置在每一次WAL日志复制时更新。
+                            </para>
                         <screen>
                             /hbase/replication/rs
                             /hostname.example.org,6020,1234
@@ -1453,57 +1407,56 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
             </variablelist>
         </section>
         <section>
-            <title>Replication Configuration Options</title>
+            <title>复制配置项</title>
             <informaltable>
                 <tgroup cols="3">
                     <thead>
                         <row>
-                            <entry>Option</entry>
-                            <entry>Description</entry>
-                            <entry>Default</entry>
+                            <entry>配置项</entry>
+                            <entry>描述</entry>
+                            <entry>缺省值</entry>
                         </row>
                     </thead>
                     <tbody>
                         <row>
                             <entry><para><code>zookeeper.znode.parent</code></para></entry>
-                            <entry><para>The name of the base ZooKeeper znode used for HBase</para></entry>
+                            <entry><para>给HBase使用的ZooKeeper根节点名</para></entry>
                             <entry><para><literal>/hbase</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>zookeeper.znode.replication</code></para></entry>
-                            <entry><para>The name of the base znode used for replication</para></entry>
+                            <entry><para>用于复制的ZooKeeper根节点名n</para></entry>
                             <entry><para><literal>replication</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>zookeeper.znode.replication.peers</code></para></entry>
-                            <entry><para>The name of the <code>peer</code> znode</para></entry>
+                            <entry><para><code>peer</code> 节点名</para></entry>
                             <entry><para><literal>peers</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>zookeeper.znode.replication.peers.state</code></para></entry>
-                            <entry><para>The name of <code>peer-state</code> znode</para></entry>
+                            <entry><para><code>peer-state</code>节点名</para></entry>
                             <entry><para><literal>peer-state</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>zookeeper.znode.replication.rs</code></para></entry>
-                            <entry><para>The name of the <code>rs</code> znode</para></entry>
+                            <entry><para><code>rs</code>节点名</para></entry>
                             <entry><para><literal>rs</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>hbase.replication</code></para></entry>
-                            <entry><para>Whether replication is enabled or disabled on a given cluster</para></entry>
+                            <entry><para>给定的集群是否启用复制</para></entry>
                             <entry><para><literal>false</literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>eplication.sleep.before.failover</code></para></entry>
-                            <entry><para>How many milliseconds a worker should sleep before attempting to replicate
-                                a dead region server's WAL queues.</para></entry>
+                            <entry><para>region server宕机后，worker应当睡眠多少毫秒开始尝试复制其WAL队列                                </para></entry>
                             <entry><para><literal></literal></para></entry>
                         </row>
                         <row>
                             <entry><para><code>replication.executor.workers</code></para></entry>
-                            <entry><para>The number of region servers a given region server should attempt to
-                                failover simultaneously.</para></entry>
+                            <entry><para>给定的region server发生故障时，进行自动切换的region server数。
+                                </para></entry>
                             <entry><para><literal>1</literal></para></entry>
                         </row>
                     </tbody>
@@ -1512,7 +1465,7 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
 
         <section>
-            <title>Replication Implementation Details</title>
+            <title>复制实现细节</title>
             <formalpara>
                 <title>Choosing Region Servers to Replicate To</title>
                 <para>When a master cluster region server initiates a replication source to a slave cluster,
