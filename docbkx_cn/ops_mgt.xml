@@ -1646,16 +1646,16 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
     <section
             xml:id="ops.backup">
         <title>HBase 备份</title>
-        <para>HBase有两种广泛使用的备份策略：备份一个关闭的集群，备份一个在线的集群。每种方法有利有弊。
+        <para>HBase有两种通用的备份策略：停止整个集群再备份，备份正在使用的集群。两种方法各有利弊。
 
              </para>
-        <para>   更多信息，参考Sematext博客上 <link
+        <para>   更多信息，参考Sematext的博客 <link
                 xlink:href="http://blog.sematext.com/2011/03/11/hbase-backup-options/">HBase Backup
             Options</link> </para>
         <section
                 xml:id="ops.backup.fullshutdown">
-            <title>全封闭备份</title>
-            <para>某些环境中可以容忍HBase集群定期全部关闭，例如，当集群用于后台分析而不服务于前端页面时。
+            <title>全停止备份</title>
+            <para>某些环境中可以容忍HBase集群全部关闭一段时间，例如，当集群用于后台分析而不服务于前端页面时。
                 这样做的好处是，NameNode/Master，RegionServers都关闭了，因此StoreFiles和metadata都不会丢失任何变更。
                 明显的缺点是集群被关闭了。步骤如下：
                </para>
@@ -1667,68 +1667,64 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
             <section
                     xml:id="ops.backup.fullshutdown.distcp">
                 <title>Distcp</title>
-                <para>Distcp could be used to either copy the contents of the HBase directory in HDFS to
-                    either the same cluster in another directory, or to a different cluster. </para>
-                <para>Note: Distcp works in this situation because the cluster is down and there are no
-                    in-flight edits to files. Distcp-ing of files in the HBase directory is not generally
-                    recommended on a live cluster. </para>
+                <para>Distcp 可用于将HDFS中的HBase目录中的内容拷贝到当前集群的另一个目录，或另一个集群。
+                   </para>
+                <para>注意： Distcp的工作情景是集群已关闭，且没有正在改变的文件。
+                     Distcp不推荐用于正工作的集群。 </para>
             </section>
             <section
                     xml:id="ops.backup.fullshutdown.restore">
-                <title>Restore (if needed)</title>
-                <para>The backup of the hbase directory from HDFS is copied onto the 'real' hbase directory
-                    via distcp. The act of copying these files creates new HDFS metadata, which is why a
-                    restore of the NameNode edits from the time of the HBase backup isn't required for this
-                    kind of restore, because it's a restore (via distcp) of a specific HDFS directory (i.e.,
-                    the HBase part) not the entire HDFS file-system. </para>
+                <title>恢复 (若有必要)</title>
+                <para>通过Distcp，将HDFS的hbase目录的备份数据拷贝到“真实”的hbase目录。拷贝操作会产生新的HDFS元数据，
+                    所以并不需要恢复备份的NameNode变更，因为是使用Distcp恢复了一个特定的HDFS目录（如HBase部分），而不是整个HDFS文件系统。
+                   </para>
             </section>
         </section>
         <section
                 xml:id="ops.backup.live.replication">
-            <title>Live Cluster Backup - Replication</title>
-            <para>This approach assumes that there is a second cluster. See the HBase page on <link
-                    xlink:href="http://hbase.apache.org/replication.html">replication</link> for more
-                information. </para>
+            <title>工作集群备份 - Replication</title>
+            <para>这种方法需要有另一个集群，更多信息请参考HBase的 <link
+                    xlink:href="http://hbase.apache.org/replication.html">replication</link>
+                 </para>
         </section>
         <section
                 xml:id="ops.backup.live.copytable">
-            <title>Live Cluster Backup - CopyTable</title>
-            <para>The <xref
-                    linkend="copytable" /> utility could either be used to copy data from one table to another
-                on the same cluster, or to copy data to another table on another cluster. </para>
-            <para>Since the cluster is up, there is a risk that edits could be missed in the copy process.
+            <title>工作集群备份 - CopyTable</title>
+            <para> <xref
+                    linkend="copytable" /> 工具，可用于将一个表的数据复制到同集群的另一个表，
+                或另一个集群的其它表。
+                 </para>
+            <para>由于集群在工作，会有丢失变更数据的风险。
             </para>
         </section>
         <section
                 xml:id="ops.backup.live.export">
-            <title>Live Cluster Backup - Export</title>
-            <para>The <xref
-                    linkend="export" /> approach dumps the content of a table to HDFS on the same cluster. To
-                restore the data, the <xref
-                        linkend="import" /> utility would be used. </para>
-            <para>Since the cluster is up, there is a risk that edits could be missed in the export
-                process. </para>
+            <title>工作集群备份 - 导出</title>
+            <para> <xref
+                    linkend="export" /> 是一种将同集群上的表的内容导出到HDFS的方法。
+                可以使用<xref
+                        linkend="import" />工具恢复数据。 </para>
+            <para>由于集群在工作，会有丢失变更数据的风险。 </para>
         </section>
     </section>
     <!--  backup -->
 
     <section
             xml:id="ops.snapshots">
-        <title>HBase Snapshots</title>
-        <para>HBase Snapshots allow you to take a snapshot of a table without too much impact on Region
-            Servers. Snapshot, Clone and restore operations don't involve data copying. Also, Exporting
-            the snapshot to another cluster doesn't have impact on the Region Servers. </para>
-        <para>Prior to version 0.94.6, the only way to backup or to clone a table is to use
-            CopyTable/ExportTable, or to copy all the hfiles in HDFS after disabling the table. The
-            disadvantages of these methods are that you can degrade region server performance (Copy/Export
-            Table) or you need to disable the table, that means no reads or writes; and this is usually
-            unacceptable. </para>
+        <title>HBase 快照</title>
+        <para>HBase快照允许你获取一个表的快照而不对region servers产生什么影响。
+             快照, 克隆和恢复操作不涉及数据拷贝。
+              同时，将快照导出到其它集群也不会影响到RegionServer。 </para>
+        <para>对于0.94.6之前的版本，备份或克隆一个表的唯一方式是通过CopyTable/ExportTable，
+            或禁用表之后拷贝其在HDFS上的所有hfiles。这些方法的缺点是，你会降低服务器性能(复制/导出表)，或者您需要将表禁用，
+            这意味着无法读或写，这通常是不可接受的。
+
+            </para>
         <section
                 xml:id="ops.snapshots.configuration">
-            <title>Configuration</title>
-            <para>To turn on the snapshot support just set the <varname>hbase.snapshot.enabled</varname>
-                property to true. (Snapshots are enabled by default in 0.95+ and off by default in
-                0.94.6+)</para>
+            <title>配置</title>
+            <para>设置 <varname>hbase.snapshot.enabled</varname>
+                属性为true，即可打开快照功能。  (快照在0.95+默认开启，在0.94.6+默认关闭)</para>
             <programlisting language="java">
                 &lt;property>
                 &lt;name>hbase.snapshot.enabled&lt;/name>
@@ -1738,9 +1734,9 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
         <section
                 xml:id="ops.snapshots.takeasnapshot">
-            <title>Take a Snapshot</title>
-            <para>You can take a snapshot of a table regardless of whether it is enabled or disabled. The
-                snapshot operation doesn't involve any data copying.</para>
+            <title>获取快照</title>
+            <para>无论一个表是否禁用，你都可以获取它的快照。
+                快照操作不涉及任何的数据拷贝。</para>
             <screen language="bourne">
                 $ ./bin/hbase shell
                 hbase> snapshot 'myTable', 'myTableSnapshot-122112'
@@ -1748,8 +1744,8 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
         <section
                 xml:id="ops.snapshots.list">
-            <title>Listing Snapshots</title>
-            <para>List all snapshots taken (by printing the names and relative information).</para>
+            <title>快照清单</title>
+            <para>列出所有的快照（打印名字和相关信息）。</para>
             <screen language="bourne">
                 $ ./bin/hbase shell
                 hbase> list_snapshots
@@ -1757,9 +1753,9 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
         <section
                 xml:id="ops.snapshots.delete">
-            <title>Deleting Snapshots</title>
-            <para>You can remove a snapshot, and the files retained for that snapshot will be removed if
-                no longer needed.</para>
+            <title>删除快照</title>
+            <para>你可以删除一个快照，快照文件如果不再需要也将被删除。
+                </para>
             <screen language="bourne">
                 $ ./bin/hbase shell
                 hbase> delete_snapshot 'myTableSnapshot-122112'
@@ -1767,10 +1763,10 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
         <section
                 xml:id="ops.snapshots.clone">
-            <title>Clone a table from snapshot</title>
-            <para>From a snapshot you can create a new table (clone operation) with the same data that you
-                had when the snapshot was taken. The clone operation, doesn't involve data copies, and a
-                change to the cloned table doesn't impact the snapshot or the original table.</para>
+            <title>从快照克隆一个表</title>
+            <para>通过快照你可以创建一个新表（克隆操作），表中的数据与你获取快照时相同。
+                克隆操作，不涉及数据拷贝，克隆表的变化不会影响快照或原始表。
+                </para>
             <screen language="bourne">
                 $ ./bin/hbase shell
                 hbase> clone_snapshot 'myTableSnapshot-122112', 'myNewTestTable'
@@ -1778,40 +1774,35 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         </section>
         <section
                 xml:id="ops.snapshots.restore">
-            <title>Restore a snapshot</title>
-            <para>The restore operation requires the table to be disabled, and the table will be restored
-                to the state at the time when the snapshot was taken, changing both data and schema if
-                required.</para>
+            <title>恢复快照</title>
+            <para>恢复操作需要禁用表，表会恢复到获取快照时的状态，如有需要，会改变数据和模式。</para>
             <screen language="bourne">
                 $ ./bin/hbase shell
                 hbase> disable 'myTable'
                 hbase> restore_snapshot 'myTableSnapshot-122112'
             </screen>
             <note>
-                <para>Since Replication works at log level and snapshots at file-system level, after a
-                    restore, the replicas will be in a different state from the master. If you want to use
-                    restore, you need to stop replication and redo the bootstrap. </para>
+                <para>由于复制处于日志级别而快照是文件系统级别，在恢复操作之后，复制品的状态会与master的不一样。
+                    如果你想使用恢复操作，你需要停止复制并重做bootstrap。
+                 </para>
             </note>
-            <para>In case of partial data-loss due to misbehaving client, instead of a full restore that
-                requires the table to be disabled, you can clone the table from the snapshot and use a
-                Map-Reduce job to copy the data that you need, from the clone to the main one. </para>
+            <para>万一客户端的不当操作造成部分数据丢失，你又不想通过禁用表来进行全量恢复，
+                你可以从快照中克隆表，并使用Map-Reduce任务从克隆表中拷贝你需要的数据到主表。 </para>
         </section>
         <section
                 xml:id="ops.snapshots.acls">
-            <title>Snapshots operations and ACLs</title>
-            <para>If you are using security with the AccessController Coprocessor (See <xref
-                    linkend="hbase.accesscontrol.configuration" />), only a global administrator can take,
-                clone, or restore a snapshot, and these actions do not capture the ACL rights. This means
-                that restoring a table preserves the ACL rights of the existing table, while cloning a table
-                creates a new table that has no ACL rights until the administrator adds them.</para>
+            <title>快照操作和ACLs</title>
+            <para>如果你通过AccessController Coprocessor（参考<xref
+                    linkend="hbase.accesscontrol.configuration" />）来保证安全，那么只有全局管理员才能获取、克隆或恢复一个快照，
+                并且这些操作不会获得ACL权限。这意味着恢复一个表会保存现有表的ACL权限，而克隆表创建了一个新表但不会有ACL权限，需要管理员自行添加。
+               </para>
         </section>
         <section
                 xml:id="ops.snapshots.export">
-            <title>Export to another cluster</title>
-            <para>The ExportSnapshot tool copies all the data related to a snapshot (hfiles, logs,
-                snapshot metadata) to another cluster. The tool executes a Map-Reduce job, similar to
-                distcp, to copy files between the two clusters, and since it works at file-system level the
-                hbase cluster does not have to be online.</para>
+            <title>导出到其它集群</title>
+            <para>ExportSnapshot 工具拷贝与快照相关的所有数据（hfiles, 日志,快照元数据）到另一个集群。
+                该工具执行一个Map-Reduce任务（与distcp相似）在两个集群间拷贝数据，由于它工作在文件系统级别，因此hbase集群不需要在线。
+             </para>
             <para>To copy a snapshot called MySnapshot to an HBase cluster srv2 (hdfs:///srv2:8082/hbase)
                 using 16 mappers:</para>
             <programlisting language="bourne">$ bin/hbase class org.apache.hadoop.hbase.snapshot.ExportSnapshot -snapshot MySnapshot -copy-to hdfs://srv2:8082/hbase -mappers 16</programlisting>
