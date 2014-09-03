@@ -480,7 +480,7 @@ public static byte[][] getHexSplits(String startKey, String endKey, int numRegio
         <para>客户/订单</para>
       </listitem>
       <listitem>
-        <para>高/宽/中 模式设计</para>
+        <para>高/宽/中间 模式设计</para>
       </listitem>
       <listitem>
         <para>列表数据</para>
@@ -911,41 +911,36 @@ long bucket = timestamp % numBuckets;
 
     <section
       xml:id="schema.smackdown">
-      <title>Case Study - "Tall/Wide/Middle" Schema Design Smackdown</title>
-      <para>This section will describe additional schema design questions that appear on the
-        dist-list, specifically about tall and wide tables. These are general guidelines and not
-        laws - each application must consider its own needs. </para>
+      <title>案例研究 - "高/宽/中间" 模式设计Smackdown</title>
+      <para>
+          本节将介绍出现在dist名单上的其他模式设计的问题，特别是对高表和宽表。这只是一般的准则，而不是严格意义上的准则。每个应用程序必须考虑自身的需要。
+          </para>
       <section
         xml:id="schema.smackdown.rowsversions">
-        <title>Rows vs. Versions</title>
-        <para>A common question is whether one should prefer rows or HBase's built-in-versioning.
-          The context is typically where there are "a lot" of versions of a row to be retained
-          (e.g., where it is significantly above the HBase default of 1 max versions). The
-          rows-approach would require storing a timestamp in some portion of the rowkey so that they
-          would not overwite with each successive update. </para>
-        <para>Preference: Rows (generally speaking). </para>
+        <title>行与版本</title>
+        <para>
+            一个常见的问题是我们应该选择行还是HBase内置的版本。这个问题的上下文是一行有"很多"的版本（例如，它明显高于HBase默认的最大版本值1）的时候。选择行意味着
+            需要在将时间戳作为行键的一部分，这样每次连续的更新将不会相互覆盖。
+             </para>
+        <para>偏好: 行 (一般来说)。 </para>
       </section>
       <section
         xml:id="schema.smackdown.rowscols">
-        <title>Rows vs. Columns</title>
-        <para>Another common question is whether one should prefer rows or columns. The context is
-          typically in extreme cases of wide tables, such as having 1 row with 1 million attributes,
-          or 1 million rows with 1 columns apiece. </para>
-        <para>Preference: Rows (generally speaking). To be clear, this guideline is in the context
-          is in extremely wide cases, not in the standard use-case where one needs to store a few
-          dozen or hundred columns. But there is also a middle path between these two options, and
-          that is "Rows as Columns." </para>
+        <title>行与列</title>
+        <para>
+            另一个常见问题是应该选择行还是选择列。这个问题的上下文是一个表是宽表，也就是说一行有1百万个属性或者说1百万行都只有1列的极端情况。
+             </para>
+        <para>
+            偏好: 行 (一般来说)。需要明确的是，这个准则是在表极宽的情况下，而不是一行有几十或几百列的正常情况下。但在这两个选项之间也有一个中间路线，那就是“行作为列”。
+            </para>
       </section>
       <section
         xml:id="schema.smackdown.rowsascols">
-        <title>Rows as Columns</title>
-        <para>The middle path between Rows vs. Columns is packing data that would be a separate row
-          into columns, for certain rows. OpenTSDB is the best example of this case where a single
-          row represents a defined time-range, and then discrete events are treated as columns. This
-          approach is often more complex, and may require the additional complexity of re-writing
-          your data, but has the advantage of being I/O efficient. For an overview of this approach,
-          see <xref
-            linkend="schema.casestudies.log-steroids" />. </para>
+        <title>行作为列</title>
+        <para>
+            行和列的中间路线是将数据打包。这会将不同的行插入列中。OpenTSDB是这种情况的最佳实例。在OpenTSDB中，一个行代表了一个确定的时间范围，并且将不同的事件看做列。
+            这种方法通常更复杂，并且需要重写数据的额外的复杂性，但是对于I/O效率有优势。对于该方法的概述，请参考<xref
+            linkend="schema.casestudies.log-steroids" />。 </para>
       </section>
     </section>
     <!--  note:  the following id is not consistent with the others becaus it was formerly in the Case Studies chapter,
@@ -953,13 +948,14 @@ long bucket = timestamp % numBuckets;
 	    links (schema.casestudies. ...)  -->
     <section
       xml:id="casestudies.schema.listdata">
-      <title>Case Study - List Data</title>
-      <para>The following is an exchange from the user dist-list regarding a fairly common question:
-        how to handle per-user list data in Apache HBase. </para>
-      <para>*** QUESTION ***</para>
-      <para> We're looking at how to store a large amount of (per-user) list data in HBase, and we
-        were trying to figure out what kind of access pattern made the most sense. One option is
-        store the majority of the data in a key, so we could have something like: </para>
+      <title>案例研究 - 列表数据</title>
+      <para>
+          下面是用户dist列表中一个相当普遍的问题的讨论：如何处理Apache HBase每个用户的列表数据。
+           </para>
+      <para>*** 提问 ***</para>
+      <para>
+          我们正在寻找如何在HBase存储大量（每个用户）的列表数据，我们试图找出什么样的访问模式才是最有意义的。一种选择是将所有主要的数据存储在一个行键中，所以我们这样做：
+           </para>
 
       <programlisting><![CDATA[
 <FixedWidthUserName><FixedWidthValueId1>:"" (no value)
@@ -967,79 +963,61 @@ long bucket = timestamp % numBuckets;
 <FixedWidthUserName><FixedWidthValueId3>:"" (no value)
 ]]></programlisting>
 
-      <para>The other option we had was to do this entirely using:</para>
+      <para>另一种做法是这样的：</para>
       <programlisting language="xml"><![CDATA[
 <FixedWidthUserName><FixedWidthPageNum0>:<FixedWidthLength><FixedIdNextPageNum><ValueId1><ValueId2><ValueId3>...
 <FixedWidthUserName><FixedWidthPageNum1>:<FixedWidthLength><FixedIdNextPageNum><ValueId1><ValueId2><ValueId3>...
     		]]></programlisting>
-      <para> where each row would contain multiple values. So in one case reading the first thirty
-        values would be: </para>
+      <para>
+          每行会包含多个值。因此第一种情况下读取最开始的30个值的方法是：
+          </para>
       <programlisting language="java"><![CDATA[
 scan { STARTROW => 'FixedWidthUsername' LIMIT => 30}
     		]]></programlisting>
-      <para>And in the second case it would be </para>
+      <para>并且在第二种情况下的方法是： </para>
       <programlisting>
 get 'FixedWidthUserName\x00\x00\x00\x00'
     		</programlisting>
-      <para> The general usage pattern would be to read only the first 30 values of these lists,
-        with infrequent access reading deeper into the lists. Some users would have &lt;= 30 total
-        values in these lists, and some users would have millions (i.e. power-law distribution) </para>
-      <para> The single-value format seems like it would take up more space on HBase, but would
-        offer some improved retrieval / pagination flexibility. Would there be any significant
-        performance advantages to be able to paginate via gets vs paginating with scans? </para>
-      <para> My initial understanding was that doing a scan should be faster if our paging size is
-        unknown (and caching is set appropriately), but that gets should be faster if we'll always
-        need the same page size. I've ended up hearing different people tell me opposite things
-        about performance. I assume the page sizes would be relatively consistent, so for most use
-        cases we could guarantee that we only wanted one page of data in the fixed-page-length case.
-        I would also assume that we would have infrequent updates, but may have inserts into the
-        middle of these lists (meaning we'd need to update all subsequent rows). </para>
-      <para> Thanks for help / suggestions / follow-up questions. </para>
-      <para>*** ANSWER ***</para>
-      <para> If I understand you correctly, you're ultimately trying to store triples in the form
-        "user, valueid, value", right? E.g., something like: </para>
+      <para>
+          一般的使用模式仅仅读取这些列表的最开始的30个值。有些用户在列表中会有&lt;=30个值，有些用户可能有几百万个值（例如，幂律分布）。
+           </para>
+      <para>
+          单值格式看起来占用更多的HBase空间，但是改善了检索/分页的复杂性。使用get分页和使用scan分页都各自有那些优势呢？
+         </para>
+      <para>
+          我最初的理解是，如果我们的页面大小是未知的（且缓存正确设置），那遍历(scan)更快；但如果我们需要获取的页面的大小相同，那Get更快。我已经不再听到有其他人告诉我关于性能的不同观点。我假定页面大小是相对一致的，因此，对于大多数情况，我们可以保证，我们只想获取页面长度固定情况下的一页数据。我还认为我们会有频繁的更新，但可能会插入到列表的中间（这意味着我们就需要更新所有后续行）。 </para>
+      <para> 感谢您的帮助/建议/后续问题。 </para>
+      <para>*** 答案 ***</para>
+      <para>
+          如果我理解正确的话，你最终想要存储的格式是这样的"user, valueid, value"，对不对？例如，像这样：
+           </para>
       <programlisting>
 "user123, firstname, Paul",
 "user234, lastname, Smith"
 			</programlisting>
-      <para> (But the usernames are fixed width, and the valueids are fixed width). </para>
-      <para> And, your access pattern is along the lines of: "for user X, list the next 30 values,
-        starting with valueid Y". Is that right? And these values should be returned sorted by
-        valueid? </para>
-      <para> The tl;dr version is that you should probably go with one row per user+value, and not
-        build a complicated intra-row pagination scheme on your own unless you're really sure it is
-        needed. </para>
-      <para> Your two options mirror a common question people have when designing HBase schemas:
-        should I go "tall" or "wide"? Your first schema is "tall": each row represents one value for
-        one user, and so there are many rows in the table for each user; the row key is user +
-        valueid, and there would be (presumably) a single column qualifier that means "the value".
-        This is great if you want to scan over rows in sorted order by row key (thus my question
-        above, about whether these ids are sorted correctly). You can start a scan at any
-        user+valueid, read the next 30, and be done. What you're giving up is the ability to have
-        transactional guarantees around all the rows for one user, but it doesn't sound like you
-        need that. Doing it this way is generally recommended (see here <link
-          xlink:href="http://hbase.apache.org/book.html#schema.smackdown">http://hbase.apache.org/book.html#schema.smackdown</link>). </para>
-      <para> Your second option is "wide": you store a bunch of values in one row, using different
-        qualifiers (where the qualifier is the valueid). The simple way to do that would be to just
-        store ALL values for one user in a single row. I'm guessing you jumped to the "paginated"
-        version because you're assuming that storing millions of columns in a single row would be
-        bad for performance, which may or may not be true; as long as you're not trying to do too
-        much in a single request, or do things like scanning over and returning all of the cells in
-        the row, it shouldn't be fundamentally worse. The client has methods that allow you to get
-        specific slices of columns. </para>
-      <para> Note that neither case fundamentally uses more disk space than the other; you're just
-        "shifting" part of the identifying information for a value either to the left (into the row
-        key, in option one) or to the right (into the column qualifiers in option 2). Under the
-        covers, every key/value still stores the whole row key, and column family name. (If this is
-        a bit confusing, take an hour and watch Lars George's excellent video about understanding
-        HBase schema design: <link
-          xlink:href="http://www.youtube.com/watch?v=_HLoH_PgrLk)">http://www.youtube.com/watch?v=_HLoH_PgrLk)</link>. </para>
-      <para> A manually paginated version has lots more complexities, as you note, like having to
-        keep track of how many things are in each page, re-shuffling if new values are inserted,
-        etc. That seems significantly more complex. It might have some slight speed advantages (or
-        disadvantages!) at extremely high throughput, and the only way to really know that would be
-        to try it out. If you don't have time to build it both ways and compare, my advice would be
-        to start with the simplest option (one row per user+value). Start simple and iterate! :)
+      <para> (但是用户名宽度固定，且valueid也宽度固定)。 </para>
+      <para>
+          而且，你的访问模式沿着这条线：“对于用户X，列出valueid从Y开始的接下来的30个值”。是这样吗？这些值应该按照valueid排序之后返回？
+      </para>
+      <para>
+          第一种方法中，你使用用户+值作为一行，而不是你自己建立一个复杂的内在的行分页模式，除非你真的确定需要这样做。
+           </para>
+      <para>
+          在设计HBase的模式时你有两个选择：应该选“高”表还是“宽”表？你的第一个模式是“高”：每一行代表一个用户的一个值，所以该表中每个用户有多行;行键是用户+valueid，并且会有（大概）会有一个列限定符代表“值”。如果你要对排好序的行进行遍历（因此我之前的问题是，是否这些ID被正确排序），会很方便。你可以以任何的用户+valueid作为开始，来遍历读取接下来的30个值。
+          你放弃了确保一个用户的所有行上事务的能力，但听起来这不是你需要的。一般建议这样做(参考 <link
+              xlink:href="http://hbase.apache.org/book.html#schema.smackdown">http://hbase.apache.org/book.html#schema.smackdown</link>)。
+         </para>
+      <para>
+          你的第二个选项是“宽”：你在一行中存储一组值，用不同的列限定符（这里的列限定符是valueid）。最简单的方法是只在单独的一行中存储一个用户的所有值。我猜你立即想到了“分页”的那个方法，因为你假设在一行中存储数百万个列会很有糟糕的表现，这可能是真的，也可能不是真的;只要你不试图在一个请求中获取太多数据，或者在遍历操作中遍历每一行的所有的单元格，它就不会有太糟糕的表现。
+          客户端提供了只获取指定的几列的方法。
+         </para>
+      <para>
+          需要注意的是，基本的使用情况使用的磁盘空间比其他情况更多;你仅仅需要选择将那些识别信息放入行键(方案一)还是放入列限定符（方案2）。在幕后，每一个键/值还是被存入一个行键的某一列中。
+          （如果有些迷惑，可以花一个小时看看Lars George关于理解HBase模式设计的一个出色的视频：<link
+              xlink:href="http://www.youtube.com/watch?v=_HLoH_PgrLk)">http://www.youtube.com/watch?v=_HLoH_PgrLk)</link>）。
+           </para>
+      <para>
+          手工分页的版本复杂性很高，就像你注意到的，你必须要追踪每一页的信息，如果有新的值被插入，还需要重新洗牌(re-shuffling)等。这似乎会导致复杂性更高。它可能在极高吞吐量的时候有一些轻微的速度优势（或劣势！）,你需要了解这一点并找到对应的办法。如果你没时间对两种方式进行综合比较，我的建议是先选择从最简单的开始（每一行是用户+value）。从简单的开始并重复！:)
       </para>
     </section>
     <!--  listdata -->
