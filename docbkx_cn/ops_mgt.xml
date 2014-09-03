@@ -1467,108 +1467,85 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
         <section>
             <title>复制实现细节</title>
             <formalpara>
-                <title>Choosing Region Servers to Replicate To</title>
-                <para>When a master cluster region server initiates a replication source to a slave cluster,
-                    it first connects to the slave's ZooKeeper ensemble using the provided cluster key . It
-                    then scans the <filename>rs/</filename> directory to discover all the available sinks
-                    (region servers that are accepting incoming streams of edits to replicate) and randomly
-                    chooses a subset of them using a configured ratio which has a default value of 10%. For
-                    example, if a slave cluster has 150 machines, 15 will be chosen as potential recipient for
-                    edits that this master cluster region server sends. Because this selection is performed by
-                    each master region server, the probability that all slave region servers are used is very
-                    high, and this method works for clusters of any size. For example, a master cluster of 10
-                    machines replicating to a slave cluster of 5 machines with a ratio of 10% causes the
-                    master cluster region servers to choose one machine each at random.</para>
+                <title>选择Region Server进行复制</title>
+                <para>当一个主集群对从集群发起复制时，首先它会通过提供给它的集群key连接从集群的ZooKeeper ensemble，
+                    然后扫描<filename>rs/</filename>目录找出所有可用的sinks（可以用来接收变更输入流进行复制的region servers），
+                    按配置的比例（默认值为10%）挑选一部分机器进行复制。例如，如果从集群有150台机器，主集群region server则会从中选择15台发送变更。
+                    因为这个挑选工作是由各自的主region server执行，因此使用到所有的从region server的概率还是非常高的，这个方法适用于任何规模的集群。
+                    例如，10台机器的主集群，正往5台机器的从集群按10%的比例复制数据，主集群region server每次将随机选择一台机器。
+                   </para>
             </formalpara>
-            <para>A ZooKeeper watcher is placed on the
-                <filename>${<replaceable>zookeeper.znode.parent</replaceable>}/rs</filename> node of the
-                slave cluster by each of the master cluster's region servers. This watch is used to monitor
-                changes in the composition of the slave cluster. When nodes are removed from the slave
-                cluster, or if nodes go down or come back up, the master cluster's region servers will
-                respond by selecting a new pool of slave region servers to replicate to.</para>
+            <para>主集群的region servers都会在从集群的 <filename>${<replaceable>zookeeper.znode.parent</replaceable>}/rs</filename>节点上
+                放置一个监听器（watcher）。这个监听器用来监视从集群的结构变化。当从集群移除节点，或节点崩溃/恢复时，
+                主集群的region servers将选择一些新的从region servers进行复制。
+              </para>
 
             <formalpara>
-                <title>Keeping Track of Logs</title>
+                <title>跟踪日志</title>
 
-                <para>Each master cluster region server has its own znode in the replication znodes
-                    hierarchy. It contains one znode per peer cluster (if 5 slave clusters, 5 znodes are
-                    created), and each of these contain a queue of WALs to process. Each of these queues will
-                    track the WALs created by that region server, but they can differ in size. For example, if
-                    one slave cluster becomes unavailable for some time, the WALs should not be deleted, so
-                    they need to stay in the queue while the others are processed. See <xref
-                            linkend="rs.failover.details"/> for an example.</para>
+                <para>主集群的每个region server在znode目录中都有它对应的znode.
+                    每个从集群都有一个znode（5个从集群，就会有5个znode被创建）,每个znode包含一个需要处理的WAL队列。
+                    每个队列都会跟踪region server创建的WAL，但是队列的大小可能不一样。
+                    例如，如果一个从集群一段时间不可用，那么它的WAL不应被删除，而需要保存在队列中（而其它从集群的日志仍在处理）。
+                    参考 <xref
+                            linkend="rs.failover.details"/> </para>
             </formalpara>
-            <para>When a source is instantiated, it contains the current WAL that the region server is
-                writing to. During log rolling, the new file is added to the queue of each slave cluster's
-                znode just before it is made available. This ensures that all the sources are aware that a
-                new log exists before the region server is able to append edits into it, but this operations
-                is now more expensive. The queue items are discarded when the replication thread cannot read
-                more entries from a file (because it reached the end of the last block) and there are other
-                files in the queue. This means that if a source is up to date and replicates from the log
-                that the region server writes to, reading up to the "end" of the current file will not
-                delete the item in the queue.</para>
+            <para>当source初始化后，它便包含region server要写入的WAL。
+                当日志滚动时，新文件在可用前会被添加到每个从集群的znode的队列中。这样的话，在region server往其追加变更前，
+                可以保证所有的sources都已知道有新的日志出现，但这种操作十分消耗系统资源。当复制线程从日志文件中无法读取到新的条目
+                （已经到达最后一个块），且在队列中还有其它文件时，这些队列项就会被丢弃。这意味着，当一个source是最新的，
+                且通过region server正写入的日志文件复制时，读取到当前文件末尾的文件不会从队列中删除。
+               </para>
             <para>A log can be archived if it is no longer used or if the number of logs exceeds
                 <code>hbase.regionserver.maxlogs</code> because the insertion rate is faster than regions
-                are flushed. When a log is archived, the source threads are notified that the path for that
-                log changed. If a particular source has already finished with an archived log, it will just
-                ignore the message. If the log is in the queue, the path will be updated in memory. If the
-                log is currently being replicated, the change will be done atomically so that the reader
-                doesn't attempt to open the file when has already been moved. Because moving a file is a
-                NameNode operation , if the reader is currently reading the log, it won't generate any
-                exception.</para>
+                are flushed.
+                当日志被归档时（由于日志不再被使用，或日志的数目超过了 <code>hbase.regionserver.maxlogs</code>的值，或插入速度比regions的刷写速度快），
+                会通知source线程，日志路径已发生变化。如果source已经同步完了这个日志，便会忽略这条通知。
+                如果这个文件在队列中，那么路径会在内存中更新。如果日志正在被复制，修改将会是原子性的，因此读进程在文件移动完成前
+                不会尝试打开文件。因为移动文件是一种NameNode操作，如果日志正在被读取，也不会产生什么异常。
+             </para>
             <formalpara>
-                <title>Reading, Filtering and Sending Edits</title>
-                <para>By default, a source attempts to read from a WAL and ship log entries to a sink as
-                    quickly as possible. Speed is limited by the filtering of log entries Only KeyValues that
-                    are scoped GLOBAL and that do not belong to catalog tables will be retained. Speed is also
-                    limited by total size of the list of edits to replicate per slave, which is limited to 64
-                    MB by default. With this configuration, a master cluster region server with three slaves
-                    would use at most 192 MB to store data to replicate. This does not account for the data
-                    which was filtered but not garbage collected.</para>
+                <title>读取、过滤以及发送变更</title>
+                <para>默认情况下，一个source会尝试从WAL读取数据，并尽可能快地将它们推送到sink（从集群的接收服务器）。
+                    推送速度首先会受到日志过滤的限制，只有那些GLOBAL类的且不属于catalog表的KeyValues会被保留，
+                    也会受到每个从集群同步总大小的限制，默认为64MB。根据这个配置，带有3个从集群的主集群region server最多占用
+                    192MB来存储要同步的数据，这还没计算被过滤掉的数据。
+                   </para>
             </formalpara>
-            <para>Once the maximum size of edits has been buffered or the reader reaces the end of the
-                WAL, the source thread stops reading and chooses at random a sink to replicate to (from the
-                list that was generated by keeping only a subset of slave region servers). It directly
-                issues a RPC to the chosen region server and waits for the method to return. If the RPC was
-                successful, the source determines whether the current file has been emptied or it contains
-                more data which needs to be read. If the file has been emptied, the source deletes the znode
-                in the queue. Otherwise, it registers the new offset in the log's znode. If the RPC threw an
-                exception, the source will retry 10 times before trying to find a different sink.</para>
+            <para>一旦缓冲的变更达到最大值，或读到了WAL文件的末尾，source线程将会停止读取并随机选择一个sink
+                （从一个生成的从集群region server子集列表中挑选）来复制数据。它会直接给挑选的region server发送
+                RPC请求，如果返回成功，source会判断当前文件是否读完。如果已读完，source会从队列中删除这个znode。否则，
+                就在日志的znode中注册一个新的位移。如果RPC抛出异常，source会在重试10次之后重新选择一个新的sink。
+
+               </para>
             <formalpara>
-                <title>Cleaning Logs</title>
-                <para>If replication is not enabled, the master's log-cleaning thread deletes old logs using
-                    a configured TTL. This TTL-based method does not work well with replication, because
-                    archived logs which have exceeded their TTL may still be in a queue. The default behavior
-                    is augmented so that if a log is past its TTL, the cleaning thread looks up every queue
-                    until it finds the log, while caching queues it has found. If the log is not found in any
-                    queues, the log will be deleted. The next time the cleaning process needs to look for a
-                    log, it starts by using its cached list.</para>
+                <title>日志清理</title>
+                <para>如果没有启用复制，master的日志清理线程会按配置的TTL（Time-To-Live）删除旧的日志。
+                    这种机制在进行复制时表现不太好，因为归档日志超出了TTL后也有可能还在队列中。因此，这种默认行为被增强了一些，
+                    即如果日志超过了TTL，清理线程会查找所有队列直到找到该日志，并缓存其找到的队列。如果没有找到该日志，
+                    则日志会被删除。下次还需要查找日志时，它会先检查缓存。
+                   </para>
             </formalpara>
             <formalpara xml:id="rs.failover.details">
-                <title>Region Server Failover</title>
-                <para>When no region servers are failing, keeping track of the logs in ZooKeeper adds no
-                    value. Unfortunately, region servers do fail, and since ZooKeeper is highly available, it
-                    is useful for managing the transfer of the queues in the event of a failure.</para>
+                <title>Region Server 异常</title>
+                <para>只要没有region server失效，在ZooKeeper中跟踪的日志就不会添加新值。
+                    如果region server不幸失效了，因为ZooKeeper的高可用性，我们可以用它来管理队列的传输。
+                 </para>
             </formalpara>
-            <para>Each of the master cluster region servers keeps a watcher on every other region server,
-                in order to be notified when one dies (just as the master does). When a failure happens,
-                they all race to create a znode called <literal>lock</literal> inside the dead region
-                server's znode that contains its queues. The region server that creates it successfully then
-                transfers all the queues to its own znode, one at a time since ZooKeeper does not support
-                renaming queues. After queues are all transferred, they are deleted from the old location.
-                The znodes that were recovered are renamed with the ID of the slave cluster appended with
-                the name of the dead server.</para>
-            <para>Next, the master cluster region server creates one new source thread per copied queue,
-                and each of the source threads follows the read/filter/ship pattern. The main difference is
-                that those queues will never receive new data, since they do not belong to their new region
-                server. When the reader hits the end of the last log, the queue's znode is deleted and the
-                master cluster region server closes that replication source.</para>
-            <para>Given a master cluster with 3 region servers replicating to a single slave with id
-                <literal>2</literal>, the following hierarchy represents what the znodes layout could be
-                at some point in time. The region servers' znodes all contain a <literal>peers</literal>
-                znode which contains a single queue. The znode names in the queues represent the actual file
-                names on HDFS in the form
-                <literal><replaceable>address</replaceable>,<replaceable>port</replaceable>.<replaceable>timestamp</replaceable></literal>.</para>
+            <para>主集群的每一个region server都会为其它region服务器保留一个监听器（watcher），
+                以便当其它服务器失效时收到通知（master也是这样做的）。当发生故障时，它们会竞争着在宕机服务器的znode（包含其队列）中创建一个叫
+                <literal>lock</literal>的znode。创建成功的服务器会把所有的队列添加到自己的znode中去，由于ZooKeeper不支持对队列改名，
+                所以必须逐个添加。在所有队列添加完成后，它将删除旧的队列。恢复过来的znode会用当前从集群的ID附加宕机服务器的名称来命名。
+
+               </para>
+            <para>接下来，主集群region server会为每个复制过来的队列创建一个新的source线程，
+                并且每个线程会按照读取/过滤/推送的模式工作。最主要的不同是，这些队列不会接收新的数据，
+                因为它们不属于新的region server，也就是说，当读进程读到日志的末尾时，队列的znode会被删除，
+                并且主集群region server会关闭这个复制source。
+             </para>
+            <para>假如一个主集群有3个region server，在复制数据到ID为<literal>2</literal>的从集群。下面的目录结构代表了某个时间点的znode的布局。
+                region server的znode都包含一个<literal>peers</literal> znode，其中包含一个队列。队列中的znode名称代表HDFS中的实际文件名，
+                格式为：<literal><replaceable>address</replaceable>,<replaceable>port</replaceable>.<replaceable>timestamp</replaceable></literal>.</para>
             <screen>
                 /hbase/replication/rs/
                 1.1.1.1,60020,123456780/
@@ -1584,10 +1561,10 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                 2/
                 1.1.1.3,60020.1280  (Contains a position)
             </screen>
-            <para>Assume that 1.1.1.2 loses its ZooKeeper session. The survivors will race to create a
-                lock, and, arbitrarily, 1.1.1.3 wins. It will then start transferring all the queues to its
-                local peers znode by appending the name of the dead server. Right before 1.1.1.3 is able to
-                clean up the old znodes, the layout will look like the following:</para>
+            <para>假设1.1.1.2丢失了它的ZooKeeper会话。其它幸存者将竞争着来创建锁，例子中，1.1.1.3创建成功，
+                它会将所有队列转移到自己的对等znode下，并附加宕机服务器的名字。在1.1.1.3清理老的znode前，
+                目录结构如下：
+                </para>
             <screen>
                 /hbase/replication/rs/
                 1.1.1.1,60020,123456780/
@@ -1609,10 +1586,9 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                 1.1.1.2,60020.1248
                 1.1.1.2,60020.1312
             </screen>
-            <para>Some time later, but before 1.1.1.3 is able to finish replicating the last WAL from
-                1.1.1.2, it dies too. Some new logs were also created in the normal queues. The last region
-                server will then try to lock 1.1.1.3's znode and will begin transferring all the queues. The
-                new layout will be:</para>
+            <para>之后，在1.1.1.3复制1.1.1.2的WAL的过程中，如果也宕机了 （一些新的日志还在正常队列中）...
+                最后剩下的region server会试着锁定 1.1.1.3的znode，同时开始转移所有队列。
+                新的目录结构如下：</para>
             <screen>
                 /hbase/replication/rs/
                 1.1.1.1,60020,123456780/
@@ -1635,34 +1611,32 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                 1.1.1.2,60020.1312  (Contains a position)
             </screen>
             <formalpara>
-                <title>Replication Metrics</title>
-                <para>The following metrics are exposed at the global region server level and (since HBase
-                    0.95) at the peer level:</para>
+                <title>复制指标</title>
+                <para>下面的指标是全局region server级和(从 HBase 0.95版本以后)peer级的:</para>
             </formalpara>
             <variablelist>
                 <varlistentry>
                     <term><code>source.sizeOfLogQueue</code></term>
                     <listitem>
-                        <para>number of WALs to process (excludes the one which is being processed) at the
-                            Replication source</para>
+                        <para> 复制源要处理的WAL数 (不包括正在处理的) </para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term><code>source.shippedOps</code></term>
                     <listitem>
-                        <para>number of mutations shipped</para>
+                        <para>推送的变更数</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term><code>source.logEditsRead</code></term>
                     <listitem>
-                        <para>number of mutations read from HLogs at the replication source</para>
+                        <para>复制源从HLogs中读取的变更数</para>
                     </listitem>
                 </varlistentry>
                 <varlistentry>
                     <term><code>source.ageOfLastShippedOp</code></term>
                     <listitem>
-                        <para>age of last batch that was shipped by the replication source</para>
+                        <para>复制源最后一次推送的时间</para>
                     </listitem>
                 </varlistentry>
             </variablelist>
@@ -1671,23 +1645,23 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
     </section>
     <section
             xml:id="ops.backup">
-        <title>HBase Backup</title>
-        <para>There are two broad strategies for performing HBase backups: backing up with a full
-            cluster shutdown, and backing up on a live cluster. Each approach has pros and cons. </para>
-        <para>For additional information, see <link
+        <title>HBase 备份</title>
+        <para>HBase有两种广泛使用的备份策略：备份一个关闭的集群，备份一个在线的集群。每种方法有利有弊。
+
+             </para>
+        <para>   更多信息，参考Sematext博客上 <link
                 xlink:href="http://blog.sematext.com/2011/03/11/hbase-backup-options/">HBase Backup
-            Options</link> over on the Sematext Blog. </para>
+            Options</link> </para>
         <section
                 xml:id="ops.backup.fullshutdown">
-            <title>Full Shutdown Backup</title>
-            <para>Some environments can tolerate a periodic full shutdown of their HBase cluster, for
-                example if it is being used a back-end analytic capacity and not serving front-end
-                web-pages. The benefits are that the NameNode/Master are RegionServers are down, so there is
-                no chance of missing any in-flight changes to either StoreFiles or metadata. The obvious con
-                is that the cluster is down. The steps include: </para>
+            <title>全封闭备份</title>
+            <para>某些环境中可以容忍HBase集群定期全部关闭，例如，当集群用于后台分析而不服务于前端页面时。
+                这样做的好处是，NameNode/Master，RegionServers都关闭了，因此StoreFiles和metadata都不会丢失任何变更。
+                明显的缺点是集群被关闭了。步骤如下：
+               </para>
             <section
                     xml:id="ops.backup.fullshutdown.stop">
-                <title>Stop HBase</title>
+                <title>停止 HBase</title>
                 <para> </para>
             </section>
             <section
