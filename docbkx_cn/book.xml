@@ -834,72 +834,58 @@ htable.put(put);
   <chapter
     xml:id="mapreduce">
     <title>HBase和MapReduce</title>
-    <para>Apache MapReduce is a software framework used to analyze large amounts of data, and is
-      the framework used most often with <link
-        xlink:href="http://hadoop.apache.org/">Apache Hadoop</link>. MapReduce itself is out of the
-      scope of this document. A good place to get started with MapReduce is <link
-        xlink:href="http://hadoop.apache.org/docs/r1.2.1/mapred_tutorial.html" />. MapReduce version
-      2 (MR2)is now part of <link
-        xlink:href="http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/">YARN</link>. </para>
+    <para>Apache MapReduce是一个用来分析大数据的框架，并且最常用的是<link
+            xlink:href="http://hadoop.apache.org/">Apache Hadoop</link> 。 MapReduce本身超出了本文档的范围。有一个开始学习MapReduce的好地方
+         <link
+        xlink:href="http://hadoop.apache.org/docs/r1.2.1/mapred_tutorial.html" />。 MapReduce 第二版
+      (MR2)现在是 <link
+        xlink:href="http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/">YARN</link> 的一部分。 </para>
 
-    <para> This chapter discusses specific configuration steps you need to take to use MapReduce on
-      data within HBase. In addition, it discusses other interactions and issues between HBase and
-      MapReduce jobs.
+    <para> 本章讨论你在HBase存储的数据上使用MapReduce的一些特定的配置步骤。另外，还讨论其他HBase和MapReduce任务的交互和问题。
       <note> 
-      <title>mapred and mapreduce</title>
-      <para>There are two mapreduce packages in HBase as in MapReduce itself: <filename>org.apache.hadoop.hbase.mapred</filename>
-      and <filename>org.apache.hadoop.hbase.mapreduce</filename>. The former does old-style API and the latter
-      the new style.  The latter has more facility though you can usually find an equivalent in the older
-      package.  Pick the package that goes with your mapreduce deploy.  When in doubt or starting over, pick the
-      <filename>org.apache.hadoop.hbase.mapreduce</filename>.  In the notes below, we refer to
-      o.a.h.h.mapreduce but replace with the o.a.h.h.mapred if that is what you are using.
+      <title>mapred和mapreduce</title>
+      <para>HBase中有两个自己的mapreduce包： <filename>org.apache.hadoop.hbase.mapred</filename>
+      和 <filename>org.apache.hadoop.hbase.mapreduce</filename>。 前者基于旧风格的API，后者基于新风格的API。 虽然你可以在旧包中找到一些和新包相同的功能，但是新报中包含更多的功能。
+          选一个和你部署的mapreduce相同的包。如果有疑问或者重新开始，选择<filename>org.apache.hadoop.hbase.mapreduce</filename>。
+          在下面的说明中，我们选择o.a.h.h.mapreduce，但是如果你在用o.a.h.h.mapred，也可以用o.a.h.h.mapred进行替换。
       </para>
       </note> 
     </para>
 
     <section
       xml:id="hbase.mapreduce.classpath">
-      <title>HBase, MapReduce, and the CLASSPATH</title>
-      <para>Ny default, MapReduce jobs deployed to a MapReduce cluster do not have access to either
-        the HBase configuration under <envar>$HBASE_CONF_DIR</envar> or the HBase classes.</para>
-      <para>To give the MapReduce jobs the access they need, you could add
-          <filename>hbase-site.xml</filename> to the
-            <filename><replaceable>$HADOOP_HOME</replaceable>/conf/</filename> directory and add the
-        HBase JARs to the <filename><replaceable>HADOOP_HOME</replaceable>/conf/</filename>
-        directory, then copy these changes across your cluster. You could add hbase-site.xml to
-        $HADOOP_HOME/conf and add HBase jars to the $HADOOP_HOME/lib. You would then need to copy
-        these changes across your cluster or edit
-          <filename><replaceable>$HADOOP_HOME</replaceable>conf/hadoop-env.sh</filename> and add
-        them to the <envar>HADOOP_CLASSPATH</envar> variable. However, this approach is not
-        recommended because it will pollute your Hadoop install with HBase references. It also
-        requires you to restart the Hadoop cluster before Hadoop can use the HBase data.</para>
-      <para> Since HBase 0.90.x, HBase adds its dependency JARs to the job configuration itself. The
-        dependencies only need to be available on the local CLASSPATH. The following example runs
-        the bundled HBase <link
-          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/RowCounter.html">RowCounter</link>
-        MapReduce job against a table named <systemitem>usertable</systemitem> If you have not set
-        the environment variables expected in the command (the parts prefixed by a
-          <literal>$</literal> sign and curly braces), you can use the actual system paths instead.
-        Be sure to use the correct version of the HBase JAR for your system. The backticks
-          (<literal>`</literal> symbols) cause ths shell to execute the sub-commands, setting the
-        CLASSPATH as part of the command. This example assumes you use a BASH-compatible shell. </para>
+      <title>HBase、MapReduce和CLASSPATH</title>
+      <para>默认情况下，部署在MapReduce集群上的MapReduce任务急不能访问HBase在<envar>$HBASE_CONF_DIR</envar>目录下的配置文件还有HBase的类文件。</para>
+      <para>
+          为了给MapReduce任务它们需要的访问权限，你应该将 <filename>hbase-site.xml</filename>文件添加到 <filename><replaceable>$HADOOP_HOME</replaceable>/conf/</filename> 目录中并且将HBase的jar文件拷贝到 <filename><replaceable>$HADOOP_HOME</replaceable>/conf/</filename> 目录中，然后在整个集群的所有机器上执行这一操作。 你可以添加hbase-site.xml文件到你的$HADOOP_HOME/conf
+          ，将HBase的jar文件添加到$HADOOP_HOME/lib目录中，或者在<filename><replaceable>$HADOOP_HOME</replaceable>conf/hadoop-env.sh</filename>文件中添加那些文件的路径到<envar>HADOOP_CLASSPATH</envar>变量。你需要在集群的所有机器上执行这一操作。然而，不推荐这种方法，因为它会污染你的Hadoop的安装与HBase的引用。它还要求你在Hadoop使用HBase的数据前重新启动Hadoop集群。
+    </para>
+      <para>
+          从HBase 0.90.x开始，HBase自己会添加作业依赖的jar文件。只需要将这些依赖放在本地CLASSPATH中。下面的例子在名为<systemitem>usertable</systemitem>的表上运行HBase提供的名为
+          <link
+                  xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/RowCounter.html">RowCounter</link> 的MapReduce任务。
+          如果你还没有设置需要的那些环境变量（由<literal>$</literal>符号和大括号组成的前缀部分），你可以用真实的系统路径替代。请务必在你的系统中使用HBase的JAR文件的正确版本，
+          反引号(<literal>`</literal> 符号)括起来的部分是一个执行的shel命令的子命令，设置CLASSPATH作为命令的一部分。本示例假定你使用与bash兼容的shell。
+           </para>
       <screen language="bourne">$ <userinput>HADOOP_CLASSPATH=`${HBASE_HOME}/bin/hbase classpath` ${HADOOP_HOME}/bin/hadoop jar ${HBASE_HOME}/hbase-0.90.0.jar rowcounter usertable</userinput></screen>
-      <para>When the command runs, internally, the HBase JAR finds the dependencies it needs for
-        zookeeper, guava, and its other dependencies on the passed <envar>HADOOP_CLASSPATH</envar>
-        and adds the JARs to the MapReduce job configuration. See the source at
-        TableMapReduceUtil#addDependencyJars(org.apache.hadoop.mapreduce.Job) for how this is done. </para>
+      <para>
+          当命令运行时，在内部，HBase的JAR通过 <envar>HADOOP_CLASSPATH</envar> 找到它需要的zookeeper，guava，以及其他依赖包，并且将这些依赖包增加到MapReduce配置中。可以查看TableMapReduceUtil#addDependencyJars(org.apache.hadoop.mapreduce.Job)的源文件，了解这一切是如何完成的。
+     </para>
       <note>
-        <para> The example may not work if you are running HBase from its build directory rather
-          than an installed location. You may see an error like the following:</para>
+        <para>
+            如果你是从构建目录而不是安装位置运行HBase的化，这个例子可能无法正常工作。你可能会看到类似下面的错误：
+            </para>
         <screen>java.lang.RuntimeException: java.lang.ClassNotFoundException: org.apache.hadoop.hbase.mapreduce.RowCounter$RowCounterMapper</screen>
-        <para>If this occurs, try modifying the command as follows, so that it uses the HBase JARs
-          from the <filename>target/</filename> directory within the build environment.</para>
+        <para>
+            如果发生这种情况，请尝试对命令做如下修改，以便它可以使用生成环境中的<filename>target/</filename>目录下HBase的JAR文件。
+        </para>
         <screen language="bourne">$ <userinput>HADOOP_CLASSPATH=${HBASE_HOME}/target/hbase-0.90.0-SNAPSHOT.jar:`${HBASE_HOME}/bin/hbase classpath` ${HADOOP_HOME}/bin/hadoop jar ${HBASE_HOME}/target/hbase-0.90.0-SNAPSHOT.jar rowcounter usertable</userinput></screen>
       </note>
       <caution>
-        <title>Notice to Mapreduce users of HBase 0.96.1 and above</title>
-        <para>Some mapreduce jobs that use HBase fail to launch. The symptom is an exception similar
-          to the following:</para>
+        <title>注意Mapreduce使用HBase 0.96.1和更高版本</title>
+        <para>
+            使用HBase的一些MapReduce任务无法启动。出现了类似以下内容的异常：
+            </para>
         <screen>
 Exception in thread "main" java.lang.IllegalAccessError: class
     com.google.protobuf.ZeroCopyLiteralByteString cannot access its superclass
@@ -929,40 +915,43 @@ Exception in thread "main" java.lang.IllegalAccessError: class
     org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil.initTableMapperJob(TableMapReduceUtil.java:100)
 ...
 </screen>
-        <para>This is caused by an optimization introduced in <link
-            xlink:href="https://issues.apache.org/jira/browse/HBASE-9867">HBASE-9867</link> that
-          inadvertently introduced a classloader dependency. </para>
-        <para>This affects both jobs using the <code>-libjars</code> option and "fat jar," those
-          which package their runtime dependencies in a nested <code>lib</code> folder.</para>
-        <para>In order to satisfy the new classloader requirements, hbase-protocol.jar must be
-          included in Hadoop's classpath. See <xref
-            linkend="hbase.mapreduce.classpath" /> for current recommendations for resolving
-          classpath errors. The following is included for historical purposes.</para>
-        <para>This can be resolved system-wide by including a reference to the hbase-protocol.jar in
-          hadoop's lib directory, via a symlink or by copying the jar into the new location.</para>
-        <para>This can also be achieved on a per-job launch basis by including it in the
-            <code>HADOOP_CLASSPATH</code> environment variable at job submission time. When
-          launching jobs that package their dependencies, all three of the following job launching
-          commands satisfy this requirement:</para>
+        <para>
+            这是因为一个优化操作 <link
+                xlink:href="https://issues.apache.org/jira/browse/HBASE-9867">HBASE-9867</link> 引入的bug，它在不经意间引入了一个类加载器依赖。
+             </para>
+        <para>
+            这会影响同时使用-libjars选项和"fat jar"的那些任务，那些包在运行时依赖于<code>lib</code>文件夹中的嵌套文件。
+        </para>
+        <para>
+            为了满足新的类加载器的要求， 必须在Hadoop的类路径(classpath)中引入hbase-protocol.jar文件。可以参考<xref
+                linkend="hbase.mapreduce.classpath" /> 来查看针对一些类路径错误的一些推荐的解决方案。紧接着是因为历史目的才包含在内的。
+        </para>
+        <para>
+            可以通过在hadoop的lib目录下建立hbase-protocol.jar的引用或者拷贝hbase-protocol.jar文件到新目录来解决这个问题。
+            </para>
+        <para>
+            也可以在每一个任务启动时在它的<code>HADOOP_CLASSPATH</code>环境变量中加入hbase-protocol.jar文件文件来解决该问题。
+            当需要启动的任务包含了自己的依赖，有3种命令可以解决这个需求：
+            </para>
         <screen language="bourne">
 $ <userinput>HADOOP_CLASSPATH=/path/to/hbase-protocol.jar:/path/to/hbase/conf hadoop jar MyJob.jar MyJobMainClass</userinput>
 $ <userinput>HADOOP_CLASSPATH=$(hbase mapredcp):/path/to/hbase/conf hadoop jar MyJob.jar MyJobMainClass</userinput>
 $ <userinput>HADOOP_CLASSPATH=$(hbase classpath) hadoop jar MyJob.jar MyJobMainClass</userinput>
         </screen>
-        <para>For jars that do not package their dependencies, the following command structure is
-          necessary:</para>
+        <para>
+            对于那些jar文件中没包含需要依赖的，下面的命令是必须的：
+            </para>
         <screen language="bourne">
 $ <userinput>HADOOP_CLASSPATH=$(hbase mapredcp):/etc/hbase/conf hadoop jar MyApp.jar MyJobMainClass -libjars $(hbase mapredcp | tr ':' ',')</userinput> ...
         </screen>
-        <para>See also <link
-            xlink:href="https://issues.apache.org/jira/browse/HBASE-10304">HBASE-10304</link> for
-          further discussion of this issue.</para>
+        <para>可以参考 <link
+            xlink:href="https://issues.apache.org/jira/browse/HBASE-10304">HBASE-10304</link> 来查看关于这些问题的更多讨论。</para>
       </caution>
     </section>
 
 
     <section>
-      <title>Bundled HBase MapReduce Jobs</title>
+      <title>HBase自带的MapReduce任务</title>
       <para>The HBase JAR also serves as a Driver for some bundled mapreduce jobs. To learn about
         the bundled MapReduce jobs, run the following command.</para>
 
