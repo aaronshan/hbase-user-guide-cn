@@ -1803,14 +1803,13 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
             <para>ExportSnapshot 工具拷贝与快照相关的所有数据（hfiles, 日志,快照元数据）到另一个集群。
                 该工具执行一个Map-Reduce任务（与distcp相似）在两个集群间拷贝数据，由于它工作在文件系统级别，因此hbase集群不需要在线。
              </para>
-            <para>To copy a snapshot called MySnapshot to an HBase cluster srv2 (hdfs:///srv2:8082/hbase)
-                using 16 mappers:</para>
+            <para>使用16个mapper将MySnapshot快照拷贝到一个HBase集群srv2 （hdfs:///srv2:8082/hbase）：
+                </para>
             <programlisting language="bourne">$ bin/hbase class org.apache.hadoop.hbase.snapshot.ExportSnapshot -snapshot MySnapshot -copy-to hdfs://srv2:8082/hbase -mappers 16</programlisting>
             <formalpara>
-                <title>Limiting Bandwidth Consumption</title>
-                <para>You can limit the bandwidth consumption when exporting a snapshot, by specifying the
-                    <code>-bandwidth</code> parameter, which expects an integer representing megabytes per
-                    second. The following example limits the above example to 200 MB/sec.</para>
+                <title>限制带宽消耗</title>
+                <para>在导出快照时你可以限制带宽消耗，通过指定<code>-bandwidth</code>参数，要求是整数（MB/s），下面的例子限制速度为200MB/s。
+                  </para>
             </formalpara>
             <programlisting language="bourne">$ bin/hbase class org.apache.hadoop.hbase.snapshot.ExportSnapshot -snapshot MySnapshot -copy-to hdfs://srv2:8082/hbase -mappers 16 -bandwidth 200</programlisting>
         </section>
@@ -1819,128 +1818,127 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
 
     <section
             xml:id="ops.capacity">
-        <title>Capacity Planning and Region Sizing</title>
-        <para>There are several considerations when planning the capacity for an HBase cluster and
+        <title>容量规划和Region大小</title>
+        <para>在规划HBase集群容量和初始化配置时，有几个考量。先从对Hbase内部如何处理数据的理解开始。
+
+            There are several considerations when planning the capacity for an HBase cluster and
             performing the initial configuration. Start with a solid understanding of how HBase handles
             data internally.</para>
         <section
                 xml:id="ops.capacity.nodes">
-            <title>Node count and hardware/VM configuration</title>
+            <title>节点数和硬件/VM 配置</title>
             <section
                     xml:id="ops.capacity.nodes.datasize">
-                <title>Physical data size</title>
-                <para>Physical data size on disk is distinct from logical size of your data and is affected
-                    by the following: </para>
+                <title>物理数据大小</title>
+                <para>磁盘上物理数据的大小明显不同于逻辑数据的大小，它受到如下因素的影响：
+                     </para>
                 <itemizedlist>
                     <listitem>
-                        <para>Increased by HBase overhead</para>
+                        <para>HBase开销会让其增加</para>
                         <itemizedlist>
                             <listitem>
-                                <para>See <xref
-                                        linkend="keyvalue" /> and <xref
-                                        linkend="keysize" />. At least 24 bytes per key-value (cell), can be more. Small
-                                    keys/values means more relative overhead.</para>
+                                <para>参考 <xref
+                                        linkend="keyvalue" /> 和 <xref
+                                        linkend="keysize" />。 每个键值对（单元格）最少24字节，可以更多。
+                                    小的键值对意味着更多的相关开销。
+                                    </para>
                             </listitem>
                             <listitem>
-                                <para>KeyValue instances are aggregated into blocks, which are indexed. Indexes also
-                                    have to be stored. Blocksize is configurable on a per-ColumnFamily basis. See <xref
+                                <para>键值对象被聚合成有索引的块，索引也需要存储。块大小可以根据每个列族来配置。
+                                    参考<xref
                                             linkend="regions.arch" />.</para>
                             </listitem>
                         </itemizedlist>
                     </listitem>
                     <listitem>
-                        <para>Decreased by <xref
+                        <para><xref
                                 linkend="compression"
-                                xrefstyle="template:compression" /> and data block encoding, depending on data. See
-                            also <link
-                                    xlink:href="http://search-hadoop.com/m/lL12B1PFVhp1">this thread</link>. You might
-                            want to test what compression and encoding (if any) make sense for your data.</para>
+                                xrefstyle="template:compression" />和数据块的编码能让其减少，具体取决于你的数据。
+                            参考<link
+                                    xlink:href="http://search-hadoop.com/m/lL12B1PFVhp1">this thread</link>。你可以测试下
+                            什么样的压缩和编码（如果有的话）对你的数据比较有意义。
+                         </para>
                     </listitem>
                     <listitem>
-                        <para>Increased by size of region server <xref
+                        <para>Region server <xref
                                 linkend="wal"
-                                xrefstyle="template:WAL" /> (usually fixed and negligible - less than half of RS
-                            memory size, per RS).</para>
+                                xrefstyle="template:WAL" /> 的大小会让其增加（通常是固定的，可忽略不计——占每台RS不到一半的内存）
+                            </para>
                     </listitem>
                     <listitem>
-                        <para>Increased by HDFS replication - usually x3.</para>
+                        <para>HDFS复制会让其增加——通常 x3。</para>
                     </listitem>
                 </itemizedlist>
-                <para>Aside from the disk space necessary to store the data, one RS may not be able to serve
-                    arbitrarily large amounts of data due to some practical limits on region count and size
-                    (see <xref
+                <para>出于region数和大小的一些限制（见下文），除了必要的磁盘空间用来存储数据，
+                    RS可能无法服务于那些数据量任意大的情况。
+
+                    （参考 <xref
                             linkend="ops.capacity.regions"
                             xrefstyle="template:below" />).</para>
             </section>
             <!-- ops.capacity.nodes.datasize -->
             <section
                     xml:id="ops.capacity.nodes.throughput">
-                <title>Read/Write throughput</title>
-                <para>Number of nodes can also be driven by required thoughput for reads and/or writes. The
-                    throughput one can get per node depends a lot on data (esp. key/value sizes) and request
-                    patterns, as well as node and system configuration. Planning should be done for peak load
-                    if it is likely that the load would be the main driver of the increase of the node count.
-                    PerformanceEvaluation and <xref
+                <title>读/写吞吐量</title>
+                <para>必需的读/写吞吐量也会影响节点数。每个节点的吞吐量更多是取决于数据（特别是键/值大小）和请求模式，
+                    以及节点和系统配置。
+                    应该为峰值负载做下计划，
+                    规划应该考虑到负载出现峰值的情况，因为负载很大程度上是节点数增长的主要驱动力。
+
+                    可以使用PerformanceEvaluation 和 <xref
                             linkend="ycsb"
-                            xrefstyle="template:YCSB" /> tools can be used to test single node or a test
-                    cluster.</para>
-                <para>For write, usually 5-15Mb/s per RS can be expected, since every region server has only
-                    one active WAL. There's no good estimate for reads, as it depends vastly on data,
-                    requests, and cache hit rate. <xref
-                            linkend="perf.casestudy" /> might be helpful.</para>
+                            xrefstyle="template:YCSB" />工具测试单个节点或测试集群。
+                        </para>
+                <para>对于写操作来说，每台RS通常在5-15Mb/s左右，因为每台region server只有一个活动的WAL日志。
+                   对于读操作来说，还没有好的估算方法，因为这极大地依赖于数据、请求和缓存命中率。
+                    <xref
+                            linkend="perf.casestudy" /> 可能有用。</para>
             </section>
             <!-- ops.capacity.nodes.throughput -->
             <section
                     xml:id="ops.capacity.nodes.gc">
-                <title>JVM GC limitations</title>
-                <para>RS cannot currently utilize very large heap due to cost of GC. There's also no good
-                    way of running multiple RS-es per server (other than running several VMs per machine).
-                    Thus, ~20-24Gb or less memory dedicated to one RS is recommended. GC tuning is required
-                    for large heap sizes. See <xref
+                <title>JVM GC 限制</title>
+                <para>由于GC代价太高，RS目前还无法使用特别大的堆。
+                    也没有好的办法在每台server上运行多个RS-es（除了在每台机器上运行多个虚拟机）。
+                    因此推荐给每个RS分配 ~20-24Gb或更少的内存。需要大点的堆可以进行GC调优。参考
+                    <xref
                             linkend="gcpause" />, <xref
-                            linkend="trouble.log.gc" /> and elsewhere (TODO: where?)</para>
+                            linkend="trouble.log.gc" /> </para>
             </section>
             <!-- ops.capacity.nodes.gc -->
         </section>
         <!-- ops.capacity.nodes -->
         <section
                 xml:id="ops.capacity.regions">
-            <title>Determining region count and size</title>
-            <para>Generally less regions makes for a smoother running cluster (you can always manually
-                split the big regions later (if necessary) to spread the data, or request load, over the
-                cluster); 20-200 regions per RS is a reasonable range. The number of regions cannot be
-                configured directly (unless you go for fully <xref
+            <title>确定 region数和大小</title>
+            <para>通常region数越少，集群运行会越顺畅(你可以经常在集群上手动分割大region(如果有必要)，或请求负载)；
+                20 - 200个region/RS比较合理合理。region数不能直接配置(除非你追求完全 <xref
                         linkend="disable.splitting"
-                        xrefstyle="template:manual splitting" />); adjust the region size to achieve the target
-                region size given table size.</para>
-            <para>When configuring regions for multiple tables, note that most region settings can be set
-                on a per-table basis via <link
-                        xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HTableDescriptor.html">HTableDescriptor</link>,
-                as well as shell commands. These settings will override the ones in
-                <varname>hbase-site.xml</varname>. That is useful if your tables have different
-                workloads/use cases.</para>
-            <para>Also note that in the discussion of region sizes here, <emphasis
-                    role="bold">HDFS replication factor is not (and should not be) taken into account, whereas
-                other factors <xref
-                        linkend="ops.capacity.nodes.datasize"
-                        xrefstyle="template:above" /> should be.</emphasis> So, if your data is compressed and
-                replicated 3 ways by HDFS, "9 Gb region" means 9 Gb of compressed data. HDFS replication
-                factor only affects your disk usage and is invisible to most HBase code.</para>
+                        xrefstyle="template:manual splitting" />); 在给定表大小下，调整region大小来达到region目标大小。</para>
+            <para>在给多个表配置region时,注意,通过 <link
+                    xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/HTableDescriptor.html">HTableDescriptor</link>以及shell命令，
+                大多数的region设置都可以基于每个表。
+                这些设置将覆盖 <varname>hbase-site.xml</varname>中的。 如果你的表有不同的工作负载/使用场景，这会很有用。</para>
+            <para>
+                还要注意,这里对region大小的讨论,还没有(不应该)考虑 <emphasis
+                    role="bold">HDFS 复制因素,然而<xref
+                    linkend="ops.capacity.nodes.datasize"
+                    xrefstyle="template:以上" />的因素是应该考虑的。 </emphasis>
+                因此,如果你的数据通过HDFS以三种途径进行了压缩和复制，“9 Gb region”意味着9 Gb的压缩数据。
+                HDFS复制因素只会影响你的磁盘使用情况，对大部分HBase code来说也是不可见的。
+               </para>
             <section
                     xml:id="ops.capacity.regions.count">
-                <title>Number of regions per RS - upper bound</title>
-                <para>In production scenarios, where you have a lot of data, you are normally concerned with
-                    the maximum number of regions you can have per server. <xref
-                            linkend="too_many_regions" /> has technical discussion on the subject; in short, maximum
-                    number of regions is mostly determined by memstore memory usage. Each region has its own
-                    memstores; these grow up to a configurable size; usually in 128-256Mb range, see <xref
-                            linkend="hbase.hregion.memstore.flush.size" />. There's one memstore per column family
-                    (so there's only one per region if there's one CF in the table). RS dedicates some
-                    fraction of total memory (see <xref
-                            linkend="hbase.regionserver.global.memstore.size" />) to region memstores. If this
-                    memory is exceeded (too much memstore usage), undesirable consequences such as
-                    unresponsive server, or later compaction storms, can result. Thus, a good starting point
-                    for the number of regions per RS (assuming one table) is:</para>
+                <title>region数/RS - 上界</title>
+                <para> 生产环境上有很多的数据，你通常关心的是每台服务器的region数最大可以为多少。9.7.1.1节中，对<xref
+                        linkend="too_many_regions" />这个问题，已进行过技术性的讨论。简而言之，region的最大数主要取决于memstore的内存使用量。
+                    每个region都有自己的memstores；它们会增长到一个可配置的大小；通常在128 - 256 mb之间，
+                    参考<xref
+                            linkend="hbase.hregion.memstore.flush.size" />。
+                    每个列族有一个memstore(因此，如果一个表只有一个列族，那每个region将只有一个memstore)。
+                    RS给region memstores分配了一部分内存（参考 <xref
+                            linkend="hbase.regionserver.global.memstore.size" />）。 如果内存溢出(memstore使用太多内存)，
+                    就会造成不良后果，比如服务器没有响应或压缩风暴。因此，每个RS的region数，刚开始时如下比较好：</para>
 
                 <programlisting>(RS memory)*(total memstore fraction)/((memstore size)*(# column families))</programlisting>
                 <para> E.g. if RS has 16Gb RAM, with default settings, it is 16384*0.4/128 ~ 51 regions per
