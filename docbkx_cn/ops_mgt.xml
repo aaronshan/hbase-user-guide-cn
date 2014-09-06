@@ -1941,117 +1941,113 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
                     就会造成不良后果，比如服务器没有响应或压缩风暴。因此，每个RS的region数，刚开始时如下比较好：</para>
 
                 <programlisting>(RS memory)*(total memstore fraction)/((memstore size)*(# column families))</programlisting>
-                <para> E.g. if RS has 16Gb RAM, with default settings, it is 16384*0.4/128 ~ 51 regions per
-                    RS is a starting point. The formula can be extended to multiple tables; if they all have
-                    the same configuration, just use total number of families.</para>
-                <para>This number can be adjusted; the formula above assumes all your regions are filled at
-                    approximately the same rate. If only a fraction of your regions are going to be actively
-                    written to, you can divide the result by that fraction to get a larger region count. Then,
-                    even if all regions are written to, all region memstores are not filled evenly, and
-                    eventually jitter appears even if they are (due to limited number of concurrent flushes).
-                    Thus, one can have as many as 2-3 times more regions than the starting point; however,
-                    increased numbers carry increased risk.</para>
-                <para>For write-heavy workload, memstore fraction can be increased in configuration at the
-                    expense of block cache; this will also allow one to have more regions.</para>
+                <para>
+                    例如，如果RS有16 Gb的内存, 使用默认设置，刚开始时每个RS会有 16384 * 0.4/128 ~ 51个region。
+                    这个公式可以扩展到多个表;如果他们都有相同的配置,只需要改下列族总数。
+
+                  </para>
+                <para>
+                    这个数字可以调整,上述公式假设你所有的region都以差不多的速度填满。
+                    如果只有一部分region经常写入，你可以从结果中分离这部分region，以获得更大的region数。
+                    此外，即使所有region都在写，所有的region memstores也不会均匀填满，并最终出现抖动(由于并发flush数的限制)。
+                    因此，一个RS的region数可以比原始值多2 - 3倍；然而，数量的增加也会带来更多的风险。
+
+                 </para>
+                <para>
+                    对于write-heavy工作负载，可以以块缓存为代价在配置中增加memstore比值，这也将使得一个RS有更多的region。
+                    </para>
             </section>
             <!-- ops.capacity.regions.count -->
             <section
                     xml:id="ops.capacity.regions.mincount">
-                <title>Number of regions per RS - lower bound</title>
-                <para>HBase scales by having regions across many servers. Thus if you have 2 regions for
-                    16GB data, on a 20 node machine your data will be concentrated on just a few machines -
-                    nearly the entire cluster will be idle. This really can't be stressed enough, since a
-                    common problem is loading 200MB data into HBase and then wondering why your awesome 10
-                    node cluster isn't doing anything.</para>
-                <para>On the other hand, if you have a very large amount of data, you may also want to go
-                    for a larger number of regions to avoid having regions that are too large.</para>
+                <title>region数/RS - 下界</title>
+                <para>
+                    HBase依比例决定多个服务器上的region数。
+                    因此，如果在20节点的机器上，你有2个region，16 Gb的数据，
+                    你的数据将只集中在几个机器——整个集群几乎被闲置。这真的不够，简直是毫无压力，
+                    因为，一个普遍性问题是 200 MB的数据加载到HBase，你就会纳闷为什么你的10节点集群屁事也没干。
+                   </para>
+                <para>另一方面，如果你的数据量特别大，你可以获取更大的region数以避免某些region太大。
+               </para>
             </section>
             <!-- ops.capacity.regions.mincount -->
             <section
                     xml:id="ops.capacity.regions.size">
-                <title>Maximum region size</title>
-                <para>For large tables in production scenarios, maximum region size is mostly limited by
-                    compactions - very large compactions, esp. major, can degrade cluster performance.
-                    Currently, the recommended maximum region size is 10-20Gb, and 5-10Gb is optimal. For
-                    older 0.90.x codebase, the upper-bound of regionsize is about 4Gb, with a default of
-                    256Mb.</para>
-                <para>The size at which the region is split into two is generally configured via <xref
-                        linkend="hbase.hregion.max.filesize" />; for details, see <xref
-                        linkend="arch.region.splits" />.</para>
-                <para>If you cannot estimate the size of your tables well, when starting off, it's probably
-                    best to stick to the default region size, perhaps going smaller for hot tables (or
-                    manually split hot regions to spread the load over the cluster), or go with larger region
-                    sizes if your cell sizes tend to be largish (100k and up).</para>
-                <para>In HBase 0.98, experimental stripe compactions feature was added that would allow for
-                    larger regions, especially for log data. See <xref
+                <title>Region最大大小</title>
+                <para>对于生产环境中的大表，region的最大大小主要受限于压缩操作 - 非常大的压缩（例如major），
+                    会降低集群的性能。目前，推荐的region最大大小是10-20Gb，最理想的是5-10Gb。
+                    对于老的 0.90.x代码库，regionsize的上界大约是4Gb，默认大小是256Mb。</para>
+                <para>Region分裂成两个的阈值大小通常通过<xref
+                        linkend="hbase.hregion.max.filesize" />来配置， 更多细节，请参考 <xref
+                        linkend="arch.region.splits" />。</para>
+                <para>如果你无法估算你的表的大小， 开始的时候，最好是使用默认大小，对于使用度高的表还可以再小点
+                    （或者手动分割使用率高的region以分担集群的负载），或者使用大点的region大小，如果你的单元格大小非常大的话（100K以上）。
+                    </para>
+                <para>在 HBase 0.98中， 增加了试验性的stripe压缩特性，这允许更大的region，特别是对日志数据。参考章节
+                    <xref
                             linkend="ops.stripe" />.</para>
             </section>
             <!-- ops.capacity.regions.size -->
             <section
                     xml:id="ops.capacity.regions.total">
-                <title>Total data size per region server</title>
-                <para>According to above numbers for region size and number of regions per region server, in
-                    an optimistic estimate 10 GB x 100 regions per RS will give up to 1TB served per region
-                    server, which is in line with some of the reported multi-PB use cases. However, it is
-                    important to think about the data vs cache size ratio at the RS level. With 1TB of data
-                    per server and 10 GB block cache, only 1% of the data will be cached, which may barely
-                    cover all block indices.</para>
+                <title>RegionServer的数据总大小</title>
+                <para>根据上面说的region大小和每台region server的region数，乐观估计下，10GB*100 region/RS将使得每个region server
+                    需有1TB，这配置也符合某些已公布的PB级使用案例。然而，重要的是要考虑RS级的数据与缓存大小比。每台服务器1TB数据，
+                    10GB的块缓存，只有1%的数据会被缓存，这可能仅仅覆盖到所有的块索引。
+                    </para>
             </section>
             <!-- ops.capacity.regions.total -->
         </section>
         <!-- ops.capacity.regions -->
         <section
                 xml:id="ops.capacity.config">
-            <title>Initial configuration and tuning</title>
-            <para>First, see <xref
-                    linkend="important_configurations" />. Note that some configurations, more than others,
-                depend on specific scenarios. Pay special attention to:</para>
+            <title>初始配置和调优</title>
+            <para>首先，见 <xref
+                    linkend="important_configurations" />。注意，某些配置相对其它配置来说，更加依赖特定的场景。
+               以下要特别注意：</para>
             <itemizedlist>
                 <listitem>
                     <para><xref
-                            linkend="hbase.regionserver.handler.count" /> - request handler thread count, vital
-                        for high-throughput workloads.</para>
+                            linkend="hbase.regionserver.handler.count" /> - 处理请求的线程数，
+                        对于高吞吐量的工作特别重要。</para>
                 </listitem>
                 <listitem>
                     <para><xref
-                            linkend="config.wals" /> - the blocking number of WAL files depends on your memstore
-                        configuration and should be set accordingly to prevent potential blocking when doing
-                        high volume of writes.</para>
+                            linkend="config.wals" /> - WAL文件的阻塞数，取决于你的memstore配置，在进行大量的写操作时，
+                        应该设置它来防止可能的阻塞。
+                     </para>
                 </listitem>
             </itemizedlist>
-            <para>Then, there are some considerations when setting up your cluster and tables.</para>
+            <para>此外，在设置你的集群和表时还有一些注意项。</para>
             <section
                     xml:id="ops.capacity.config.compactions">
-                <title>Compactions</title>
-                <para>Depending on read/write volume and latency requirements, optimal compaction settings
-                    may be different. See <xref
-                            linkend="compaction" /> for some details.</para>
-                <para>When provisioning for large data sizes, however, it's good to keep in mind that
-                    compactions can affect write throughput. Thus, for write-intensive workloads, you may opt
-                    for less frequent compactions and more store files per regions. Minimum number of files
-                    for compactions (<varname>hbase.hstore.compaction.min</varname>) can be set to higher
-                    value; <xref
-                            linkend="hbase.hstore.blockingStoreFiles" /> should also be increased, as more files
-                    might accumulate in such case. You may also consider manually managing compactions: <xref
+                <title>压缩</title>
+                <para>根据读/写量和延迟要求，最优化的压缩设置可能不一样。具体细节请参考：
+                    <xref
+                            linkend="compaction" /></para>
+                <para>当压缩数据特别大时，记住，压缩会影响写吞吐量。因此，对于写密集型工作，
+                    不要频繁压缩，给每台region分配更多的store文件。 压缩文件的最小数目(<varname>hbase.hstore.compaction.min</varname>)
+                    可以设置得更高些；
+                    <xref
+                            linkend="hbase.hstore.blockingStoreFiles" /> 也应该高一点，因为在这种情况下，会堆积越来越多的文件。
+                    你也可以考虑手动管理压缩： <xref
                             linkend="managed.compactions" /></para>
             </section>
             <!-- ops.capacity.config.compactions -->
             <section
                     xml:id="ops.capacity.config.presplit">
-                <title>Pre-splitting the table</title>
-                <para>Based on the target number of the regions per RS (see <xref
+                <title>预分割表</title>
+                <para>基于每个RS的region目标数目（参考 <xref
                         linkend="ops.capacity.regions.count"
-                        xrefstyle="template:above" />) and number of RSes, one can pre-split the table at
-                    creation time. This would both avoid some costly splitting as the table starts to fill up,
-                    and ensure that the table starts out already distributed across many servers.</para>
-                <para>If the table is expected to grow large enough to justify that, at least one region per
-                    RS should be created. It is not recommended to split immediately into the full target
-                    number of regions (e.g. 50 * number of RSes), but a low intermediate value can be chosen.
-                    For multiple tables, it is recommended to be conservative with presplitting (e.g.
-                    pre-split 1 region per RS at most), especially if you don't know how much each table will
-                    grow. If you split too much, you may end up with too many regions, with some tables having
-                    too many small regions.</para>
-                <para>For pre-splitting howto, see <xref
+                        xrefstyle="template:above" />）和RS的数目，可以在表创建的时候对其预分割。
+                    这可以避免随着表开始填满，而进行的高代价分割，也可以确保表在一开始就已经分布到多台服务器上。
+                   </para>
+                <para>如果表预计会增长的很大，应该给每个RS最少创建一个region。
+                    不建议立马将region分割到最大目标数目（例如50*RS数），可以小一点。
+                    对于多个表的情况，建议预分割保守点（例如每个RS预分割一个region），特别是你不清楚每个表会增长到多大时。
+                    如果你分割得太多，最后你可能会有很多的region，某些表就会有太多的小region。
+                   </para>
+                <para>至于怎样进行预分割，请参考 <xref
                         linkend="precreate.regions" />.</para>
             </section>
             <!-- ops.capacity.config.presplit -->
