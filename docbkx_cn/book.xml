@@ -952,8 +952,9 @@ $ <userinput>HADOOP_CLASSPATH=$(hbase mapredcp):/etc/hbase/conf hadoop jar MyApp
 
     <section>
       <title>HBase自带的MapReduce任务</title>
-      <para>The HBase JAR also serves as a Driver for some bundled mapreduce jobs. To learn about
-        the bundled MapReduce jobs, run the following command.</para>
+      <para>
+          HBase的JAR包中自带了一些mapreduce任务，为了学习这些自带的mapreduce任务，可以运行如下的命令：
+          </para>
 
       <screen language="bourne">$ <userinput>${HADOOP_HOME}/bin/hadoop jar ${HBASE_HOME}/hbase-0.90.0-SNAPSHOT.jar</userinput>
 <computeroutput>An example program must be given as the first argument.
@@ -965,40 +966,38 @@ Valid program names are:
   importtsv: Import data in TSV format.
   rowcounter: Count rows in HBase table</computeroutput>
     </screen>
-      <para>Each of the valid program names are bundled MapReduce jobs. To run one of the jobs,
-        model your command after the following example.</para>
+      <para>
+          每一个有效的程序名就是一个自带的mapreduce任务。为了运行其中一个任务，你可以像下面这样使用命令。
+          </para>
       <screen language="bourne">$ <userinput>${HADOOP_HOME}/bin/hadoop jar ${HBASE_HOME}/hbase-0.90.0-SNAPSHOT.jar rowcounter myTable</userinput></screen>
     </section>
 
     <section>
-      <title>HBase as a MapReduce Job Data Source and Data Sink</title>
-      <para>HBase can be used as a data source, <link
+      <title>MapReduce任务使用HBase作为数据源或数据存储池</title>
+      <para>HBase可以被用来作为一个MapReduce任务的数据源, <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html">TableInputFormat</link>,
-        and data sink, <link
+        和数据存储池, <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableOutputFormat.html">TableOutputFormat</link>
-        or <link
+        或 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/MultiTableOutputFormat.html">MultiTableOutputFormat</link>,
-        for MapReduce jobs. Writing MapReduce jobs that read or write HBase, it is advisable to
-        subclass <link
+        。 在读或写HBase的MapReduce任务中，建议使用 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableMapper.html">TableMapper</link>
-        and/or <link
-          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableReducer.html">TableReducer</link>.
-        See the do-nothing pass-through classes <link
+        和/或 <link
+          xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableReducer.html">TableReducer</link>的子类。
+        可以参考 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/IdentityTableMapper.html">IdentityTableMapper</link>
-        and <link
+        和 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/IdentityTableReducer.html">IdentityTableReducer</link>
-        for basic usage. For a more involved example, see <link
+        类学习基本的用法。 更多调用的例子，可以参考 <link
           xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/RowCounter.html">RowCounter</link>
-        or review the <code>org.apache.hadoop.hbase.mapreduce.TestTableMapReduce</code> unit test. </para>
-      <para>If you run MapReduce jobs that use HBase as source or sink, need to specify source and
-        sink table and column names in your configuration.</para>
+        或者预览 <code>org.apache.hadoop.hbase.mapreduce.TestTableMapReduce</code> 单元测试。 </para>
+      <para>如果你在MapReduce任务中使用HBase作为数据源或数据存储池，需要在你的配置中指定作为源的表和作为存储池的表。</para>
 
-      <para>When you read from HBase, the <code>TableInputFormat</code> requests the list of regions
-        from HBase and makes a map, which is either a <code>map-per-region</code> or
-          <code>mapreduce.job.maps</code> map, whichever is smaller. If your job only has two maps,
-        raise <code>mapreduce.job.maps</code> to a number greater than the number of regions. Maps
-        will run on the adjacent TaskTracker if you are running a TaskTracer and RegionServer per
-        node. When writing to HBase, it may make sense to avoid the Reduce step and write back into
+      <para>
+          当你从HBase中读取数据时，<code>TableInputFormat</code> 向HBase请求一个region的列表并且做一个映射，该映射不是
+          <code>map-per-region</code>就是<code>mapreduce.job.maps</code>，就看哪个更小一些。如果你的任务仅仅有2个map，
+          你需要将<code>mapreduce.job.maps</code>的值增大到比region数据更大才行。如果你正在每个节点上运行一个TaskTracer和
+          RegionServer进程，映射将会运行在相邻的TaskTracer。 When writing to HBase, it may make sense to avoid the Reduce step and write back into
         HBase from within your map. This approach works when your job does not need the sort and
         collation that MapReduce does on the map-emitted data. On insert, HBase 'sorts' so there is
         no point double-sorting (and shuffling data around your MapReduce cluster) unless you need
@@ -1015,59 +1014,55 @@ Valid program names are:
     </section>
 
     <section>
-      <title>Writing HFiles Directly During Bulk Import</title>
-      <para>If you are importing into a new table, you can bypass the HBase API and write your
-        content directly to the filesystem, formatted into HBase data files (HFiles). Your import
-        will run faster, perhaps an order of magnitude faster. For more on how this mechanism works,
-        see <xref
-          linkend="arch.bulk.load" />.</para>
+      <title>在批量导入（Bulk Import）时直接写入HFile文件</title>
+      <para>
+          如果你正在导入一个新表，你可以绕过HBase的API，并直接将内容写入文件系统，格式化成HBase的数据文件（HFiles）。你的导入将运行得更快。如需了解该机制的工作原理，请参考<xref
+          linkend="arch.bulk.load" />。</para>
     </section>
 
     <section>
-      <title>RowCounter Example</title>
-      <para>The included <link
+      <title>RowCounter示例</title>
+      <para>
+
+          HBase中自带的 <link
         xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/RowCounter.html">RowCounter</link>
-        MapReduce job uses <code>TableInputFormat</code> and does a count of all rows in the specified
-        table. To run it, use the following command: </para>
+        MapReduce任务使用 <code>TableInputFormat</code> 并且a比偶的所有行的数目。为了运行它，需要使用如下命令： </para>
       <screen language="bourne">$ <userinput>./bin/hadoop jar hbase-X.X.X.jar</userinput></screen> 
-      <para>This will
-        invoke the HBase MapReduce Driver class. Select <literal>rowcounter</literal> from the choice of jobs
-        offered. This will print rowcouner usage advice to standard output. Specify the tablename,
-        column to count, and output
-        directory. If you have classpath errors, see <xref linkend="hbase.mapreduce.classpath" />.</para>
+      <para>
+          这将调用HBase的MapReduce驱动类。从提供的任务中选择<literal>rowcounter</literal>。它将输出rowcouner到标准输出中。指定一个表名，要统计的列和输出目录。如果你的类路径(classpath)错误，请参考<xref linkend="hbase.mapreduce.classpath" />。
+         </para>
     </section>
 
     <section
       xml:id="splitter">
-      <title>Map-Task Splitting</title>
+      <title>Map-Task分割</title>
       <section
         xml:id="splitter.default">
-        <title>The Default HBase MapReduce Splitter</title>
-        <para>When <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html">TableInputFormat</link>
-          is used to source an HBase table in a MapReduce job, its splitter will make a map task for
-          each region of the table. Thus, if there are 100 regions in the table, there will be 100
-          map-tasks for the job - regardless of how many column families are selected in the
-          Scan.</para>
+        <title>默认的HBase MapReduce分割器</title>
+        <para>
+            当MapReduce任务的HBas表使用<link
+                xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormat.html">TableInputFormat</link>作为数据源格式的时候,它的分割器(splitter)会将这个table的每个region分到一个map。因此，如果一个table有100个region，就有100个map任务，不论scan操作中选择了多少个列族。
+        </para>
       </section>
       <section
         xml:id="splitter.custom">
-        <title>Custom Splitters</title>
-        <para>For those interested in implementing custom splitters, see the method
-            <code>getSplits</code> in <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormatBase.html">TableInputFormatBase</link>.
-          That is where the logic for map-task assignment resides. </para>
+        <title>自定义分割器</title>
+        <para>
+            对于那些有兴趣实现自定义分割器的人，可以参考方法<link
+                xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableInputFormatBase.html">TableInputFormatBase</link>中的
+            <code>getSplits</code>方法。这就是map任务分配的逻辑。
+             </para>
       </section>
     </section>
     <section
       xml:id="mapreduce.example">
-      <title>HBase MapReduce Examples</title>
+      <title>HBase MapReduce实例</title>
       <section
         xml:id="mapreduce.example.read">
-        <title>HBase MapReduce Read Example</title>
-        <para>The following is an example of using HBase as a MapReduce source in read-only manner.
-          Specifically, there is a Mapper instance but no Reducer, and nothing is being emitted from
-          the Mapper. There job would be defined as follows...</para>
+        <title>HBase MapReduce读实例</title>
+        <para>
+            下面是使用HBase作为源的MapReduce读取示例。特别是它仅有Mapper实例，没有Reducer。Mapper什么也不产生。如下所示：
+            </para>
         <programlisting language="java">
 Configuration config = HBaseConfiguration.create();
 Job job = new Job(config, "ExampleRead");
@@ -1093,7 +1088,7 @@ if (!b) {
   throw new IOException("error with job!");
 }
   </programlisting>
-        <para>...and the mapper instance would extend <link
+        <para>...mapper实例将继承 <link
             xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableMapper.html">TableMapper</link>...</para>
         <programlisting language="java">
 public static class MyMapper extends TableMapper&lt;Text, Text&gt; {
@@ -1106,9 +1101,10 @@ public static class MyMapper extends TableMapper&lt;Text, Text&gt; {
       </section>
       <section
         xml:id="mapreduce.example.readwrite">
-        <title>HBase MapReduce Read/Write Example</title>
-        <para>The following is an example of using HBase both as a source and as a sink with
-          MapReduce. This example will simply copy data from one table to another.</para>
+        <title>HBase MapReduce读/写实例</title>
+        <para>
+            下面是使用HBase作为源和存储池的MapReduce示例. 本示例简单将一个表的数据复制到另一个表。
+            </para>
         <programlisting language="java">
 Configuration config = HBaseConfiguration.create();
 Job job = new Job(config,"ExampleReadWrite");
@@ -1137,17 +1133,13 @@ if (!b) {
     throw new IOException("error with job!");
 }
     </programlisting>
-        <para>An explanation is required of what <classname>TableMapReduceUtil</classname> is doing,
-          especially with the reducer. <link
-            xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableOutputFormat.html">TableOutputFormat</link>
-          is being used as the outputFormat class, and several parameters are being set on the
-          config (e.g., TableOutputFormat.OUTPUT_TABLE), as well as setting the reducer output key
-          to <classname>ImmutableBytesWritable</classname> and reducer value to
-            <classname>Writable</classname>. These could be set by the programmer on the job and
-          conf, but <classname>TableMapReduceUtil</classname> tries to make things easier.</para>
-        <para>The following is the example mapper, which will create a <classname>Put</classname>
-          and matching the input <classname>Result</classname> and emit it. Note: this is what the
-          CopyTable utility does. </para>
+        <para>
+            <classname>TableMapReduceUtil</classname>做了什么需要解释, 特别是对reducer。  <link
+                xlink:href="http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/mapreduce/TableOutputFormat.html">TableOutputFormat</link>作为 outputFormat类, 在config中设置的几个参数(例如，TableOutputFormat.OUTPUT_TABLE), 同时设置<classname>ImmutableBytesWritable</classname>的reducer输出key和<classname>Writable</classname>的 reducer值。 这可以通过在编程时配置job和conf来进行，但<classname>TableMapReduceUtil</classname>使这些变的更简单。
+            </para>
+        <para>
+            下面是一个mapper示例, 它将创建一个<classname>Put</classname>，匹配输入的<classname>Result</classname>并提交. 注意: 这是CopyTable工具做的.
+         </para>
         <programlisting language="java">
 public static class MyMapper extends TableMapper&lt;ImmutableBytesWritable, Put&gt;  {
 
@@ -1165,23 +1157,23 @@ public static class MyMapper extends TableMapper&lt;ImmutableBytesWritable, Put&
    	}
 }
     </programlisting>
-        <para>There isn't actually a reducer step, so <classname>TableOutputFormat</classname> takes
-          care of sending the <classname>Put</classname> to the target table. </para>
-        <para>This is just an example, developers could choose not to use
-            <classname>TableOutputFormat</classname> and connect to the target table themselves.
+        <para>
+            这不是真正的reducer步骤, 所以<classname>TableOutputFormat</classname>处理发送 <classname>Put</classname>到目标表.
+             </para>
+        <para>
+            这仅仅是一个示例, 开发者可以选择不使用<classname>TableOutputFormat</classname>并自己连接到目标表。
         </para>
       </section>
       <section
         xml:id="mapreduce.example.readwrite.multi">
-        <title>HBase MapReduce Read/Write Example With Multi-Table Output</title>
-        <para>TODO: example for <classname>MultiTableOutputFormat</classname>. </para>
+        <title>HBase MapReduce读/写多表输出实例</title>
+        <para>TODO: 一个<classname>MultiTableOutputFormat</classname>的实例。 </para>
       </section>
       <section
         xml:id="mapreduce.example.summary">
-        <title>HBase MapReduce Summary to HBase Example</title>
-        <para>The following example uses HBase as a MapReduce source and sink with a summarization
-          step. This example will count the number of distinct instances of a value in a table and
-          write those summarized counts in another table.
+        <title>HBase MapReduce汇总到HBase实例</title>
+        <para>
+            下面是使用HBase作为源和存储池的具有汇总步骤的MapReduce示例。例子计算一个表中不同值的个数，并将汇总的结果输出到另一个表。
           <programlisting language="java">
 Configuration config = HBaseConfiguration.create();
 Job job = new Job(config,"ExampleSummary");
