@@ -28,21 +28,21 @@
  * limitations under the License.
  */
 -->
-  <title>Apache HBase Case Studies</title>
+  <title>Apache HBase 实例学习</title>
   <section
     xml:id="casestudies.overview">
-    <title>Overview</title>
-    <para> This chapter will describe a variety of performance and troubleshooting case studies that
-      can provide a useful blueprint on diagnosing Apache HBase cluster issues. </para>
-    <para> For more information on Performance and Troubleshooting, see <xref
-        linkend="performance" /> and <xref
-        linkend="trouble" />. </para>
+    <title>概述</title>
+    <para> 本章节将描述一些性能和故障诊断案例研究，这为HBase集群问题的诊断提供了一份有用的蓝本。
+      </para>
+    <para> 关于性能和故障诊断的更多信息，请参考 <xref
+        linkend="performance" /> 和 <xref
+        linkend="trouble" />。 </para>
   </section>
 
   <section
     xml:id="casestudies.schema">
-    <title>Schema Design</title>
-    <para>See the schema design case studies here: <xref
+    <title>模式设计</title>
+    <para>参考：<xref
         linkend="schema.casestudies" />
     </para>
 
@@ -51,100 +51,88 @@
 
   <section
     xml:id="casestudies.perftroub">
-    <title>Performance/Troubleshooting</title>
+    <title>性能/故障排除</title>
 
     <section
       xml:id="casestudies.slownode">
-      <title>Case Study #1 (Performance Issue On A Single Node)</title>
+      <title>案例 #1 (单节点上的性能问题)</title>
       <section>
-        <title>Scenario</title>
-        <para> Following a scheduled reboot, one data node began exhibiting unusual behavior.
-          Routine MapReduce jobs run against HBase tables which regularly completed in five or six
-          minutes began taking 30 or 40 minutes to finish. These jobs were consistently found to be
-          waiting on map and reduce tasks assigned to the troubled data node (e.g., the slow map
-          tasks all had the same Input Split). The situation came to a head during a distributed
-          copy, when the copy was severely prolonged by the lagging node. </para>
+        <title>场景</title>
+        <para> 重启后，一个数据节点表现不正常。
+            针对HBase表的例行MapReduce任务往常执行完只要5到6分钟，现在开始要30或40分钟。
+            最后发现这些任务都是在等待，那些分配给有问题的那个数据节点的map和reduce任务（例如，运行慢的map任务都有同样的Input Split）。
+            这种情况在分布式拷贝期间会到紧要关头，由于这个滞后的节点，复制过程会严重拖延。
+          </para>
       </section>
       <section>
-        <title>Hardware</title>
+        <title>硬件</title>
         <itemizedlist>
-          <title>Datanodes:</title>
+          <title>数据节点:</title>
           <listitem>
-            <para>Two 12-core processors</para>
+            <para>2个 12-核 处理器</para>
           </listitem>
           <listitem>
-            <para>Six Enerprise SATA disks</para>
+            <para>6个 Enerprise SATA 硬盘</para>
           </listitem>
           <listitem>
-            <para>24GB of RAM</para>
+            <para>24GB内存</para>
           </listitem>
           <listitem>
-            <para>Two bonded gigabit NICs</para>
+            <para>两个粘合的千兆级网卡</para>
           </listitem>
         </itemizedlist>
         <itemizedlist>
-          <title>Network:</title>
+          <title>网络:</title>
           <listitem>
-            <para>10 Gigabit top-of-rack switches</para>
+            <para>10千兆级架顶交换机</para>
           </listitem>
           <listitem>
-            <para>20 Gigabit bonded interconnects between racks.</para>
+            <para>20 千兆级机架连接线</para>
           </listitem>
         </itemizedlist>
       </section>
       <section>
-        <title>Hypotheses</title>
+        <title>假设</title>
         <section>
-          <title>HBase "Hot Spot" Region</title>
-          <para> We hypothesized that we were experiencing a familiar point of pain: a "hot spot"
-            region in an HBase table, where uneven key-space distribution can funnel a huge number
-            of requests to a single HBase region, bombarding the RegionServer process and cause slow
-            response time. Examination of the HBase Master status page showed that the number of
-            HBase requests to the troubled node was almost zero. Further, examination of the HBase
-            logs showed that there were no region splits, compactions, or other region transitions
-            in progress. This effectively ruled out a "hot spot" as the root cause of the observed
-            slowness. </para>
+          <title>HBase “热点” Region</title>
+          <para> 我们假设正在经历一个熟悉的痛点：HBase表中的一个“热点”，key空间分配不均匀会造成大量的请求打到
+              一个单独的region上，会“轰击”RegionServer进程并导致缓慢的响应时间。对HBase Master状态页的检查表明
+              问题节点的请求数基本为0。而且，对HBase日志的检查表明没有region分裂，压缩或有其它region在进行转换（transition）。
+              这有力的排除了“热点”是响应缓慢的根本原因。
+
+
+          </para>
         </section>
         <section>
-          <title>HBase Region With Non-Local Data</title>
-          <para> Our next hypothesis was that one of the MapReduce tasks was requesting data from
-            HBase that was not local to the datanode, thus forcing HDFS to request data blocks from
-            other servers over the network. Examination of the datanode logs showed that there were
-            very few blocks being requested over the network, indicating that the HBase region was
-            correctly assigned, and that the majority of the necessary data was located on the node.
-            This ruled out the possibility of non-local data causing a slowdown. </para>
+          <title>HBase Region和非本地数据</title>
+          <para> 我们的下一个假设是，有一个MapReduce任务正在从HBase请求数据，但该HBase对于datanode来说不是本地的，
+             因此HDFS不得不通过网络从其它服务器上请求数据块。检查datanode日志表明通过网络请求的数据块特别少，这表明
+            HBase region分配得很正确，大部分必要的数据位于节点上。这也派出了非本地数据导致响应缓慢的可能性。
+
+           </para>
         </section>
         <section>
-          <title>Excessive I/O Wait Due To Swapping Or An Over-Worked Or Failing Hard Disk</title>
-          <para> After concluding that the Hadoop and HBase were not likely to be the culprits, we
-            moved on to troubleshooting the datanode's hardware. Java, by design, will periodically
-            scan its entire memory space to do garbage collection. If system memory is heavily
-            overcommitted, the Linux kernel may enter a vicious cycle, using up all of its resources
-            swapping Java heap back and forth from disk to RAM as Java tries to run garbage
-            collection. Further, a failing hard disk will often retry reads and/or writes many times
-            before giving up and returning an error. This can manifest as high iowait, as running
-            processes wait for reads and writes to complete. Finally, a disk nearing the upper edge
-            of its performance envelope will begin to cause iowait as it informs the kernel that it
-            cannot accept any more data, and the kernel queues incoming data into the dirty write
-            pool in memory. However, using <code>vmstat(1)</code> and <code>free(1)</code>, we could
-            see that no swap was being used, and the amount of disk IO was only a few kilobytes per
-            second. </para>
+          <title>过度工作或有问题的磁盘，或内存交换造成I/O等待过多</title>
+          <para>以上结论表明 Hadoop和HBase不像是罪魁祸首，我们继续对datanode的硬件进行故障排除。
+            JAVA，在设计上，将定期扫描它的整个内存空间以进行垃圾收集。如果系统内存使用过量，Linux内核会进入一个恶性循环，
+            它将耗尽所有资源来交换回java堆内存，从磁盘到RAM，因为java要运行垃圾收集程序。此外，一个有问题的硬盘在放弃或返回一个错误之前，
+            会重试读/写多次。这就变现出很高的iowait，因为正在运行的进程需要等待读写操作完成。最后，一个快接近性能上限的磁盘也会导致io等待，
+            因为它会告诉内核，它无法再接收更多的数据了，内核就会将到来的数据列入到内存中的脏写池中。
+            </para>
         </section>
         <section>
-          <title>Slowness Due To High Processor Usage</title>
-          <para> Next, we checked to see whether the system was performing slowly simply due to very
-            high computational load. <code>top(1)</code> showed that the system load was higher than
-            normal, but <code>vmstat(1)</code> and <code>mpstat(1)</code> showed that the amount of
-            processor being used for actual computation was low. </para>
+          <title>处理器高使用造成的缓慢</title>
+          <para> 接下来，我们会检查，看看系统运行缓慢是否只是因为计算负载太高。
+              <code>top(1)</code>表明系统负载比正常时候要高，但<code>vmstat(1)</code> 和 <code>mpstat(1)</code>
+              表明用于实际计算的处理器数比较少。
+         </para>
         </section>
         <section>
-          <title>Network Saturation (The Winner)</title>
-          <para> Since neither the disks nor the processors were being utilized heavily, we moved on
-            to the performance of the network interfaces. The datanode had two gigabit ethernet
-            adapters, bonded to form an active-standby interface. <code>ifconfig(8)</code> showed
-            some unusual anomalies, namely interface errors, overruns, framing errors. While not
-            unheard of, these kinds of errors are exceedingly rare on modern hardware which is
-            operating as it should: </para>
+          <title>网络饱和(赢家)</title>
+          <para> 既然不是磁盘也不是处理器被过度使用，那么我们接着看看网络设备的性能。
+            datanode有2个千兆级以太网适配器，结合成主备模式的接口。 <code>ifconfig(8)</code>显示有
+              一些不寻常的异常，超量，帧错误。虽然不是闻所未闻，但对于现在的硬件上的操作来说，出现这些错误是非常罕见的：
+ </para>
           <screen language="bourne">		
 $ /sbin/ifconfig bond0
 bond0  Link encap:Ethernet  HWaddr 00:00:00:00:00:00  
@@ -155,11 +143,11 @@ TX packets:3443518196 errors:0 dropped:0 overruns:0 carrier:0
 collisions:0 txqueuelen:0 
 RX bytes:2416328868676 (2.4 TB)  TX bytes:3464991094001 (3.4 TB)
         </screen>
-          <para> These errors immediately lead us to suspect that one or more of the ethernet
-            interfaces might have negotiated the wrong line speed. This was confirmed both by
-            running an ICMP ping from an external host and observing round-trip-time in excess of
-            700ms, and by running <code>ethtool(8)</code> on the members of the bond interface and
-            discovering that the active interface was operating at 100Mbs/, full duplex. </para>
+          <para>
+              这些错误立即让我们怀疑,一个或多个以太网接口可能协商出错误的线路速度。
+              通过下面两点证实了这个怀疑：从一个外部主机运行ICMP ping并观察超过700 ms的往返时间，
+              在结合的接口成员上运行 <code>ethtool(8)</code>，并发现活动接口以100mb/s，全双工运行。
+           </para>
           <screen language="bourne">		
 $ sudo ethtool eth0
 Settings for eth0:
@@ -188,49 +176,46 @@ Wake-on: g
 Current message level: 0x00000003 (3)
 Link detected: yes
           </screen>
-          <para> In normal operation, the ICMP ping round trip time should be around 20ms, and the
-            interface speed and duplex should read, "1000MB/s", and, "Full", respectively. </para>
+          <para>在正常操作中，ICMP ping 往返时间应该在20ms左右， 接口速度和双工应该分别为"1000MB/s"和"Full"。
+               </para>
         </section>
       </section>
       <section>
-        <title>Resolution</title>
-        <para> After determining that the active ethernet adapter was at the incorrect speed, we
-          used the <code>ifenslave(8)</code> command to make the standby interface the active
-          interface, which yielded an immediate improvement in MapReduce performance, and a 10 times
-          improvement in network throughput: </para>
-        <para> On the next trip to the datacenter, we determined that the line speed issue was
-          ultimately caused by a bad network cable, which was replaced. </para>
+        <title>解决方案</title>
+        <para>
+            确定活动的以太网适配器速度不正确后，我们使用了 <code>ifenslave(8)</code> 命令使备用接口成为活动接口，
+            这立即改善了MapReduce性能，使网络吞吐量提高了10倍。  </para>
+          <para>
+            接着在数据中心，我们最终确定线路速度的问题是由一根坏网络电缆造成的，然后更换了它。
+
+        </para>
       </section>
     </section>
     <!--  case study -->
     <section
       xml:id="casestudies.perf.1">
-      <title>Case Study #2 (Performance Research 2012)</title>
-      <para> Investigation results of a self-described "we're not sure what's wrong, but it seems
-        slow" problem. <link
+        <title>案例#2(性能研究 2012)</title>
+      <para>  一个自称“我们不知道怎么了，但似乎很慢”的问题的调查结果。 <link
           xlink:href="http://gbif.blogspot.com/2012/03/hbase-performance-evaluation-continued.html">http://gbif.blogspot.com/2012/03/hbase-performance-evaluation-continued.html</link>
       </para>
     </section>
 
     <section
       xml:id="casestudies.perf.2">
-      <title>Case Study #3 (Performance Research 2010))</title>
-      <para> Investigation results of general cluster performance from 2010. Although this research
-        is on an older version of the codebase, this writeup is still very useful in terms of
-        approach. <link
+      <title> 案例#3(性能研究 2010)</title>
+      <para>  2010年的对于一般集群的性能的调查结果。尽管这项研究基于一个旧版本的代码库，这篇文章在方法层面仍然非常有用。 <link
           xlink:href="http://hstack.org/hbase-performance-testing/">http://hstack.org/hbase-performance-testing/</link>
       </para>
     </section>
 
     <section
       xml:id="casestudies.max.transfer.threads">
-      <title>Case Study #4 (max.transfer.threads Config)</title>
-      <para> Case study of configuring <code>max.transfer.threads</code> (previously known as
-        <code>xcievers</code>) and diagnosing errors from misconfigurations. <link
+      <title>案例#4(max.transfer.threads配置)</title>
+      <para>   配置<code>max.transfer.threads</code> (以前为xcievers)及 诊断来自于错误配置的错误。<link
           xlink:href="http://www.larsgeorge.com/2012/03/hadoop-hbase-and-xceivers.html">http://www.larsgeorge.com/2012/03/hadoop-hbase-and-xceivers.html</link>
       </para>
-      <para> See also <xref
-          linkend="dfs.datanode.max.transfer.threads" />. </para>
+      <para> 参考 <xref
+          linkend="dfs.datanode.max.transfer.threads" />。 </para>
     </section>
 
   </section>
