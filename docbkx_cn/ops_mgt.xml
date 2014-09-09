@@ -2058,19 +2058,17 @@ $ for i in `cat conf/regionservers|sort`; do ./bin/graceful_stop.sh --restart --
     <section
             xml:id="table.rename">
         <title>Table Rename</title>
-        <para>In versions 0.90.x of hbase and earlier, we had a simple script that would rename the hdfs
-            table directory and then do an edit of the hbase:meta table replacing all mentions of the old
-            table name with the new. The script was called <command>./bin/rename_table.rb</command>. The
-            script was deprecated and removed mostly because it was unmaintained and the operation
-            performed by the script was brutal. </para>
-        <para> As of hbase 0.94.x, you can use the snapshot facility renaming a table. Here is how you
-            would do it using the hbase shell:</para>
+        <para>
+            在0.90.x及早期hbase版本中，我们有一个简单的脚本，可用来重命名hdfs表目录，并将hbase:meta表中所有涉及的旧表名替换成新的。
+            该脚本为 <command>./bin/rename_table.rb</command>，多半已被弃用删除了，因为该脚本早已不再维护，其执行过程太多野蛮。
+           </para>
+        <para> 到了 hbase 0.94.x， 你可以使用快照工具来重命名表。下面是通过hbase shell来操作：</para>
         <screen><![CDATA[hbase shell> disable 'tableName'
 hbase shell> snapshot 'tableName', 'tableSnapshot'
 hbase shell> clone_snapshot 'tableSnapshot', 'newTableName'
 hbase shell> delete_snapshot 'tableSnapshot'
 hbase shell> drop 'tableName']]></screen>
-        <para>or in code it would be as follows:</para>
+        <para>代码如下：</para>
         <programlisting language="Java">void rename(HBaseAdmin admin, String oldTableName, String newTableName) {
             String snapshotName = randomName();
             admin.disableTable(oldTableName);
