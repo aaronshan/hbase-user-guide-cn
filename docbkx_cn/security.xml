@@ -28,51 +28,50 @@
  * limitations under the License.
  */
 -->
-  <title>Secure Apache HBase</title>
+  <title>安全的Apache HBase</title>
   <section
     xml:id="hbase.secure.configuration">
-    <title>Secure Client Access to Apache HBase</title>
-    <para>Newer releases of Apache HBase (&gt;= 0.92) support optional SASL authentication of clients<footnote>
-        <para>See also Matteo Bertozzi's article on <link
+    <title>安全的客户端访问Apache HBase</title>
+    <para>
+        最新的Apache HBase (&gt;= 0.92)发行版支持可选择的客户端SASL认证
+        <footnote>
+        <para>可以参考Matteo Bertozzi's的文章 <link
             xlink:href="http://www.cloudera.com/blog/2012/09/understanding-user-authentication-and-authorization-in-apache-hbase/">Understanding
-            User Authentication and Authorization in Apache HBase</link>.</para>
+            User Authentication and Authorization in Apache HBase</link>。</para>
       </footnote>.</para>
-    <para>This describes how to set up Apache HBase and clients for connection to secure HBase
-      resources.</para>
+    <para>
+        下面描述如何设置Apache HBase和客户端，以使得可以进行安全的HBase资源连接。
+        </para>
 
     <section xml:id="security.prerequisites">
-      <title>Prerequisites</title>
+      <title>先决条件</title>
       <variablelist>
         <varlistentry>
-          <term>Hadoop Authentication Configuration</term>
+          <term>Hadoop的身份验证配置</term>
           <listitem>
-            <para>To run HBase RPC with strong authentication, you must set
-                <code>hbase.security.authentication</code> to <literal>true</literal>. In this case,
-              you must also set <code>hadoop.security.authentication</code> to
-                <literal>true</literal>. Otherwise, you would be using strong authentication for
-              HBase but not for the underlying HDFS, which would cancel out any benefit.</para>
+            <para>
+                为了使用强验证来运行HBase RPC，你必须设置<code>hbase.security.authentication</code>的值为<literal>true</literal>。
+                在这个例子中，你也必须设置<code>hadoop.security.authentication</code>的值为<literal>true</literal>。否则，你将能在HBase中使用强验证
+                但底层的HDFS不是使用强验证，这会把所有的好处都抵消掉。
+                </para>
           </listitem>
         </varlistentry>
 
         <varlistentry>
           <term>Kerberos KDC</term>
           <listitem>
-            <para> You need to have a working Kerberos KDC. </para>
-            <para> A HBase configured for secure client access is expected to be running on top of a
-              secured HDFS cluster. HBase must be able to authenticate to HDFS services. HBase needs
-              Kerberos credentials to interact with the Kerberos-enabled HDFS daemons.
-              Authenticating a service should be done using a keytab file. The procedure for
-              creating keytabs for HBase service is the same as for creating keytabs for Hadoop.
-              Those steps are omitted here. Copy the resulting keytab files to wherever HBase Master
-              and RegionServer processes are deployed and make them readable only to the user
-              account under which the HBase daemons will run. </para>
-            <para> A Kerberos principal has three parts, with the form
-                <code>username/fully.qualified.domain.name@YOUR-REALM.COM</code>. We recommend using
-                <code>hbase</code> as the username portion. </para>
-            <para> The following is an example of the configuration properties for Kerberos
-              operation that must be added to the <code>hbase-site.xml</code> file on every server
-              machine in the cluster. Required for even the most basic interactions with a secure
-              Hadoop configuration, independent of HBase security. </para>
+            <para> 你需要有一个工作中的Kerberos KDC。 </para>
+            <para>
+                HBase配置安全的客户端访问需要运行在安全的HDFS集群上。HBase必须能够验证HDFS的服务。HBase需要Kerberos凭证与启用Kerberos的HDFS守护进程交互。
+                验证一个服务应该使用keytab文件来完成。为HBase创建keytabs的过程与为Hadoop创建keytabs的过程相同。这些步骤在这里被省略。复制生成的keytab文件
+                到HBase的Master和Regionserver，在部署时使它们只能被运行HBase守护进程的账户读取。 </para>
+            <para>
+                Kerberos主体有三个部分，格式为<code>username/fully.qualified.domain.name@YOUR-REALM.COM</code>。
+                我们建议使用<code>hbase</code>作为用户名的一部分。 </para>
+            <para>
+                下面是一个配置Kerberos操作的属性的例子。你必须在集群中服务器上的每一个<code>hbase-site.xml</code>文件进行配置。
+                即使对于最基本的交互，也需要使用安全的Hadoop配置，这和HBase的安全相互独立。
+                 </para>
             <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.regionserver.kerberos.principal</name>
@@ -91,32 +90,26 @@
   <value>/etc/hbase/conf/keytab.krb5</value>
 </property>
     ]]></programlisting>
-            <para> Each HBase client user should also be given a Kerberos principal. This principal
-              should have a password assigned to it (as opposed to a keytab file). The client
-              principal's <code>maxrenewlife</code> should be set so that it can be renewed enough
-              times for the HBase client process to complete. For example, if a user runs a
-              long-running HBase client process that takes at most 3 days, we might create this
-              user's principal within <code>kadmin</code> with: <code>addprinc -maxrenewlife
-                3days</code>
+            <para>
+                每一个HBase客户端用户应该被给予一个Kerberos主体。这个主体应该被分配一个密码（而不是keytab文件）。客户端主体的<code>maxrenewlife</code>应该被设置，以便它可以在
+                HBase客户端进程的续期内完成。例如，如果一个用户运行一个长时间的HBase客户端处理过程（至多花费3天），我们可能在<code>kadmin</code>使用：<code>addprinc -maxrenewlife
+                3days</code>创建这个用户的主体。
             </para>
-            <para> Long running daemons with indefinite lifetimes that require client access to
-              HBase can instead be configured to log in from a keytab. For each host running such
-              daemons, create a keytab with <code>kadmin</code> or <code>kadmin.local</code>. The
-              procedure for creating keytabs for HBase service is the same as for creating keytabs
-              for Hadoop. Those steps are omitted here. Copy the resulting keytab files to where the
-              client daemon will execute and make them readable only to the user account under which
-              the daemon will run. </para>
+            <para>
+                长时间运行的守护进程，需要到HBase的客户端访问无限期的寿命可以改为配置为从密钥表登录。对于运行的守护进程等各个主机上，创建的kadmin或kadmin.local密钥表。用于HBase的服务创建keytabs的过程是相同的，为的Hadoop创建keytabs。这些步骤在这里被省略。复制生成的密钥表文件到客户端守护进程就会执行，使他们只能读取到用户帐户下的守护进程运行。复制生成的keytab文件
+                到HBase的Master和Regionserver，在部署时使它们只能被运行HBase守护进程的账户读取。
+            </para>
           </listitem>
         </varlistentry>
       </variablelist>
     </section>
 
     <section>
-      <title>Server-side Configuration for Secure Operation</title>
-      <para>First, refer to <xref linkend="security.prerequisites" /> and ensure that your
-        underlying HDFS configuration is secure.</para>
-      <para> Add the following to the <code>hbase-site.xml</code> file on every server machine in
-        the cluster: </para>
+      <title>安全操作的服务器端配置</title>
+      <para>
+          首先，参考<xref linkend="security.prerequisites" />并且确定你底层的HDFS配置是安全的。
+          </para>
+      <para> 增加下面的内容到集群中的每一个服务器中的 <code>hbase-site.xml</code> 文件中： </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.security.authentication</name>
@@ -131,49 +124,53 @@
   <value>org.apache.hadoop.hbase.security.token.TokenProvider</value>
 </property>
     ]]></programlisting>
-      <para> A full shutdown and restart of HBase service is required when deploying these
-        configuration changes. </para>
+      <para>
+          当配置好这些内容之后，关闭且重启HBase服务以使新的配置生效。
+           </para>
     </section>
 
     <section>
-      <title>Client-side Configuration for Secure Operation</title>
-      <para>First, refer to <xref linkend="security.prerequisites" /> and ensure that your
-        underlying HDFS configuration is secure.</para>
-      <para> Add the following to the <code>hbase-site.xml</code> file on every client: </para>
+      <title>安全操作客户端的配置</title>
+      <para>
+          首先，参考<xref linkend="security.prerequisites" />并且确定你底层的HDFS配置是安全的。
+          </para>
+      <para> 增加下面的内容到每一个客户端的 <code>hbase-site.xml</code> 文件中： </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.security.authentication</name>
   <value>kerberos</value>
 </property>
     ]]></programlisting>
-      <para> The client environment must be logged in to Kerberos from KDC or keytab via the
-          <code>kinit</code> command before communication with the HBase cluster will be possible. </para>
-      <para> Be advised that if the <code>hbase.security.authentication</code> in the client- and
-        server-side site files do not match, the client will not be able to communicate with the
-        cluster. </para>
-      <para> Once HBase is configured for secure RPC it is possible to optionally configure
-        encrypted communication. To do so, add the following to the <code>hbase-site.xml</code> file
-        on every client: </para>
+      <para>
+          在与HBase集群通信之前，客户端环境必须通过<code>kinit</code>命令从KDC或者keytab登录到了Kerberos。
+           </para>
+      <para>
+          注意，如果在客户端和服务器端站点文件的<code>hbase.security.authentication</code>不匹配，则客户端将无法与集群通信。
+           </para>
+      <para>
+          一旦HBase的配置为安全的RPC，所以能够根据需要配置加密通信。要做到这一点，需要添加以下内容到每个客户端上的<code>hbase-site.xml</code>文件：
+           </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rpc.protection</name>
   <value>privacy</value>
 </property>
     ]]></programlisting>
-      <para> This configuration property can also be set on a per connection basis. Set it in the
-          <code>Configuration</code> supplied to <code>HTable</code>: </para>
+      <para>
+          此配置属性还可以在每个连接设置。在新建<code>HTable</code>时配置<code>Configuration</code>：
+           </para>
       <programlisting language="java">
 Configuration conf = HBaseConfiguration.create();
 conf.set("hbase.rpc.protection", "privacy");
 HTable table = new HTable(conf, tablename);
     </programlisting>
-      <para> Expect a ~10% performance penalty for encrypted communication. </para>
+      <para> 预计加密通信将造成大约10%的性能损失。</para>
     </section>
 
 
     <section xml:id="security.client.thrift">
-      <title>Client-side Configuration for Secure Operation - Thrift Gateway</title>
-      <para> Add the following to the <code>hbase-site.xml</code> file for every Thrift gateway: <programlisting language="xml"><![CDATA[
+      <title>安全操作客户端的配置 - Thrift网关</title>
+      <para> 对于每一个Thrift网关，增加下面的内容到 <code>hbase-site.xml</code> 文件中： <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.thrift.keytab.file</name>
   <value>/etc/hbase/conf/hbase.keytab</value>
@@ -187,76 +184,78 @@ HTable table = new HTable(conf, tablename);
 </property>
     ]]></programlisting>
       </para>
-      <para> Substitute the appropriate credential and keytab for <replaceable>$USER</replaceable>
-        and <replaceable>$KEYTAB</replaceable> respectively. </para>
-      <para>In order to use the Thrift API principal to interact with HBase, it is also necessary to
-        add the <code>hbase.thrift.kerberos.principal</code> to the <code>_acl_</code> table. For
-        example, to give the Thrift API principal, <code>thrift_server</code>, administrative
-        access, a command such as this one will suffice: </para>
+      <para>
+          替代相应的凭证和keytab为<replaceable>$USER</replaceable>和<replaceable>$KEYTAB</replaceable>。
+           </para>
+      <para>
+          为了使用Thrift API主体与HBase交互，添加<code>hbase.thrift.kerberos.principal</code>到 <code>_acl_</code>表也是必要的。
+          例如，对于给定的Thrift API主体，<code>thrift_server</code>，管理访问权限，使用下面的命令就可以了：
+      </para>
       <programlisting language="sql"><![CDATA[
 grant 'thrift_server', 'RWCA'
     ]]></programlisting>
-      <para>For more information about ACLs, please see the <link
-          linkend="hbase.accesscontrol.configuration">Access Control</link> section </para>
+      <para>更多关于ACLs的信息，请查阅 <link
+          linkend="hbase.accesscontrol.configuration">访问控制</link> 部分。 </para>
 
-      <para> The Thrift gateway will authenticate with HBase using the supplied credential. No
-        authentication will be performed by the Thrift gateway itself. All client access via the
-        Thrift gateway will use the Thrift gateway's credential and have its privilege. </para>
+      <para>
+          Thrift网关将使用提供的凭据与HBase进行身份验证。无身份验证将由Thrift网关自身执行。通过Thrift网关的所有客户端访问将使用Thrift网关的凭证，并有其特权。
+      </para>
     </section>
     <section xml:id="security.gateway.thrift">
-      <title>Configure the Thrift Gateway to Authenticate on Behalf of the Client</title>
-      <para><xref linkend="security.client.thrift"/> describes how to authenticate a Thrift client
-        to HBase using a fixed user. As an alternative, you can configure the Thrift gateway to
-        authenticate to HBase on the client's behalf, and to access HBase using a proxy user. This
-        was implemented in <link xlink:href="https://issues.apache.org/jira/browse/HBASE-11349"
-          >HBASE-11349</link> for Thrift 1, and <link
-          xlink:href="https://issues.apache.org/jira/browse/HBASE-11474">HBASE-11474</link> for
-        Thrift 2.</para>
+      <title>配置Thrift网管进行验证的客户端代表</title>
+      <para>
+          <xref linkend="security.client.thrift"/> 介绍如何认证一个固定用户使用Thrift客户端与HBase的连接。作为一种替代方法，你可以配置Thrift网关进行HBase客户端的身份验证，
+          ，并使用代理的用户访问HBase。<link xlink:href="https://issues.apache.org/jira/browse/HBASE-11349"
+              >HBASE-11349</link>是针对Thrift 1的实现，<link
+              xlink:href="https://issues.apache.org/jira/browse/HBASE-11474">HBASE-11474</link>是针对Thrift 2的实现。
+         </para>
       <note>
-        <title>Limitations with Thrift Framed Transport</title>
-        <para>If you use framed transport, you cannot yet take advantage of this feature, because
-          SASL does not work with Thrift framed transport at this time.</para>
+        <title>与Thrift框架传输的限制</title>
+        <para>
+            如果你使用框架式的传输，你还不能利用这个功能的优势，因为SASL在​​这个时候不能与Thrift的框架传输一起工作。
+            </para>
       </note>
-      <para>To enable it, do the following.</para>
+      <para>要启用它，请执行以下操作。</para>
       <procedure>
         <step>
-          <para>Be sure Thrift is running in secure mode, by following the procedure described in
-              <xref linkend="security.client.thrift"/>.</para>
+          <para>按照在
+              <xref linkend="security.client.thrift"/>中描述的过程，确定Thrift运行在安全模式。</para>
         </step>
         <step>
-          <para>Be sure that HBase is configured to allow proxy users, as described in <xref
-              linkend="security.rest.gateway"/>.</para>
+          <para>按照<xref
+                  linkend="security.rest.gateway"/>中的描述，确定HBase的配置允许代理用户。</para>
         </step>
         <step>
-          <para>In <filename>hbase-site.xml</filename> for each cluster node running a Thrift
-            gateway, set the property <code>hbase.thrift.security.qop</code> to one of the following
-            three values:</para>
+          <para>
+              在集群中的每一个运行Thrift网管的节点的<filename>hbase-site.xml</filename>文件，设置属性<code>hbase.thrift.security.qop</code>
+              为下面三个值中的某一个：
+              </para>
           <itemizedlist>
             <listitem>
-              <para><literal>auth-conf</literal> - authentication, integrity, and confidentiality
-                checking</para>
+              <para><literal>auth-conf</literal> - 身份验证，完整性和保密性检查</para>
             </listitem>
             <listitem>
-              <para><literal>auth-int</literal> - authentication and integrity checking</para>
+              <para><literal>auth-int</literal> - 身份验证和完整性检查</para>
             </listitem>
             <listitem>
-              <para><literal>auth</literal> - authentication checking only</para>
+              <para><literal>auth</literal> - 只检查身份验证</para>
             </listitem>
           </itemizedlist>
         </step>
         <step>
-          <para>Restart the Thrift gateway processes for the changes to take effect. If a node is
-            running Thrift, the output of the <command>jps</command> command will list a
-              <code>ThriftServer</code> process. To stop Thrift on a node, run the command
-              <command>bin/hbase-daemon.sh stop thrift</command>. To start Thrift on a node, run the
-            command <command>bin/hbase-daemon.sh start thrift</command>.</para>
+          <para>
+              重新启动Thrift网关程序，以使更改生效。如果一个节点运行Thrift，在<command>jps</command>命令的输出将列出一个<code>ThriftServer</code>进程。
+              要停止一个节点上的Thrift，运行命令<command>bin/hbase-daemon.sh stop thrift</command>。要在节点上启动Thrift，运行命令<command>bin/hbase-daemon.sh start thrift</command>。
+          </para>
         </step>
       </procedure>
     </section>
     
     <section>
-      <title>Client-side Configuration for Secure Operation - REST Gateway</title>
-      <para> Add the following to the <code>hbase-site.xml</code> file for every REST gateway: </para>
+      <title>安全操作客户端的配置 - REST网关</title>
+      <para>
+          添加如下内容到每一个REST网关的<code>hbase-site.xml</code>文件中：
+          </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rest.keytab.file</name>
@@ -267,37 +266,38 @@ grant 'thrift_server', 'RWCA'
   <value>$USER/_HOST@HADOOP.LOCALDOMAIN</value>
 </property>
     ]]></programlisting>
-      <para> Substitute the appropriate credential and keytab for <replaceable>$USER</replaceable>
-        and <replaceable>$KEYTAB</replaceable> respectively. </para>
-      <para> The REST gateway will authenticate with HBase using the supplied credential. No
-        authentication will be performed by the REST gateway itself. All client access via the REST
-        gateway will use the REST gateway's credential and have its privilege. </para>
-      <para>In order to use the REST API principal to interact with HBase, it is also necessary to
-        add the <code>hbase.rest.kerberos.principal</code> to the <code>_acl_</code> table. For
-        example, to give the REST API principal, <code>rest_server</code>, administrative access, a
-        command such as this one will suffice: </para>
+      <para>
+          替代相应的凭证和keytab为<replaceable>$USER</replaceable>和<replaceable>$KEYTAB</replaceable>。
+           </para>
+      <para>
+          REST网关将使用提供的凭据与HBase进行身份验证。无身份验证将由REST网关自身执行。通过REST网关的所有客户端访问将使用REST网关的凭证，并有其特权。
+      </para>
+      <para>
+          为了使用REST API主体与HBase交互，添加<code>hbase.rest.kerberos.principal</code>到 <code>_acl_</code>表也是必要的。
+          例如，对于给定的REST API主体，<code>rest_server</code>，管理访问权限，使用下面的命令就可以了：
+      </para>
       <programlisting language="sql"><![CDATA[
 grant 'rest_server', 'RWCA'
     ]]></programlisting>
-      <para>For more information about ACLs, please see the <link
-          linkend="hbase.accesscontrol.configuration">Access Control</link> section </para>
-      <para> It should be possible for clients to authenticate with the HBase cluster through the
-        REST gateway in a pass-through manner via SPEGNO HTTP authentication. This is future work.
+      <para>更多关于ACLs的信息, 请查阅 <link
+          linkend="hbase.accesscontrol.configuration">Access Control</link> 部分。 </para>
+      <para>
+          客户端与HBase集群通过REST网关的验证通过SPEGNO HTTP认证方式进行也是可能的。这是未来的工作。
       </para>
     </section>
 
     <section xml:id="security.rest.gateway">
-      <title>REST Gateway Impersonation Configuration</title>
-      <para> By default, the REST gateway doesn't support impersonation. It accesses the HBase on
-        behalf of clients as the user configured as in the previous section. To the HBase server,
-        all requests are from the REST gateway user. The actual users are unknown. You can turn on
-        the impersonation support. With impersonation, the REST gateway user is a proxy user. The
-        HBase server knows the acutal/real user of each request. So it can apply proper
-        authorizations. </para>
-      <para> To turn on REST gateway impersonation, we need to configure HBase servers (masters and
-        region servers) to allow proxy users; configure REST gateway to enable impersonation. </para>
-      <para> To allow proxy users, add the following to the <code>hbase-site.xml</code> file for
-        every HBase server: </para>
+      <title>REST网关模拟配置</title>
+      <para>
+          默认情况下，REST网关不支持模拟。它访问HBase的客户代表作为在上一节中所述的配置用户。对于HBase的服务器，所有的请求来自REST网关用户。实际用户是未知的。
+          你可以开启模拟支持。在模拟中，REST网关用户是一个代理用户。 HBase的服务器知道每个请求的actual/real用户。因此，它可以应用适当的授权。
+      </para>
+      <para>
+          要打开REST网关模拟，我们需要配置HBase的服务器（masters和region servers）给所有的代理用户;为了启用模拟而配置REST网关。
+           </para>
+      <para>
+          要允许代理用户，为每个HBase服务器的 <code>hbase-site.xml</code> 文件添加一下内容：
+           </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hadoop.security.authorization</name>
@@ -312,10 +312,12 @@ grant 'rest_server', 'RWCA'
   <value>$GROUPS</value>
 </property>
     ]]></programlisting>
-      <para> Substitute the REST gateway proxy user for $USER, and the allowed group list for
-        $GROUPS. </para>
-      <para> To enable REST gateway impersonation, add the following to the
-          <code>hbase-site.xml</code> file for every REST gateway. </para>
+      <para>
+          替代REST网关代理用户为$USER，和允许的组列表为$GROUPS。
+          </para>
+      <para>
+          为了启用REST网关模拟，增加如下内容到每个REST网关的<code>hbase-site.xml</code>文件。
+           </para>
       <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rest.authentication.type</name>
@@ -330,7 +332,7 @@ grant 'rest_server', 'RWCA'
   <value>$KEYTAB</value>
 </property>
     ]]></programlisting>
-      <para> Substitute the keytab for HTTP for $KEYTAB. </para>
+      <para> 代替HTTP的keytab为 $KEYTAB。 </para>
     </section>
 
   </section>
