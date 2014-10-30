@@ -340,35 +340,36 @@ grant 'rest_server', 'RWCA'
 
   <section
     xml:id="hbase.secure.simpleconfiguration">
-    <title>Simple User Access to Apache HBase</title>
-    <para>Newer releases of Apache HBase (&gt;= 0.92) support optional SASL authentication of clients<footnote>
-        <para>See also Matteo Bertozzi's article on <link
-            xlink:href="http://www.cloudera.com/blog/2012/09/understanding-user-authentication-and-authorization-in-apache-hbase/">Understanding
-            User Authentication and Authorization in Apache HBase</link>.</para>
+    <title>简单的用户访问Apache HBase</title>
+    <para>
+      最新的Apache HBase (&gt;= 0.92)发行版支持可选择的客户端SASL认证
+      <footnote>
+      <para>可以参考Matteo Bertozzi's的文章 <link
+              xlink:href="http://www.cloudera.com/blog/2012/09/understanding-user-authentication-and-authorization-in-apache-hbase/">Understanding
+          User Authentication and Authorization in Apache HBase</link>。
+       </para>
       </footnote>.</para>
-    <para>This describes how to set up Apache HBase and clients for simple user access to HBase
-      resources.</para>
+    <para>下面描述如何设置Apache HBase和客户端，以使得可以进行安全的HBase资源连接。</para>
 
     <section>
-      <title>Simple Versus Secure Access</title>
-      <para> The following section shows how to set up simple user access. Simple user access is not
-        a secure method of operating HBase. This method is used to prevent users from making
-        mistakes. It can be used to mimic the Access Control using on a development system without
-        having to set up Kerberos. </para>
-      <para> This method is not used to prevent malicious or hacking attempts. To make HBase secure
-        against these types of attacks, you must configure HBase for secure operation. Refer to the
-        section <link
-          linkend="hbase.accesscontrol.configuration">Secure Client Access to HBase</link> and
-        complete all of the steps described there. </para>
+      <title>简单VS安全访问</title>
+      <para>
+          以下部分显示了如何设置简单的用户访问。简单的用户访问没有操作HBase的安全方法。此方法用于防止用户的错误。它可以被用来在开发系统上模仿访问控制，而不必设置Kerberos。
+           </para>
+      <para>
+          这个方法不被用来阻止恶意或者骇客攻击。为了使HBase的安全能阻止这些攻击，你需要配置HBase为安全模式。参考章节<link
+              linkend="hbase.accesscontrol.configuration">Secure Client Access to HBase</link> 并且完成里面描述的所有步骤。
+           </para>
 
       <section>
-        <title>Prerequisites</title>
-        <para> None </para>
+        <title>先决条件</title>
+        <para> 无 </para>
 
         <section>
-          <title>Server-side Configuration for Simple User Access Operation</title>
-          <para> Add the following to the <code>hbase-site.xml</code> file on every server machine
-            in the cluster: </para>
+          <title>简单用户访问操作的服务器端配置</title>
+          <para>
+              增加下面的内容到集群中的每一个服务器上的 <code>hbase-site.xml</code> 文件中：
+               </para>
           <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.security.authentication</name>
@@ -387,8 +388,9 @@ grant 'rest_server', 'RWCA'
   <value>org.apache.hadoop.hbase.security.access.AccessController</value>
 </property>
     ]]></programlisting>
-          <para> For 0.94, add the following to the <code>hbase-site.xml</code> file on every server
-            machine in the cluster: </para>
+          <para>
+              对于0.94版本，增加下面的内容到集群中的每一个服务器上的 <code>hbase-site.xml</code> 文件中：
+              </para>
           <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rpc.engine</name>
@@ -403,65 +405,68 @@ grant 'rest_server', 'RWCA'
   <value>org.apache.hadoop.hbase.security.access.AccessController</value>
 </property> 
     ]]></programlisting>
-          <para> A full shutdown and restart of HBase service is required when deploying these
-            configuration changes. </para>
+          <para>
+              关闭HBase服务，然后重新启动以使得所有的配置更改生效。
+               </para>
         </section>
 
         <section>
-          <title>Client-side Configuration for Simple User Access Operation</title>
-          <para> Add the following to the <code>hbase-site.xml</code> file on every client: </para>
+          <title>简单用户访问操作的客户器端配置</title>
+          <para>
+              增加下面的内容到每一个客户端的 <code>hbase-site.xml</code> 文件中：
+              </para>
           <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.security.authentication</name>
   <value>simple</value>
 </property>
     ]]></programlisting>
-          <para> For 0.94, add the following to the <code>hbase-site.xml</code> file on every server
-            machine in the cluster: </para>
+          <para>
+              对于0.94版本，增加下面的内容到集群中的每一个服务器上的 <code>hbase-site.xml</code> 文件中：
+               </para>
           <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.rpc.engine</name>
   <value>org.apache.hadoop.hbase.ipc.SecureRpcEngine</value>
 </property>
     ]]></programlisting>
-          <para> Be advised that if the <code>hbase.security.authentication</code> in the client-
-            and server-side site files do not match, the client will not be able to communicate with
-            the cluster. </para>
+          <para>
+              注意，如果在客户端和服务器端站点文件的<code>hbase.security.authentication</code>不匹配，则客户端将无法与集群通信。
+               </para>
         </section>
 
         <section>
-          <title>Client-side Configuration for Simple User Access Operation - Thrift Gateway</title>
-          <para>The Thrift gateway user will need access. For example, to give the Thrift API user,
-              <code>thrift_server</code>, administrative access, a command such as this one will
-            suffice: </para>
+          <title>简单用户访问操作的客户器端配置 - Thrift网关</title>
+          <para>
+              Thrift网关用户需要访问。例如，未定Thrift API用户， <code>thrift_server</code>，可以通过下面的命令进行授权：
+              </para>
           <programlisting language="sql"><![CDATA[
 grant 'thrift_server', 'RWCA'
     ]]></programlisting>
-          <para>For more information about ACLs, please see the <link
-              linkend="hbase.accesscontrol.configuration">Access Control</link> section </para>
+          <para>
+              更多关于ACLs的信息，请查阅 <link
+              linkend="hbase.accesscontrol.configuration">Access Control</link> 部分。 </para>
 
-          <para> The Thrift gateway will authenticate with HBase using the supplied credential. No
-            authentication will be performed by the Thrift gateway itself. All client access via the
-            Thrift gateway will use the Thrift gateway's credential and have its privilege. </para>
+          <para>
+              Thrift网关将使用提供的凭据与HBase进行身份验证。无身份验证将由Thrift网关自身执行。通过Thrift网关的所有客户端访问将使用Thrift网关的凭证，并有其特权。
+             </para>
         </section>
 
         <section>
-          <title>Client-side Configuration for Simple User Access Operation - REST Gateway</title>
+          <title>简单用户访问操作的客户器端配置 - REST网关</title>
 
-          <para> The REST gateway will authenticate with HBase using the supplied credential. No
-            authentication will be performed by the REST gateway itself. All client access via the
-            REST gateway will use the REST gateway's credential and have its privilege. </para>
-          <para>The REST gateway user will need access. For example, to give the REST API user,
-              <code>rest_server</code>, administrative access, a command such as this one will
-            suffice: </para>
+          <para>
+              REST网关将使用提供的凭据与HBase进行身份验证。无身份验证将由REST网关自身执行。通过REST网关的所有客户端访问将使用REST网关的凭证，并有其特权。
+          </para>
+          <para>
+              REST网关用户需要访问。例如，未定REST API用户， <code>rest_server</code>，可以通过下面的命令进行授权：
+               </para>
           <programlisting language="sql"><![CDATA[
 grant 'rest_server', 'RWCA'
     ]]></programlisting>
-          <para>For more information about ACLs, please see the <link
-              linkend="hbase.accesscontrol.configuration">Access Control</link> section </para>
-          <para> It should be possible for clients to authenticate with the HBase cluster through
-            the REST gateway in a pass-through manner via SPEGNO HTTP authentication. This is future
-            work. </para>
+          <para>更多关于ACLs的信息，请查阅 <link
+                  linkend="hbase.accesscontrol.configuration">Access Control</link> 部分。 </para>
+          <para> 客户端与HBase集群通过REST网关的验证通过SPEGNO HTTP认证方式进行也是可能的。这是未来的工作。 </para>
         </section>
       </section>
     </section>
@@ -471,49 +476,56 @@ grant 'rest_server', 'RWCA'
 
   <section
     xml:id="hbase.tags">
-    <title>Tags</title>
-    <para> Every cell can have metadata associated with it. Adding metadata in the data part of
-      every cell would make things difficult. </para>
-    <para> The 0.98 version of HBase solves this problem by providing Tags along with the cell
-      format. Some of the usecases that uses the tags are Visibility labels, Cell level ACLs, etc. </para>
-    <para> HFile V3 version from 0.98 onwards supports tags and this feature can be turned on using
-      the following configuration </para>
+    <title>标签</title>
+    <para>
+        每一个单元格（cell）都有一个与它联系的元数据。给每一个单元格的数据部分添加元数据很困难。
+         </para>
+    <para>
+        0.98版本的HBase的解决了这个问题，通过提供单元格的格式对应的标签。一些使用该标签的例子都是可见的标签，单元格级别的的ACLs，等等。
+    </para>
+    <para> 0.98版的HFile V3 文件格式支持标签，并且这个特性可以通过在配置中进行如下设置打开： </para>
     <programlisting language="xml"><![CDATA[
 <property>
   <name>hfile.format.version</name>
   <value>3</value>
 </property>
     ]]></programlisting>
-    <para> Every cell can have zero or more tags. Every tag has a type and the actual tag byte
-      array. The types <command>0-31</command> are reserved for System tags. For example ‘1’ is
-      reserved for ACL and ‘2’ is reserved for Visibility tags. </para>
-    <para> The way rowkeys, column families, qualifiers and values are encoded using different
-      Encoding Algos, similarly the tags can also be encoded. Tag encoding can be turned on per CF.
-      Default is always turn ON. To turn on the tag encoding on the HFiles use </para>
+    <para>
+        每一个单元格可以有0或多个标签。每一个标签有一个类型，并且被实际上存储为字节数组。类型 <command>0-31</command> 是被系统保留的标签。例如，'1'被
+        ACL保留而'2'被用作可见性标签。
+         </para>
+    <para>
+        正如行键(rowkeys),列族（column families），列限定符（qualifiers）和值可以使用不同的编码算法来编码一样，标签也可以被编码。标签编码可以对每个列族开启。默认总是开启的。
+        为了开启HFile标签编码，可以使用：
+         </para>
     <programlisting language="java"><![CDATA[
 HColumnDescriptor#setCompressTags(boolean compressTags)
     ]]></programlisting>
-    <para> Note that encoding of tags takes place only if the DataBlockEncoder is enabled for the
-      CF. </para>
-    <para> As we compress the WAL entries using Dictionary the tags present in the WAL can also be
-      compressed using Dictionary. Every tag is compressed individually using WAL Dictionary. To
-      turn ON tag compression in WAL dictionary enable the property </para>
+    <para>
+        注意只有当DataBlockEncoder启用了针对列族的编码时，标签编码才会发生。
+         </para>
+    <para>
+        当我们使用字典压缩的WAL项在WAL目前的标签也可以用词典进行压缩。每一个标签被使用的WAL词典单独压缩。要开启标签压缩WAL字典使物业
+        就像我们使用字典压缩WAL实体一样，在WAL中的标签也可以使用字典压缩。每一个标签使用WAL字典被独立压缩。为了开启WAL的标签压缩功能，需要设置如下属性：
+         </para>
     <programlisting language="xml"><![CDATA[
 <property>
   <name>hbase.regionserver.wal.tags.enablecompression</name>
   <value>true</value>
 </property>
     ]]></programlisting>
-    <para> To add tags to every cell during Puts, the following apis are provided </para>
+    <para>
+        为了给Puts期间的每一个单元格增加标签，提供了如下api：
+         </para>
     <programlisting language="java"><![CDATA[
 Put#add(byte[] family, byte [] qualifier, byte [] value, Tag[] tag)
 Put#add(byte[] family, byte[] qualifier, long ts, byte[] value, Tag[] tag)
     ]]></programlisting>
 
-    <para> Some of the feature developed using tags are Cell level ACLs and Visibility labels. These
-      are some features that use tags framework and allows users to gain better security features on
-      cell level. </para>
-    <para> For details, see:</para>
+    <para>
+        一些在开发的使用标签的特性时单元格级别的ACLs和可见性标签。这些特性使用标签框架并且允许用户在单元格级别获取更好的安全特性。
+         </para>
+    <para> 更多的细节，请查阅</para>
     <para>
       <link
         linkend="hbase.accesscontrol.configuration">Access Control</link>
@@ -524,49 +536,51 @@ Put#add(byte[] family, byte[] qualifier, long ts, byte[] value, Tag[] tag)
 
   <section
     xml:id="hbase.accesscontrol.configuration">
-    <title>Access Control</title>
-    <para> Newer releases of Apache HBase (&gt;= 0.92) support optional access control list (ACL-)
-      based protection of resources on a column family and/or table basis. </para>
-    <para> This describes how to set up Secure HBase for access control, with an example of granting
-      and revoking user permission on table resources provided. </para>
+    <title>访问控制</title>
+    <para>
+        更新的Apache HBase发行版（&gt;= 0.92）支持可选的基于列族和/或表级别的资源保护的访问控制列表 (ACL-)。
+         </para>
+    <para>
+        下面使用一个给用户授权和回收表级别权限的例子，描述如何设置访问控制的安全HBase。
+         </para>
 
     <section>
-      <title>Prerequisites</title>
-      <para> You must configure HBase for secure or simple user access operation. Refer to the <link
-          linkend="hbase.accesscontrol.configuration">Secure Client Access to HBase</link> or <link
-          linkend="hbase.secure.simpleconfiguration">Simple User Access to HBase</link> sections and
-        complete all of the steps described there. </para>
-      <para> For secure access, you must also configure ZooKeeper for secure operation. Changes to
-        ACLs are synchronized throughout the cluster using ZooKeeper. Secure authentication to
-        ZooKeeper must be enabled or otherwise it will be possible to subvert HBase access control
-        via direct client access to ZooKeeper. Refer to the section on secure ZooKeeper
-        configuration and complete all of the steps described there. </para>
+      <title>先决条件</title>
+      <para>
+          你必须配置HBase为安全或者简单用户访问操作。参考<link
+              linkend="hbase.accesscontrol.configuration">安全的客户端访问HBase</link>或者<link
+              linkend="hbase.secure.simpleconfiguration">简单的客户端访问HBase</link> 章节，并且完成这里面所有的操作步骤。
+           </para>
+      <para>
+          对于安全访问，你必须也配置Zookeeper的安全操作。改变ACLs并使用Zookeeper同步到整个集群。安全认证Zookeeper必须启用，否则通过直接客户端访问
+          Zookeeper就可以颠覆HBase访问控制。参考安全的Zookeeper配置章节并且完成里面描述的所有步骤。
+           </para>
     </section>
 
     <section>
-      <title>Overview</title>
-      <para> With Secure RPC and Access Control enabled, client access to HBase is authenticated and
-        user data is private unless access has been explicitly granted. Access to data can be
-        granted at a table or per column family basis. </para>
-      <para> However, the following items have been left out of the initial implementation for
-        simplicity: </para>
+      <title>简介</title>
+      <para>
+          当安全的RPC和访问控制启用，客户端访问HBase需要被认证并且用户数据是私有的，除非访问被显式的授权。访问数据可以被授予针对一个表或者一个列族。
+          </para>
+      <para>
+          然而，为了简单性，下面的选项已经被排除在初始的实现之外：
+           </para>
       <orderedlist>
         <listitem>
-          <para>Row-level or per value (cell): Using Tags in HFile V3</para>
+          <para>
+              行级别或者每个值（单元格）：在HFile V3中使用标签
+              </para>
         </listitem>
         <listitem>
-          <para>Push down of file ownership to HDFS: HBase is not designed for the case where files
-            may have different permissions than the HBase system principal. Pushing file ownership
-            down into HDFS would necessitate changes to core code. Also, while HDFS file ownership
-            would make applying quotas easy, and possibly make bulk imports more straightforward, it
-            is not clear that it would offer a more secure setup.</para>
+          <para>
+              HDFS文件的所有权：HBase没有被设计用于文件的权限，这可能与HBase系统主要的权限不同。增加HDFS文件所有权将需要修改核心代码。
+              另外，虽然HDFS文件所有权将使申请配额变得容易，并且有可能使得批量导入更简单，但目前并不清楚，它会被提供一个更安全的设置。
+              </para>
         </listitem>
         <listitem>
-          <para>HBase managed "roles" as collections of permissions: We will not model "roles"
-            internally in HBase to begin with. We instead allow group names to be granted
-            permissions, which allows external modeling of roles via group membership. Groups are
-            created and manipulated externally to HBase, via the Hadoop group mapping
-            service.</para>
+          <para>
+              HBase管理“角色”的权限的集合：我们不会在HBase开始时在内部模式化“角色”。我们允许组名被授予权限，通过组成员身份，这使得角色的外部模式化。通过Hadoop的组映射服务，组创建和操纵在HBase的外部。
+              </para>
         </listitem>
       </orderedlist>
       <para> Access control mechanisms are mature and fairly standardized in the relational database
