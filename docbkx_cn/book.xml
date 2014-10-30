@@ -1202,9 +1202,7 @@ if (!b) {
 	throw new IOException("error with job!");
 }
     </programlisting>
-          In this example mapper a column with a String-value is chosen as the value to summarize
-          upon. This value is used as the key to emit from the mapper, and an
-            <classname>IntWritable</classname> represents an instance counter.
+            在这个例子中，mapper方法会汇总一个选定的字符串值，这个值会作为键值（key）输出，<classname>IntWritable</classname>表示一个计数器实例。
           <programlisting language="java">
 public static class MyMapper extends TableMapper&lt;Text, IntWritable&gt;  {
 	public static final byte[] CF = "cf".getBytes();
@@ -1221,8 +1219,7 @@ public static class MyMapper extends TableMapper&lt;Text, IntWritable&gt;  {
    	}
 }
     </programlisting>
-          In the reducer, the "ones" are counted (just like any other MR example that does this),
-          and then emits a <classname>Put</classname>.
+            在reducer方法中，将统计"ones"（就像其他的MapReduce实例那样）并且输出一个<classname>Put</classname>。
           <programlisting language="java">
 public static class MyTableReducer extends TableReducer&lt;Text, IntWritable, ImmutableBytesWritable&gt;  {
 	public static final byte[] CF = "cf".getBytes();
@@ -1244,10 +1241,10 @@ public static class MyTableReducer extends TableReducer&lt;Text, IntWritable, Im
       </section>
       <section
         xml:id="mapreduce.example.summary.file">
-        <title>HBase MapReduce Summary to File Example</title>
-        <para>This very similar to the summary example above, with exception that this is using
-          HBase as a MapReduce source but HDFS as the sink. The differences are in the job setup and
-          in the reducer. The mapper remains the same. </para>
+        <title>HBase MapReduce汇总到文件实例</title>
+        <para>
+            这和上面的汇总实例很像，不一样的地方在于它使用HBase作为MapReduce的数据源，而将HDFS作为存储池。它们在任务设置和reducer方法上不同，mapper方法一样。
+             </para>
         <programlisting language="java">
 Configuration config = HBaseConfiguration.create();
 Job job = new Job(config,"ExampleSummaryToFile");
@@ -1274,9 +1271,9 @@ if (!b) {
 	throw new IOException("error with job!");
 }
     </programlisting>
-        <para>As stated above, the previous Mapper can run unchanged with this example. As for the
-          Reducer, it is a "generic" Reducer instead of extending TableMapper and emitting
-          Puts.</para>
+        <para>
+            如上所述，之前的Mapper方法可以不做改变运行在这个例子中。而Reducer方法继承了一个"通用"的Reducer而不是TableReducer，并且不再输出Puts。
+            </para>
         <programlisting language="java">
  public static class MyReducer extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt;  {
 
@@ -1292,31 +1289,28 @@ if (!b) {
       </section>
       <section
         xml:id="mapreduce.example.summary.noreducer">
-        <title>HBase MapReduce Summary to HBase Without Reducer</title>
-        <para>It is also possible to perform summaries without a reducer - if you use HBase as the
-          reducer. </para>
-        <para>An HBase target table would need to exist for the job summary. The HTable method
-            <code>incrementColumnValue</code> would be used to atomically increment values. From a
-          performance perspective, it might make sense to keep a Map of values with their values to
-          be incremeneted for each map-task, and make one update per key at during the <code>
-            cleanup</code> method of the mapper. However, your milage may vary depending on the
-          number of rows to be processed and unique keys. </para>
-        <para>In the end, the summary results are in HBase. </para>
+        <title>HBase MapReduce无Reducer汇总到HBase</title>
+        <para>
+            没有reducer也可以完成汇总功能 - 如果你使用HBase作为reducer。
+             </para>
+        <para>
+            汇总作业中需要一个HBase目标表。HTable方法<code>incrementColumnValue</code>将被用作原子递增值。
+            从性能的角度来看，它可能对保持每一个map任务的映射（Map）递增的值，和对在mapper的<code>
+            cleanup</code>方法的每一个键（key）的更新是有意义的。但是，最终还是要看你要处理的行数和唯一建的数目。
+            </para>
+        <para>最终，结果会汇总在HBase中。 </para>
       </section>
       <section
         xml:id="mapreduce.example.summary.rdbms">
-        <title>HBase MapReduce Summary to RDBMS</title>
-        <para>Sometimes it is more appropriate to generate summaries to an RDBMS. For these cases,
-          it is possible to generate summaries directly to an RDBMS via a custom reducer. The
-            <code>setup</code> method can connect to an RDBMS (the connection information can be
-          passed via custom parameters in the context) and the cleanup method can close the
-          connection. </para>
-        <para>It is critical to understand that number of reducers for the job affects the
-          summarization implementation, and you'll have to design this into your reducer.
-          Specifically, whether it is designed to run as a singleton (one reducer) or multiple
-          reducers. Neither is right or wrong, it depends on your use-case. Recognize that the more
-          reducers that are assigned to the job, the more simultaneous connections to the RDBMS will
-          be created - this will scale, but only to a point. </para>
+        <title>HBase MapReduce汇总到RDBMS</title>
+        <para>
+            有时结果更适合汇总到关系型数据库（RDBMS）。对于这样的例子，可以通过一个自定义的reducer方法直接汇总到RDBMS。
+            <code>setup</code>方法可以连接到一个RDBMS（连接信息可以通过客户在上下文(context)中的参数来传递，并且可以在cleanup方法中关闭连接）
+            </para>
+        <para>
+            关键是要理解reducer数目对任务结果的影响，并且你需要自己设计你的reducer方法。具体来说，设计是运行一个单例（一个reducer）还是多个reducer。
+            这无关对错，它依赖于你的使用案例。你需要意识到给任务分配更多的reducer，将会创建更多到RDBMS的连接 - 这是规模上的考虑，当然实际不只是考虑这些。
+             </para>
         <programlisting language="java">
  public static class MyRdbmsReducer extends Reducer&lt;Text, IntWritable, Text, IntWritable&gt;  {
 
@@ -1337,17 +1331,17 @@ if (!b) {
 
 }
     </programlisting>
-        <para>In the end, the summary results are written to your RDBMS table/s. </para>
+        <para>最终，汇总的结果会被写入到你的RDBMS表中。 </para>
       </section>
 
     </section>
     <!--  mr examples -->
     <section
       xml:id="mapreduce.htable.access">
-      <title>Accessing Other HBase Tables in a MapReduce Job</title>
-      <para>Although the framework currently allows one HBase table as input to a MapReduce job,
-        other HBase tables can be accessed as lookup tables, etc., in a MapReduce job via creating
-        an HTable instance in the setup method of the Mapper.
+      <title>在MapReduce任务中访问其他的HBase表</title>
+      <para>
+          虽然目前的框架允许一个HBase的表作为输入提供给MapReduce任务，
+          其他HBase的表可以通过在Mapper的设置方法中创建HTable实例，作为查找表等进行访问。
         <programlisting language="java">public class MyMapper extends TableMapper&lt;Text, LongWritable&gt; {
   private HTable myOtherTable;
 
@@ -1365,14 +1359,12 @@ if (!b) {
     </section>
     <section
       xml:id="mapreduce.specex">
-      <title>Speculative Execution</title>
-      <para>It is generally advisable to turn off speculative execution for MapReduce jobs that use
-        HBase as a source. This can either be done on a per-Job basis through properties, on on the
-        entire cluster. Especially for longer running jobs, speculative execution will create
-        duplicate map-tasks which will double-write your data to HBase; this is probably not what
-        you want. </para>
-      <para>See <xref
-          linkend="spec.ex" /> for more information. </para>
+      <title>推测执行 </title>
+      <para>
+          一般在MapReduce任务中使用HBase作为数据源时最好关掉推测执行。可以通过在整个集群中设置属性来对每一个任务进行设置。特别是对于长时间运行的任务，推测执行将会创建重复的map任务，从而将会对HBase写入双倍的数据；这可能不是你想要的结果。
+           </para>
+      <para>查阅 <xref
+          linkend="spec.ex" /> 可以了解更多信息。 </para>
     </section>
   </chapter>  <!--  mapreduce -->
 
